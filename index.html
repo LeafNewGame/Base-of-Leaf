@@ -1,15 +1,50 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
+<header>
+ <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leaf開発サイト</title>
-</head>
+ </head>
+</header>
+<img src="leaf.png"alt="Leaf Projectのロゴ">
 <body>
 
     <h1>Leaf Project</h1>
+    <h2>計画と構想</h2>
+    <nav>
+     <h2>メニュー</h2>
 
+     <ul>
+        <li><a href="#">概要</a></li>
+        <li><a href="#">開発日誌</a></li>
+        <li><a href="#">GitHub</a></li>
+     </ul>
+    </nav>
+  <main> 
+   <section>
     <p>構想の基礎となるサイト</p>
+    <a href="https://github.com">
+       GitHubを見る
+    </a>
+    <button aria-label="閉じる">
+      開発状況を見る
+    </button>
+    <form>
 
+     <label for="name">名前</label>
+     <input type="text" id="name">
+
+    </form>
+    <button type="submit">
+     送信
+    </button>
+    <textarea id="idea">
+        ここに計画を記入
+    </textarea>
+   </section>
+  </main>
 </body>
+<footer>
+    <p>制作開始日 2026/6/7</p>
 </html>
