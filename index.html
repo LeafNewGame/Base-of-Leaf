@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leaf開発サイト</title>
+    <link rel="stylesheet" href="style.css">
  </head>
 </header>
 <img src="leaf.png"alt="PLANTERのロゴ">
@@ -31,18 +32,25 @@
     <button aria-label="閉じる">
       開発状況を見る
     </button>
-    <form>
+    <p>
+     <form action="messages.text">
 
-     <label for="name">名前</label>
-     <input type="text" id="name">
-
-    </form>
-    <button type="submit">
-     送信
-    </button>
-    <textarea id="idea">
-        ここに計画を記入
-    </textarea>
+      <label for="name">名前</label>
+      <input type="text" id="name">
+ 
+     </form>
+    </p>
+    <p>
+     <textarea
+      rows="5"
+      cols="30">
+     </textarea>
+    </p>
+    <p>
+     <button type="submit">
+      送信
+     </button>
+    </p>
    </section>
   </main>
 </body>
