@@ -11,16 +11,24 @@
 <img src="images/leaf.png"alt="PLANTERのロゴ">
 
 <body>
-    <h1 id="title">PLANTER</h1>
-
-    <button id="btn">
-     変更
-    </button>
-    <script src="script.js"></script>
+    <h1>PLANTER</h1>
     <h2>多機能便利ツールサイト</h2>
     <nav>
      <h2>メニュー</h2>
+     <h3>カウントボタン</h3>
+     <p id="countText">0</p>
+     <button id="plusBtn">+1</button>
+     <button id="minusBtn">-1</button>
+     <button id="reset">リセット</button>
+     
 
+     <input id="nameBox">
+
+     <button id="btn">
+      表示
+     </button>
+     <p id="result"></p>
+     <script src="script.js"></script>
      <ul>
         <li><a href="tools/planning_tool.html">計画整理ツール</a></li>
         <li><a href="tools/memo_tool.html">メモ整理ツール</a></li>
@@ -56,6 +64,7 @@
      <button type="submit">
       送信
      </button>
+
     </p>
    </section>
   </main>
