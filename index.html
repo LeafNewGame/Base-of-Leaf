@@ -8,16 +8,34 @@
     <link rel="stylesheet" href="style.css">
 
 </head>
-<img src="images/leaf.png"alt="PLANTERのロゴ">
+
 
 <body>
+    <img src="images/leaf.png"alt="PLANTERのロゴ">
     <h1>PLANTER</h1>
     <h2>多機能便利ツールサイト</h2>
 
     <h2>メニュー</h2>
+    <button id="menuBtn">
+      ☰
+    </button>
+
+    <nav id="menu">
+      <ul>
+        <li>ホーム</li>
+        <li>ブログ</li>
+        <li>習慣化</li>
+      </ul>
+    </nav>
+
+    <script src="script.js"></script>
+    
     <div class="tool-card">
       <p>長期計画の整理ツールです</p>
-      <a href="tools/planning_tool.html">開く</a>
+      <a href="tools/planning_tool.html">
+         <img src="images/planning.png"
+         alt="計画整理ツール">
+      </a>
     </div>
     <div class="tool-card">
       <p>複雑なメモを管理するツール</p>
@@ -35,6 +53,7 @@
       <p>開発者の話</p>
       <a href="tools/blog.html">開く</a>
     </div>
+    
 
   <main> 
    <section>
