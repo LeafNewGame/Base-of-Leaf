@@ -85,3 +85,7 @@ greet.addEventListener(
         list.appendChild(p);
     }
 );
+
+let task =
+document.getElementById("task");
+

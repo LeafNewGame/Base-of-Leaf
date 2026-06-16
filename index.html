@@ -13,46 +13,33 @@
 <body>
     <h1>PLANTER</h1>
     <h2>多機能便利ツールサイト</h2>
-    <nav>
-     <h2>メニュー</h2>
-     <h3>カウントボタン</h3>
-     <p id="countText">0</p>
-     <button id="plusBtn">+1</button>
-     <button id="minusBtn">-1</button>
-     <button id="reset">リセット</button>
 
-     <button id="greet">
-      追加
-     </button>
+    <h2>メニュー</h2>
+    <div class="tool-card">
+      <p>長期計画の整理ツールです</p>
+      <a href="tools/planning_tool.html">開く</a>
+    </div>
+    <div class="tool-card">
+      <p>複雑なメモを管理するツール</p>
+      <a href="tools/memo_tool.html">開く</a>
+    </div>
+    <div class="tool-card">
+      <p>習慣を継続するためのツールです</p>
+      <a href="tools/habit_tool.html">開く</a>
+    </div>
+    <div class="tool-card">
+      <p>パッチノート</p>
+      <a href="tools/patchnote.html">開く</a>
+    </div>
+    <div class="tool-card">
+      <p>開発者の話</p>
+      <a href="tools/blog.html">開く</a>
+    </div>
 
-
-     <div id="list"></div>
-
-     <input id="nameBox">
-
-     <button id="btn">
-      表示
-     </button>
-     <p id="result"></p>
-     <script src="script.js"></script>
-     <ul>
-        <li><a href="tools/planning_tool.html">計画整理ツール</a></li>
-        <li><a href="tools/memo_tool.html">メモ整理ツール</a></li>
-        <li><a href="tools/habit_tool.html">習慣化ツール</a></li>
-        <li><a href="tools/patchnote.html">パッチノート</a></li>
-        <li><a href="tools/blog.html">開発者の話</a></li>
-     </ul>
-    </nav>
   <main> 
    <section>
     <p>PLANTER予定</p>
-    <a href="https://github.com">
-       GitHubを見る
-    </a>
-    <button aria-label="閉じる">
-      開発状況を見る
-    </button>
-    
+
     <form action="messages.text">
 
       <label for="name">名前</label>
@@ -72,6 +59,7 @@
      </button>
 
     </p>
+
    </section>
   </main>
   <footer>

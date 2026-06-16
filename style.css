@@ -12,3 +12,29 @@ h1{
     padding:20px;
     margin:20px;
 }
+
+.tool-card{
+
+    width:300px;
+
+    padding:20px;
+
+    margin:20px;
+
+    background:white;
+
+    border-radius:15px;
+
+    box-shadow:0 4px 8px rgba(0,0,0,0.2);
+
+}
+.tool-card{
+
+    transition:0.3s;
+
+}
+.tool-card:hover{
+
+    transform:translateY(-10px);
+
+}
