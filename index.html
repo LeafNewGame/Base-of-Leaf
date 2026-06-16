@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="ja">
-<header>
- <head>
+<head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leaf開発サイト</title>
     <link rel="stylesheet" href="style.css">
- </head>
-</header>
+
+</head>
 <img src="images/leaf.png"alt="PLANTERのロゴ">
 
 <body>
@@ -20,7 +20,13 @@
      <button id="plusBtn">+1</button>
      <button id="minusBtn">-1</button>
      <button id="reset">リセット</button>
-     
+
+     <button id="greet">
+      追加
+     </button>
+
+
+     <div id="list"></div>
 
      <input id="nameBox">
 
@@ -46,14 +52,14 @@
     <button aria-label="閉じる">
       開発状況を見る
     </button>
-    <p>
-     <form action="messages.text">
+    
+    <form action="messages.text">
 
       <label for="name">名前</label>
       <input type="text" id="name">
  
-     </form>
-    </p>
+    </form>
+    
     <p>
      <textarea
       rows="5"
@@ -68,8 +74,8 @@
     </p>
    </section>
   </main>
+  <footer>
+    <p>制作開始日 2026/6/7</p>
+  </html>
 </body>
 
-<footer>
-    <p>制作開始日 2026/6/7</p>
-</html>

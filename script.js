@@ -12,20 +12,23 @@ document.getElementById("minusBtn");
 let reset = document.getElementById("reset");
 
 plusBtn.addEventListener(
-    "mouseover",
+    "click",
     function(){
         count += 1
         countText.textContent = count;
     }
 );
 
-minusBtn.onclick = function(){
+minusBtn.addEventListener(
+    "click",
+    function(){
 
     count--;
 
     countText.textContent = count;
+    }
+);
 
-};
 
 reset.onclick = function(){
     count = 0
@@ -46,9 +49,39 @@ document.getElementById("result");
 btn.addEventListener(
     "click",
     function(){
-        console.log(nameBox.value);
+        result.textContent = 
+        "こんにちは"
+        +nameBox.value
+        +"さん";
+    }
+);
+let greet = document.getElementById("greet")
+let list =
+document.getElementById("list");
 
-        result.textContent = nameBox.value;
+greet.addEventListener(
+   "click",
+   function(){
+        let p =
+        document.createElement("p");
 
+        p.textContent =
+        "こんにちは";
+
+        let deleteb = document.createElement("button");
+  
+        deleteb.textContent =
+        "削除";
+
+        deleteb.addEventListener(
+            "click",
+            function(){
+
+                p.remove();
+            }
+
+        );
+        p.appendChild(deleteb);
+        list.appendChild(p);
     }
 );
