@@ -1,5 +1,4 @@
 
-
 let menuBtn =
 document.getElementById("menuBtn");
 
@@ -22,5 +21,3 @@ menuBtn.addEventListener(
 
     }
 ); 
-
-
