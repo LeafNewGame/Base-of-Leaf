@@ -1,11 +1,33 @@
 .icon{
-    justify-content: left;
-    width:150px;
-    height:200px;
+    height:60px;
+    width:auto;
+
 }
+
+
 header{
+    position:fixed;
+    top:0;
+    left:0;
+
+    width:100%;
+
     background-color:#228b22;
-    height:30px;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    padding:10px 20px;
+
+    z-index:1000;
+
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    padding-top:80px;
 }
 .menu-btn{
     width:50px;
@@ -52,11 +74,18 @@ header{
         rotate(-45deg);
 }
 
+.menu-btn{
+    z-index:1001;
+}
+#menu{
+    z-index:1000;
+}
+
 
 #menu{
     text-align: right;
     position: fixed;
-    top: 0px;
+    top: 80px;
     left: 100%;
 
     width: 100%;
@@ -175,15 +204,4 @@ body{
 }
 
 
-header{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    padding:20px;
-
-}
 
