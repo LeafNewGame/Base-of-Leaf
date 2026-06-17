@@ -1,10 +1,73 @@
 .icon{
-    width:60px;
-    height:60px;
+    justify-content: left;
+    width:150px;
+    height:200px;
 }
 header{
     background-color:#228b22;
     height:30px;
+}
+.menu-btn{
+    width:50px;
+    height:50px;
+
+    background:none;
+    border:none;
+
+    position:relative;
+    cursor:pointer;
+}
+.menu-btn span{
+    position:absolute;
+
+    width:30px;
+    height:2px;
+
+    background:black;
+
+    left:10px;
+
+    transition:0.3s;
+}
+.menu-btn span:nth-child(1){
+    top:15px;
+}
+.menu-btn span:nth-child(2){
+    top:24px;
+}
+.menu-btn span:nth-child(3){
+    top:33px;
+}
+.menu-btn.active span:nth-child(1){
+    transform:
+        translateY(9px)
+        rotate(45deg);
+}
+.menu-btn.active span:nth-child(2){
+    opacity:0;
+}
+.menu-btn.active span:nth-child(3){
+    transform:
+        translateY(-9px)
+        rotate(-45deg);
+}
+
+
+#menu{
+    text-align: right;
+    position: fixed;
+    top: 0px;
+    left: 100%;
+
+    width: 100%;
+    height: 100vh;
+
+    background: white;
+
+    transition: 0.5s ease;
+}
+#menu.active{
+    left: 0;
 }
 
 .hero{
@@ -22,21 +85,61 @@ header{
     justify-content:center;
 }
 
-.hero-inrto{
+.hero-intro{
+
     display:flex;
+
+    justify-content:space-between;
+
+    align-items:flex-start;
+
+    gap:70px;
+
+}
+
+.left{
+
+    flex:1.5;
+
+}
+
+.right{
+
+    flex:1.2;
+
+}
+
+.introduce{
+
+    display:block;
+
+    font-size:12px;
+
+    letter-spacing:3px;
+
+    margin-bottom:0px;
+
 }
 
 .hero-intro h2{
-    text-align:left;
+
     font-size:50px;
-    line-height:1;
+
+    margin:0;
+
 }
 
-.hero p{
-    al
+.hero-intro p{
+    text-align:left;
+
+    font-size:20px;
+
+    margin-top:35px;
+
 }
 
 body{
+
     background-color:white;
 }
 
@@ -71,11 +174,7 @@ body{
     height:200px;
 }
 
-#menu{
 
-    display:none;
-
-}
 header{
 
     display:flex;

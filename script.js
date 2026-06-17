@@ -1,23 +1,13 @@
+const menu = document.getElementById("menu");
+const btn = document.querySelector(".menu-btn");
+const closeBtn = document.getElementById("close-btn");
 
-let menuBtn =
-document.getElementById("menuBtn");
+btn.addEventListener("click", () => {
+    menu.classList.add("active");
+    btn.classList.add("active");
+});
 
-let menu =
-document.getElementById("menu");
-
-menuBtn.addEventListener(
-    "click",
-    function(){
-
-        if(menu.style.display === "block"){
-
-            menu.style.display = "none";
-
-        }else{
-
-            menu.style.display = "block";
-
-        }
-
-    }
-); 
+closeBtn.addEventListener("click", () => {
+    menu.classList.remove("active");
+    btn.classList.remove("active");
+});
