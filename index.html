@@ -12,9 +12,11 @@
 <body>
 
 <header>
-    <img src="images/hub-icon.png"
-         alt="PLANTERのロゴ"
-         class="icon">
+    <a href="index.html">
+      <img src="images/hub-icon.png"
+      alt="PLANTERのロゴ" class="icon">
+    </a>
+
 
     <button id="menu-btn" class="menu-btn">
         <span></span>
@@ -24,9 +26,12 @@
 
     <nav id="menu">
         <ul>
-            <li>ホーム</li>
-            <li>ブログ</li>
-            <li>習慣化</li>
+            <li><a href="index.html">ホーム</a></li>
+            <li><a href="tools/planning_tool.html">計画整理ツール</a>
+            <li><a href="tools/memo_tool.html">メモツール</a></li>
+            <li><a href="tools/habit_tool.html">習慣化ツール</a></li>
+            <li><a href="tools/patchnote.html">パッチノート</a></li>
+            <li><a href="tools/blog.html">開発者より</a></li>
         </ul>
     </nav>
 </header>
@@ -38,9 +43,9 @@
 <section class="hero-intro">
 
     <div class="left">
-        <span class="introduce">INTRODUCE</span>
+        <span class="introduce"> ――― INTRODUCE</span>
 
-        <h2>
+        <h2 class="introduce2">
             ユニークな機能を持った、<br>
             普遍的なツールを使って、<br>
             自分の能力を育てていく。
@@ -65,7 +70,7 @@
 
 
 
-    
+  <section class="tool-cards">  
     <div class="tool-card">
       <a href="tools/planning_tool.html">
          <img src="images/planning.png"
@@ -89,6 +94,7 @@
       <p>開発者の話</p>
       <a href="tools/blog.html">開く</a>
     </div>
+  </section>
     
 
   <main> 

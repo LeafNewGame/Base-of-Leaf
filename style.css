@@ -83,10 +83,12 @@ body{
 
 
 #menu{
-    text-align: right;
+    text-align: left;
     position: fixed;
     top: 80px;
     left: 100%;
+    font-size:30px;
+
 
     width: 100%;
     height: 100vh;
@@ -130,13 +132,23 @@ body{
 
     flex:1.5;
 
+
 }
 
-.right{
+.left .introduce2{
+    margin-left: 100px;
+}
+
+.right {
 
     flex:1.2;
 
 }
+
+.right p{
+    font-size: 1px;
+}
+
 
 .introduce{
 
@@ -147,6 +159,7 @@ body{
     letter-spacing:3px;
 
     margin-bottom:0px;
+    margin-left: 6px;
 
 }
 
@@ -174,6 +187,8 @@ body{
 
 .tool-card{
 
+
+
     width:300px;
 
     padding:20px;
@@ -196,6 +211,10 @@ body{
 
     transform:translateY(-10px);
 
+}
+
+.tool-cards{
+    display: flex;
 }
 
 .tool-photo{
