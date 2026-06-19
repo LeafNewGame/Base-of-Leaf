@@ -9,3 +9,7 @@ btn.addEventListener("click", () => {
     btn.classList.toggle("active");
 
 });
+
+const track = document.querySelector(".slide-track");
+
+track.innerHTML += track.innerHTML;
