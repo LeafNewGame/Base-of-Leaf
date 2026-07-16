@@ -167,9 +167,38 @@ body{
 .hero h1{
     text-align:center;
     font-size:60px;
-    color:#2E7D32;
+    color:#2e7d32;
     display:flex;
     justify-content:center;
+}
+
+.PLANTER-Font {
+    overflow:hidden;
+    color:#228b22;
+    white-space:nowrap;
+    border-right:3px solid black;
+    display:inline-block;
+    animation:
+
+     typing
+
+     4s
+
+     steps(8)
+
+     forwards;
+}
+
+@keyframes typing {
+
+    from{
+        width:0;
+    }
+
+    to{
+        width:100%;
+    }
+
 }
 
 .hero-intro{
