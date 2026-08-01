@@ -10,9 +10,12 @@ btn.addEventListener("click", () => {
 
 });
 
-const track = document.querySelector(".slide-track");
+const track =
+document.querySelector(".slide-track");
 
-track.innerHTML += track.innerHTML;
+if (track) {
+    track.innerHTML += track.innerHTML;
+}
 
 
 const overlay =
