@@ -39,12 +39,54 @@
 <li><a href="../index.html">ホームに戻る</a></li>
 <h1>習慣化アプリ</h1>
 
-<input id="habitInput" placeholder="習慣化した物を入れましょう">
+
 
 
 <button id="addHabit">
-    追加
+   新しい習慣を追加
 </button>
+
+
+<div id="habitModal">
+
+    <div class="modal-content">
+
+        <h2>新しい習慣を追加</h2>
+
+        <label>習慣名</label>
+        <input id="habitName">
+
+        <br></br>
+
+        <label>目標</label>
+        <input id="habitGoal">
+
+        <br></br>
+
+        <label>記録方法</label>
+
+        <select id="habitType">
+
+            <option value="check">達成・未達成</option>
+            <option value="count">回数</option>
+            <option value="time">時間</option>
+
+        </select>
+
+        <br></br>
+
+        <button id="saveHabit">
+            保存
+        </button>
+
+        <button id="closeModal">
+            閉じる
+        </button>
+
+    </div>
+
+</div>
+
 
 <div id="habitList">
 
