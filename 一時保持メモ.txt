@@ -1,0 +1,21 @@
+addHabit.addEventListener(
+    "click",
+    function(){
+        if(habitInput.value != ""){
+
+        const habitData = {
+            name : habitInput.value,
+            streak : 0,
+            completed : false
+        };
+        habits.push(habitData);
+
+        localStorage.setItem(
+            "habits",
+            JSON.stringify(habits)
+        );
+
+        displayHabits();
+        habitInput.value = ""
+    }}
+);

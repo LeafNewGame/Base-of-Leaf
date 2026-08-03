@@ -4,6 +4,7 @@ const habitList = document.getElementById("habitList")
 const habitGoal = document.getElementById("habitGoal")
 const saveHabit = document.getElementById("saveHabit")
 const habitType = document.getElementById("habitType")
+const type = habitType.value
 
 
 let habits =
@@ -11,15 +12,26 @@ JSON.parse(
     localStorage.getItem("habits")
 ) || [];
 
+
 saveHabit.addEventListener(
     "click",
     function(){
+        const f_num = 0
+        const type = habitType.value
+        let num = "";
+        if (type === "time"){
+         num = f_num+"分"
+        }
+        else if (type === "count"){
+         num = f_num+"回"
+        };
         const habitData = {
          name: habitName.value,
          goal: habitGoal.value,
-         type: habitType.value,
+         type: type,
          streak:0,
-         completed:false
+         counter: num,
+         completed:false         
         };
         habits.push(habitData);
         localStorage.setItem(
@@ -28,6 +40,7 @@ saveHabit.addEventListener(
         );
 
         displayHabits();
+        modal.style.display = "none";
     }
 )
 
@@ -71,7 +84,8 @@ function displayHabits(){
 
     const status = document.createElement("p");
 
-    const count = document.createElement("p")
+    const counter = document.createElement("p")
+    counter.textContent = habit.counter
 
     const goal = document.createElement("h3")
 
@@ -89,6 +103,7 @@ function displayHabits(){
         if (!habit.completed){
         habit.streak++;
         habit.completed = true;
+
         displayHabits();
         localStorage.setItem(
         "habits",
@@ -119,6 +134,8 @@ function displayHabits(){
 
     card.appendChild(status);
 
+    card.appendChild(counter);
+
     card.appendChild(completeButton);
 
     card.appendChild(deleteButton);
@@ -127,26 +144,6 @@ function displayHabits(){
     });
 }
 
-addHabit.addEventListener(
-    "click",
-    function(){
-        if(habitInput.value != ""){
 
-        const habitData = {
-            name : habitInput.value,
-            streak : 0,
-            completed : false
-        };
-        habits.push(habitData);
-
-        localStorage.setItem(
-            "habits",
-            JSON.stringify(habits)
-        );
-
-        displayHabits();
-        habitInput.value = ""
-    }}
-);
 
 displayHabits();
