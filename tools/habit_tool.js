@@ -31,7 +31,8 @@ saveHabit.addEventListener(
          type: type,
          streak:0,
          counter: num,
-         completed:false         
+         completed:false, 
+         lastCompletedDate: ""        
         };
         habits.push(habitData);
         localStorage.setItem(
@@ -103,7 +104,8 @@ function displayHabits(){
         if (!habit.completed){
         habit.streak++;
         habit.completed = true;
-
+        const today = new Date().toISOString().slice(0, 10);
+        habit.lastCompletedDate = today;
         displayHabits();
         localStorage.setItem(
         "habits",
@@ -145,5 +147,26 @@ function displayHabits(){
 }
 
 
+function checkDate() {
 
+    const today = new Date().toISOString().slice(0, 10);
+
+    habits.forEach(function(habit){
+
+        if(habit.lastCompletedDate !== today){
+
+            habit.completed = false;
+
+        }
+
+    });
+
+    localStorage.setItem(
+        "habits",
+        JSON.stringify(habits)
+    );
+
+}
+
+checkDate();
 displayHabits();
