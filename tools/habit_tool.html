@@ -66,12 +66,20 @@
         <label>記録方法</label>
 
         <select id="habitType">
-
             <option value="check">達成・未達成</option>
             <option value="count">回数</option>
             <option value="time">時間</option>
-
         </select>
+
+        <div id="unitArea">
+
+          <label>単位</label>
+
+          <input
+             id="habitUnit"
+             placeholder="例：回、分、ページ、km">
+
+        </div>
 
         <br></br>
 
@@ -87,6 +95,30 @@
 
 </div>
 
+<div id="recordModal">
+
+    <div class="modal-content">
+
+        <h2>今回の記録(製作中)</h2>
+
+        <input
+            id="recordValue"
+            type="number"
+            placeholder="数値を入力してください">
+
+        <br><br>
+
+        <button id="saveRecord">
+            保存
+        </button>
+
+        <button id="closeRecord">
+            閉じる
+        </button>
+
+    </div>
+
+</div>
 
 <div id="habitList">
 
@@ -95,7 +127,7 @@
 
     
     <footer>
-      <p>実装日 2026/6/14</p>
+      <p>最終更新日 2026/8/6</p>
     </footer>
  <script src="habit_tool.js"></script>
  <script src="../script.js"></script>

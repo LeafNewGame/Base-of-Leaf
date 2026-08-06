@@ -4,36 +4,77 @@ const habitList = document.getElementById("habitList")
 const habitGoal = document.getElementById("habitGoal")
 const saveHabit = document.getElementById("saveHabit")
 const habitType = document.getElementById("habitType")
-const type = habitType.value
-
+const unitArea = document.getElementById("unitArea");
+const habitUnit = document.getElementById("habitUnit");
+const recordModal = document.getElementById("recordModal")
+const recordValue = document.getElementById("recordValue");
+const saveRecord = document.getElementById("saveRecord");
+const closeRecord = document.getElementById("closeRecord");
+const value = Number(recordValue.value);
+let selectedHabit = null;
 
 let habits =
 JSON.parse(
     localStorage.getItem("habits")
 ) || [];
 
+function updateUnitArea(){
+
+    if(habitType.value === "check"){
+
+        unitArea.style.display = "none";
+        habitUnit.value = "";
+
+    }
+    else if(habitType.value === "count"){
+
+        unitArea.style.display = "block";
+        if(habitUnit.value === ""){
+            habitUnit.value = "回";
+        }
+
+    }
+    else if(habitType.value === "time"){
+
+        unitArea.style.display = "block";
+        if(habitUnit.value === ""){
+            habitUnit.value = "分";
+        }
+    }
+}
+
+habitType.addEventListener(
+    "change",
+    updateUnitArea
+);
+
+updateUnitArea();
 
 saveHabit.addEventListener(
     "click",
     function(){
+        if(habitName.value.trim() === ""){
+            alert("習慣名を入力してください。");
+            return;
+        }
+        if(habitType.value !== "check" && habitUnit.value.trim() === ""){
+            alert("単位を入力してください。");
+            return;
+        }
         const f_num = 0
         const type = habitType.value
-        let num = "";
-        if (type === "time"){
-         num = f_num+"分"
-        }
-        else if (type === "count"){
-         num = f_num+"回"
-        };
         const habitData = {
          name: habitName.value,
          goal: habitGoal.value,
          type: type,
          streak:0,
-         counter: num,
+         counter: 0,
+         todaycounter:0,
+         unit: habitUnit.value,
          completed:false, 
          lastCompletedDate: ""        
         };
+       
         habits.push(habitData);
         localStorage.setItem(
             "habits",
@@ -86,14 +127,14 @@ function displayHabits(){
     const status = document.createElement("p");
 
     const counter = document.createElement("p")
-    counter.textContent = habit.counter
+    counter.textContent = habit.counter + habit.unit;
 
     const goal = document.createElement("h3")
 
     const memo = document.createElement("p")
 
     const completeButton = document.createElement("button");
-    completeButton.textContent = "達成する";
+    completeButton.textContent = "記録する";
 
     const deleteButton = document.createElement("button");
     deleteButton.textContent = "削除";
@@ -104,6 +145,10 @@ function displayHabits(){
         if (!habit.completed){
         habit.streak++;
         habit.completed = true;
+        selectedHabit = habit;
+        recordModal.style.display = "flex";
+        habit.counter += value;
+        habit.todaycounter += value;
         const today = new Date().toISOString().slice(0, 10);
         habit.lastCompletedDate = today;
         displayHabits();
@@ -111,7 +156,10 @@ function displayHabits(){
         "habits",
         JSON.stringify(habits)
         );
-      }}
+      }
+        displayHabits();
+        modal.style.display = "none";
+      }
     );
 
     deleteButton.addEventListener(
@@ -144,6 +192,7 @@ function displayHabits(){
 
     habitList.appendChild(card);
     });
+
 }
 
 
@@ -156,6 +205,7 @@ function checkDate() {
         if(habit.lastCompletedDate !== today){
 
             habit.completed = false;
+            habit.todaycounter = 0;
 
         }
 
