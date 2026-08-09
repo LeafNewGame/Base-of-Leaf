@@ -2317,7 +2317,11 @@ create policy "own row" on kb_cards
     const s = Settings.get();
     Cloud.init(s.supabaseUrl || "", s.supabaseKey || "");
     Cloud.onStatus(updateCloudUI);
-    if (/[?&]code=/.test(location.search)) {
+    // Google ログイン後は ?code=（PKCE）か #access_token=（暗黙的フロー）が付く。
+    // どちらの場合も handleCallback がトークンを処理する。
+    const hasCode = /[?&]code=/.test(location.search);
+    const hasToken = !!(location.hash && /access_token/.test(location.hash));
+    if (hasCode || hasToken) {
       Cloud.handleCallback().then((ok) => {
         if (ok) { cloudMsg2("Googleでログインしました ✓"); syncFromCloud(); }
         else updateCloudUI();
