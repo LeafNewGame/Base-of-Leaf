@@ -894,10 +894,11 @@ create policy "own row" on kb_cards
 
   /* ---------- ユーティリティ ---------- */
   const $ = (sel, root = document) => root.querySelector(sel);
-  // Google ログインのリダイレクト先を「アプリ本来の URL（デプロイ先）」に固定する。
-  // これにより、planter(HUB) から開いていても認証後に planter には戻らず、
-  // 必ずこのアプリに戻ってログインが完了する。planter に飛ばされるのを防ぐため。
-  const KG_OAUTH_REDIRECT = "https://7bf76b18915b4f2983eee9f43e3eb3a0.gz1.agentos-app.net";
+  // Google ログインのリダイレクト先を「今開いているこのページ自身」にする（動的）。
+  // これにより、GitHub Pages でも CloudStudio でも、認証後は必ず同じページに戻ってログインが完了する。
+  // ※この URL は Supabase の Authentication → URL Configuration → Redirect URLs に登録しておく必要がある。
+  //   どこで開くかで URL が変わるので、実際に使う URL（GitHub Pages の tools/knowledge_garden.html など）をすべて登録すること。
+  const KG_OAUTH_REDIRECT = location.origin + location.pathname;
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
   const uid = () => "c_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   const stars = (n) => "★".repeat(n) + "☆".repeat(5 - n);
