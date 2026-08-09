@@ -239,6 +239,57 @@ body::after{
 .map-error{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); background:rgba(40,12,12,.9); border:1px solid var(--danger); color:#ffd5d5; padding:12px 16px; border-radius:10px; font-size:13px; max-width:80%; text-align:center; z-index:5; }
 
 </style>
+<style>
+/* ===== カレンダー改善（本物の枠組み＋予定リスト） ===== */
+.cg-grid{ margin-top:10px; }
+.cg-dow{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:6px; }
+.cg-dow span{ text-align:center; font-size:12px; color:var(--text-dim); padding:4px 0; }
+.cg-dow span:nth-child(1){ color:#ff7b7b; }
+.cg-dow span:nth-child(7){ color:#7ba6ff; }
+.cg-cells{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+.cg-cell{ position:relative; min-height:86px; border:1px solid var(--border); border-radius:10px; background:var(--surface); color:var(--text); padding:8px; text-align:left; font-size:14px; line-height:1.2; display:flex; flex-direction:column; align-items:flex-start; gap:6px; cursor:pointer; transition:border-color .15s, box-shadow .15s; }
+.cg-cell:hover{ border-color:var(--accent); }
+.cg-cell.blank{ background:transparent; border-color:transparent; cursor:default; }
+.cg-cell.blank:hover{ border-color:transparent; }
+.cg-cell.today{ border-color:var(--accent); box-shadow:0 0 0 1px var(--accent) inset; }
+.cg-cell.sel{ outline:2px solid var(--accent); outline-offset:1px; }
+.cg-cell.has{ background:color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+.cg-badge{ margin-top:auto; align-self:flex-end; font-size:11px; font-weight:600; background:var(--text-dim); color:var(--surface); padding:1px 8px; border-radius:999px; }
+.cg-month-label{ font-weight:600; min-width:96px; text-align:center; }
+
+/* 日付選択パネル（月ビュー） */
+.cg-day{ margin-top:14px; border:1px solid var(--border); border-radius:12px; background:var(--surface); padding:12px 14px; }
+.cg-day-head{ margin-bottom:8px; }
+.cg-day-title{ font-weight:700; }
+.cg-tasks{ display:flex; flex-direction:column; gap:8px; }
+.cg-task{ display:flex; gap:10px; align-items:flex-start; border:1px solid var(--border); border-radius:10px; padding:8px 10px; background:var(--bg); }
+.cg-task.done{ opacity:.45; }
+.cg-task-check{ display:flex; align-items:center; gap:6px; cursor:pointer; }
+.cg-task-main{ flex:1; }
+.cg-task-title{ font-size:14px; }
+.cg-task-meta{ display:flex; gap:8px; align-items:center; font-size:12px; color:var(--text-dim); margin-top:2px; }
+.done-tag{ color:var(--accent); }
+.cg-task.leaving{ opacity:0; transform:translateY(6px) scale(.98); transition:opacity .25s, transform .25s; }
+
+/* 予定リスト（10日アジェンダ） */
+.cg-agenda{ margin-top:10px; display:flex; flex-direction:column; gap:10px; }
+.cg-ada-day{ border:1px solid var(--border); border-radius:12px; background:var(--surface); overflow:hidden; }
+.cg-ada-day.today{ border-color:var(--accent); }
+.cg-ada-head{ display:flex; align-items:center; gap:8px; padding:8px 12px; background:color-mix(in srgb, var(--text) 6%, var(--surface)); border-bottom:1px solid var(--border); font-size:13px; }
+.cg-ada-date{ font-weight:700; }
+.cg-ada-dow{ color:var(--text-dim); }
+.cg-ada-count{ margin-left:auto; font-size:12px; color:var(--text-dim); }
+.cg-ada-row{ display:flex; flex-wrap:wrap; gap:8px; padding:10px 12px; }
+.cg-ada-empty{ color:var(--text-dim); font-size:12px; padding:2px 0; }
+.cg-ata{ display:flex; align-items:center; gap:8px; border:1px solid var(--border); border-radius:10px; padding:6px 10px; background:var(--bg); min-width:190px; max-width:280px; transition:opacity .2s; }
+.cg-ata.done{ opacity:.45; }
+.cg-ata.leaving{ opacity:0; transform:scale(.96); transition:opacity .25s, transform .25s; }
+.cg-ata-check{ display:flex; align-items:center; gap:4px; cursor:pointer; }
+.cg-ata-body{ min-width:0; }
+.cg-ata-title{ font-size:13px; cursor:pointer; }
+.cg-ata-title:hover{ color:var(--accent); text-decoration:underline; }
+.cg-ata-meta{ display:flex; gap:6px; align-items:center; font-size:11px; color:var(--text-dim); margin-top:2px; }
+</style>
 </head>
 <body>
 <noscript><div style="padding:40px;text-align:center;color:#888">このアプリは JavaScript が必要です。ブラウザで JavaScript を有効にしてください。</div></noscript>
@@ -360,9 +411,11 @@ body::after{
           <span id="cal-month-label" class="cg-month-label"></span>
           <button id="cal-next" class="ghost-btn" aria-label="次の月">›</button>
           <button id="cal-today" class="ghost-btn">今日</button>
+          <button id="cal-toggle" class="ghost-btn" aria-label="表示切替">予定リスト</button>
         </div>
       </header>
       <div id="cal-grid" class="cg-grid"></div>
+      <div id="cal-agenda" class="cg-agenda" hidden></div>
       <div id="cal-day" class="cg-day" hidden>
         <div id="cal-day-head" class="cg-day-head"></div>
         <div id="cal-tasks" class="cg-tasks"></div>
@@ -2126,9 +2179,10 @@ create policy "own row" on kb_cards
     $("#editor-cancel").onclick = () => ($("#editor-backdrop").hidden = true);
     $("#editor-close").onclick = () => ($("#editor-backdrop").hidden = true);
     // カレンダー（タスク）
-    $("#cal-prev").onclick = () => { calState.m--; if (calState.m < 0) { calState.m = 11; calState.y--; } renderCalendar(); };
-    $("#cal-next").onclick = () => { calState.m++; if (calState.m > 11) { calState.m = 0; calState.y++; } renderCalendar(); };
-    $("#cal-today").onclick = () => { const t = new Date(); calState = { y: t.getFullYear(), m: t.getMonth() }; calSelected = t.toISOString().slice(0, 10); renderCalendar(); };
+    $("#cal-prev").onclick = () => { if (calMode === "agenda") calAgendaBase = shiftDays(calAgendaBase || new Date(), -10); else { calState.m--; if (calState.m < 0) { calState.m = 11; calState.y--; } } renderCalendar(); };
+    $("#cal-next").onclick = () => { if (calMode === "agenda") calAgendaBase = shiftDays(calAgendaBase || new Date(), 10); else { calState.m++; if (calState.m > 11) { calState.m = 0; calState.y++; } } renderCalendar(); };
+    $("#cal-today").onclick = () => { const t = new Date(); if (calMode === "agenda") calAgendaBase = t; else { calState = { y: t.getFullYear(), m: t.getMonth() }; calSelected = t.toISOString().slice(0, 10); } renderCalendar(); };
+    $("#cal-toggle").onclick = () => { calMode = calMode === "agenda" ? "month" : "agenda"; if (calMode === "agenda" && !calAgendaBase) calAgendaBase = new Date(); renderCalendar(); };
     $("#btn-add-calendar").onclick = () => { const d = $("#f-duedate"); d.hidden = false; d.value = d.value || new Date().toISOString().slice(0, 10); $("#btn-add-calendar").hidden = true; $("#btn-clear-due").hidden = false; $("#due-hint").textContent = "予定日: " + d.value; };
     $("#btn-clear-due").onclick = () => { const d = $("#f-duedate"); d.value = ""; d.hidden = true; $("#btn-add-calendar").hidden = false; $("#btn-clear-due").hidden = true; $("#due-hint").textContent = ""; };
     $("#f-duedate").onchange = () => { const v = $("#f-duedate").value; $("#due-hint").textContent = v ? ("予定日: " + v) : ""; };
@@ -2352,7 +2406,18 @@ create policy "own row" on kb_cards
   /* ---------- カレンダー（タスク管理） ---------- */
   let calState = { y: new Date().getFullYear(), m: new Date().getMonth() };
   let calSelected = null;
+  let calMode = "month";
+  let calAgendaBase = null;
+  const shiftDays = (date, n) => new Date(date.getFullYear(), date.getMonth(), date.getDate() + n);
   function renderCalendar() {
+    const isA = calMode === "agenda";
+    $("#cal-grid").hidden = isA;
+    $("#cal-day").hidden = isA || !calSelected;
+    $("#cal-agenda").hidden = !isA;
+    const tog = $("#cal-toggle"); if (tog) tog.textContent = isA ? "月カレンダー" : "予定リスト";
+    if (isA) renderAgenda(); else renderMonth();
+  }
+  function renderMonth() {
     const grid = $("#cal-grid"); if (!grid) return;
     const y = calState.y, m = calState.m;
     $("#cal-month-label").textContent = y + "年 " + (m + 1) + "月";
@@ -2377,8 +2442,52 @@ create policy "own row" on kb_cards
     }
     html += "</div>";
     grid.innerHTML = html;
-    grid.querySelectorAll(".cal-cell.has").forEach((b) => { b.onclick = () => selectDay(b.dataset.date); });
+    grid.querySelectorAll(".cg-cell.has").forEach((b) => { b.onclick = () => selectDay(b.dataset.date); });
     if (calSelected) renderDayPanel();
+  }
+  function renderAgenda() {
+    const wrap = $("#cal-agenda"); if (!wrap) return;
+    const base = calAgendaBase || new Date();
+    const start = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+    const pad = (n) => String(n).padStart(2, "0");
+    const fmt = (dt) => dt.getFullYear() + "-" + pad(dt.getMonth() + 1) + "-" + pad(dt.getDate());
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const byDate = {};
+    cards.forEach((c) => { if (c.dueDate) (byDate[c.dueDate] = byDate[c.dueDate] || []).push(c); });
+    const dows = ["日", "月", "火", "水", "木", "金", "土"];
+    const end = shiftDays(start, 9);
+    $("#cal-month-label").textContent = (start.getMonth() + 1) + "/" + start.getDate() + " – " + (end.getMonth() + 1) + "/" + end.getDate();
+    let html = "";
+    for (let i = 0; i < 10; i++) {
+      const dt = shiftDays(start, i);
+      const ds = fmt(dt);
+      const list = (byDate[ds] || []).slice().sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0) || (b.importance || 3) - (a.importance || 3));
+      const doneN = list.filter((c) => c.done).length;
+      const isToday = ds === todayStr;
+      html += `<div class="cg-ada-day${isToday ? " today" : ""}">`;
+      html += `<div class="cg-ada-head"><span class="cg-ada-date">${dt.getMonth() + 1}/${dt.getDate()}</span><span class="cg-ada-dow">（${dows[dt.getDay()]}）</span><span class="cg-ada-count">${doneN}/${list.length}</span></div>`;
+      html += `<div class="cg-ada-row">`;
+      if (!list.length) html += `<div class="cg-ada-empty">予定なし</div>`;
+      else list.forEach((c) => {
+        const badge = (c.type && c.type !== "knowledge") ? `<span class="type-badge type-${c.type}">${TYPE_LABEL[c.type]}</span>` : "";
+        html += `<div class="cg-ata${c.done ? " done" : ""}" data-id="${c.id}">
+          <label class="cg-ata-check"><input type="checkbox" ${c.done ? "checked" : ""} data-id="${c.id}" /><span class="cg-task-box">${c.done ? CHECK_ON_SVG : CHECK_OFF_SVG}</span></label>
+          <div class="cg-ata-body">
+            <div class="cg-ata-title">${escapeHtml(c.title)}</div>
+            <div class="cg-ata-meta"><span class="stars">${stars(c.importance)}</span>${badge}</div>
+          </div>
+        </div>`;
+      });
+      html += `</div></div>`;
+    }
+    wrap.innerHTML = html;
+    wrap.querySelectorAll(".cg-ata").forEach((el) => {
+      const id = el.dataset.id;
+      const cb = el.querySelector('input[type="checkbox"]');
+      if (cb) cb.onchange = () => toggleTaskDone(id, el);
+      const t = el.querySelector(".cg-ata-title");
+      if (t) t.onclick = () => openEditor(id);
+    });
   }
   function selectDay(date) {
     calSelected = date;
