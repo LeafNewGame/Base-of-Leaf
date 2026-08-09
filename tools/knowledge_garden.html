@@ -473,7 +473,7 @@ alter table kb_cards enable row level security;
 create policy "own row" on kb_cards
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);</pre>
           <p class="hint">※Auth 設定で「Email confirmations」をオフにすると、登録後すぐにログインできます（オンのままなら確認メールのリンクを踏んでからログイン）。</p>
-          <p class="hint"><strong>Google ログインを使う場合：</strong> Supabase の Authentication → Providers で <strong>Google</strong> を有効化し、Google Cloud で作成した OAuth クライアント ID / シークレットを貼ります。さらに Authentication → URL Configuration の <strong>Redirect URLs</strong> に、このアプリの URL（デプロイ先の https のままのアドレス）を追加してください。</p>
+          <p class="hint"><strong>Google ログインを使う場合：</strong> Supabase の Authentication → Providers で <strong>Google</strong> を有効化し、Google Cloud で作成した OAuth クライアント ID / シークレットを貼ります。さらに Authentication → URL Configuration の <strong>Redirect URLs</strong> に、以下の URL を<strong>そのまま（末尾スラッシュなし）</strong>追加してください：<br><code>https://7bf76b18915b4f2983eee9f43e3eb3a0.gz1.agentos-app.net</code><br>※Google ログインは必ずこのデプロイ版で完了し、クラウド同期もこの URL でご利用ください（planter から押してもここに移動します）。</p>
         </details>
         <label>Supabase Project URL
           <input id="set-supabase-url" type="text" placeholder="https://xxxx.supabase.co" />
@@ -722,8 +722,9 @@ create policy "own row" on kb_cards
         // 暗黙的フロー(implicit, response_type=token)を使用。
         // トークン交換用の POST リクエストを行わないため、環境によって POST 本文が失われる
         // （Supabase が「本文が空」と見なす）問題を根本から回避できる。
-        let redir = (location.origin + location.pathname).replace(/\/+$/, "");
-        if (!redir) redir = location.origin;
+        // リダイレクト先は現在のページではなく、固定のデプロイ URL にする。
+        // （現在のページ=planter だと、認証後に planter に戻されてしまうため）
+        let redir = KG_OAUTH_REDIRECT;
         const u = url + "/auth/v1/authorize?provider=google&response_type=token"
           + "&apikey=" + encodeURIComponent(key)
           + "&redirect_to=" + encodeURIComponent(redir);
@@ -881,6 +882,10 @@ create policy "own row" on kb_cards
 
   /* ---------- ユーティリティ ---------- */
   const $ = (sel, root = document) => root.querySelector(sel);
+  // Google ログインのリダイレクト先を「アプリ本来の URL（デプロイ先）」に固定する。
+  // これにより、planter(HUB) から開いていても認証後に planter には戻らず、
+  // 必ずこのアプリに戻ってログインが完了する。planter に飛ばされるのを防ぐため。
+  const KG_OAUTH_REDIRECT = "https://7bf76b18915b4f2983eee9f43e3eb3a0.gz1.agentos-app.net";
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
   const uid = () => "c_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   const stars = (n) => "★".repeat(n) + "☆".repeat(5 - n);
