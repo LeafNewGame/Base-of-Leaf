@@ -607,6 +607,23 @@ create policy "own row" on kb_cards
   </div>
 </div>
 
+<script type="module">
+  /* 公式 Supabase JS SDK を ESM で読み込み、createClient を window に公開する。
+     フォールバック CDN 付き。クラウド認証（Google OAuth / PKCE）に使用。 */
+  (async () => {
+    try {
+      const m = await import("https://esm.sh/@supabase/supabase-js@2");
+      window.__sbCreateClient = m.createClient;
+    } catch (e1) {
+      try {
+        const m = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+        window.__sbCreateClient = m.createClient;
+      } catch (e2) { console.error("Supabase SDK の読み込みに失敗しました", e1, e2); }
+    }
+    document.dispatchEvent(new Event("sb-ready"));
+  })();
+</script>
+
 <script>
 /* =========================================================================
    知識の箱庭 — Knowledge Garden (Stage 2: localStorage 単一ファイル版)
@@ -615,13 +632,15 @@ create policy "own row" on kb_cards
 (() => {
   "use strict";
 
-  /* ---------- クラウド同期（Supabase REST / 無料ティア）
-     外部ライブラリ不要。Supabase の REST & Auth API を直接 fetch で呼ぶ。
-     テーブル: kb_cards(user_id uuid PK, cards jsonb, updated_at timestamptz)
-     ログイン情報は localStorage(kg_cloud_session) にのみ保存。 ---------- */
+  /* ---------- クラウド同期（Supabase / 無料ティア）
+     認証は公式 JS SDK（ESM で読み込み）を使用。PKCE の state/verifier を
+     localStorage で管理するため、手書き OAuth で起きていた「state 欠落」
+     (bad_oauth_callback) を回避できる。データ同期は REST を直接 fetch。
+     テーブル: kb_cards(user_id uuid PK, cards jsonb, updated_at timestamptz) ---------- */
   const Cloud = (() => {
     const LS_SESSION = "kg_cloud_session";
     let url = "", key = "";
+    let sb = null; // Supabase クライアント
     let session = null;
     let listeners = [];
     let syncTimer = null;
@@ -642,22 +661,60 @@ create policy "own row" on kb_cards
       if (!/^https?:\/\//i.test(u)) u = "https://" + u;
       try { return new URL(u).origin; } catch { return u.replace(/\/+$/, ""); }
     }
-    function init(u, k) { url = normBase(u); key = (k || "").trim(); loadSession(); emit(); }
+    async function init(u, k) {
+      url = normBase(u); key = (k || "").trim(); loadSession();
+      if (configured()) {
+        try {
+          await ensureClient();
+          const { data } = await sb.auth.getSession();
+          if (data.session) { session = toOur(data.session); saveSession(); }
+        } catch (e) { console.warn("cloud init client err", e); }
+      }
+      emit();
+    }
     function setConfig(u, k) { url = normBase(u); key = (k || "").trim(); }
     function baseUrl() { return url; }
     function isConfigured() { return configured(); }
 
-    async function refresh() {
-      if (!session || !session.refresh_token) return false;
-      try {
-        const r = await fetch(url + "/auth/v1/token?grant_type=refresh_token", {
-          method: "POST", headers: { "Content-Type": "application/json", "apikey": key },
-          body: JSON.stringify({ refresh_token: session.refresh_token })
-        });
-        if (!r.ok) return false;
-        const j = await r.json();
-        session = { access_token: j.access_token, refresh_token: j.refresh_token, user: j.user || session.user };
+    /* 公式 SDK (window.__sbCreateClient) が読み込まれるのを待つ（ESM は遅延読み込み） */
+    function whenReady(timeoutMs) {
+      return new Promise((resolve, reject) => {
+        if (window.__sbCreateClient) return resolve(window.__sbCreateClient);
+        const t0 = Date.now();
+        const iv = setInterval(() => {
+          if (window.__sbCreateClient) { clearInterval(iv); resolve(window.__sbCreateClient); }
+          else if (Date.now() - t0 > (timeoutMs || 9000)) { clearInterval(iv); reject(new Error("Supabase SDK の読み込みがタイムアウトしました（ネット接続／CDN を確認）")); }
+        }, 50);
+        document.addEventListener("sb-ready", () => { clearInterval(iv); resolve(window.__sbCreateClient); }, { once: true });
+      });
+    }
+    async function ensureClient() {
+      if (sb) return sb;
+      const createClient = await whenReady();
+      sb = createClient(url, key, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+          flowType: "pkce",
+          storage: window.localStorage,
+          storageKey: "kg_supabase_auth"
+        }
+      });
+      sb.auth.onAuthStateChange((_e, s) => {
+        session = s ? toOur(s) : null;
         saveSession(); emit();
+      });
+      return sb;
+    }
+    function toOur(s) { return { access_token: s.access_token, refresh_token: s.refresh_token, user: { id: s.user.id, email: s.user.email } }; }
+
+    async function refresh() {
+      if (!sb) { try { await ensureClient(); } catch (e) { return false; } }
+      try {
+        const { data, error } = await sb.auth.refreshSession();
+        if (error || !data.session) return false;
+        session = toOur(data.session); saveSession(); emit();
         return true;
       } catch { return false; }
     }
@@ -674,108 +731,62 @@ create policy "own row" on kb_cards
     }
 
     async function signUp(em, pw) {
-      const r = await fetch(url + "/auth/v1/signup", {
-        method: "POST", headers: { "Content-Type": "application/json", "apikey": key },
-        body: JSON.stringify({ email: em, password: pw })
-      });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.msg || j.message || "登録に失敗しました");
-      if (j.session) { session = { access_token: j.session.access_token, refresh_token: j.session.refresh_token, user: j.user }; saveSession(); emit(); }
-      return j;
+      await ensureClient();
+      const { data, error } = await sb.auth.signUp({ email: em, password: pw });
+      if (error) throw new Error(error.message || "登録に失敗しました");
+      if (data.session) { session = toOur(data.session); saveSession(); emit(); }
+      return data;
     }
     async function signIn(em, pw) {
-      const r = await fetch(url + "/auth/v1/token?grant_type=password", {
-        method: "POST", headers: { "Content-Type": "application/json", "apikey": key },
-        body: JSON.stringify({ email: em, password: pw })
-      });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.error_description || j.msg || "ログインに失敗しました");
-      session = { access_token: j.access_token, refresh_token: j.refresh_token, user: j.user };
-      saveSession(); emit();
+      await ensureClient();
+      const { data, error } = await sb.auth.signInWithPassword({ email: em, password: pw });
+      if (error) throw new Error(error.message || "ログインに失敗しました");
+      session = toOur(data.session); saveSession(); emit();
       return session;
     }
-    function signOut() { session = null; saveSession(); emit(); }
+    async function signOut() {
+      if (sb) { try { await sb.auth.signOut(); } catch (e) {} }
+      session = null; saveSession(); emit();
+    }
 
-    /* Google OAuth（PKCE・外部ライブラリ不要） */
-    function b64url(buf) {
-      return btoa(String.fromCharCode.apply(null, new Uint8Array(buf)))
-        .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    }
-    async function sha256b64url(str) {
-      const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
-      return b64url(d);
-    }
-    function randomVerifier() {
-      const a = new Uint8Array(32); crypto.getRandomValues(a); return b64url(a);
-    }
+    /* Google OAuth：公式 SDK の PKCE フローを使用。
+       state / code_verifier は SDK が localStorage で管理するため、
+       手書き時に起きていた「OAuth state parameter missing (bad_oauth_callback)」
+       や「POST 本文消失」を回避できる。 */
     function cloudMsg(t) { const m = $("#cloud-msg"); if (m) m.textContent = t; }
-    /* PKCE verifier の保存：localStorage を主とし sessionStorage も併用。
-       sessionStorage は Google→Supabase→アプリ のリダイレクト途中で失われることがあるため、
-       同じオリジンに残る localStorage を使うのが確実。 */
-    function pkceSet(v) { try { localStorage.setItem("kg_pkce", v); } catch (e) {} try { sessionStorage.setItem("kg_pkce", v); } catch (e) {} }
-    function pkceGet() { try { return localStorage.getItem("kg_pkce") || sessionStorage.getItem("kg_pkce") || null; } catch (e) { return null; } }
-    function pkceClear() { try { localStorage.removeItem("kg_pkce"); } catch (e) {} try { sessionStorage.removeItem("kg_pkce"); } catch (e) {} }
     async function googleLogin() {
       if (!configured()) { cloudMsg("先に設定画面の「Supabase URL / anon key」を入力してください（入力後はそのまま「Google でログイン」を押すか「保存設定」を押します）"); return; }
-      if (!crypto || !crypto.subtle) { cloudMsg("Googleログインは HTTPS 環境（デプロイURL）でのみ利用できます"); return; }
+      let client;
+      try { client = await ensureClient(); }
+      catch (e) { cloudMsg(e.message); return; }
       try {
-        // 暗黙的フロー(implicit, response_type=token)を使用。
-        // トークン交換用の POST リクエストを行わないため、環境によって POST 本文が失われる
-        // （Supabase が「本文が空」と見なす）問題を根本から回避できる。
-        // リダイレクト先は現在のページではなく、固定のデプロイ URL にする。
-        // （現在のページ=planter だと、認証後に planter に戻されてしまうため）
-        let redir = KG_OAUTH_REDIRECT;
-        const u = url + "/auth/v1/authorize?provider=google&response_type=token"
-          + "&apikey=" + encodeURIComponent(key)
-          + "&redirect_to=" + encodeURIComponent(redir);
-        location.href = u;
-      } catch (e) { cloudMsg("Googleログイン準備エラー: " + e.message); }
+        const { error } = await client.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: KG_OAUTH_REDIRECT }
+        });
+        if (error) throw error;
+        // 以降は Supabase が Google 認証後に KG_OAUTH_REDIRECT へ戻す（ブラウザ遷移）
+      } catch (e) { cloudMsg("Googleログイン準備エラー: " + (e.message || e)); }
     }
     async function handleCallback() {
-      // --- 暗黙的フロー: トークンは URL のハッシュ(#access_token=...)に入っている（POST なし）---
-      if (location.hash && location.hash.length > 1) {
-        const hp = new URLSearchParams(location.hash.slice(1));
-        const at = hp.get("access_token");
-        const rt = hp.get("refresh_token");
-        const herr = hp.get("error");
-        if (herr) { cloudMsg("Googleログインがキャンセル/拒否されました: " + (hp.get("error_description") || herr)); history.replaceState({}, document.title, location.pathname); return false; }
-        if (at) {
-          try {
-            // ユーザー情報を取得（GET なので本文消失の問題なし）
-            const ur = await fetch(url + "/auth/v1/user?apikey=" + encodeURIComponent(key), { headers: { "Authorization": "Bearer " + at, "apikey": key } });
-            const uj = await ur.json();
-            session = { access_token: at, refresh_token: rt, user: uj };
-            saveSession(); emit();
-            history.replaceState({}, document.title, location.pathname);
-            return true;
-          } catch (e) { cloudMsg("ログイン失敗(ユーザー情報取得): " + e.message); return false; }
-        }
-      }
-      // --- PKCE フロー(フォールバック): コードがクエリ(?code=)にあれば交換 ---
-      const params = new URLSearchParams(location.search);
-      const code = params.get("code");
-      const err = params.get("error");
-      if (err) { cloudMsg("Googleログインがキャンセル/拒否されました: " + (params.get("error_description") || err)); pkceClear(); return false; }
-      if (!code) { return false; }
-      const verifier = pkceGet();
-      pkceClear();
-      if (!verifier) { cloudMsg("認証用検証コード(verifier)が見つかりません。もう一度「Google でログイン」をお試しください"); return false; }
+      if (!sb) { try { await ensureClient(); } catch (e) { cloudMsg(e.message); return false; } }
       try {
-        const bodyStr = "code=" + encodeURIComponent(code) + "&code_verifier=" + encodeURIComponent(verifier);
-        const tokenUrl = url + "/auth/v1/token?grant_type=pkce&apikey=" + encodeURIComponent(key);
-        const r = await fetch(tokenUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: bodyStr
-        });
-        const txt = await r.text();
-        let j; try { j = JSON.parse(txt); } catch (e) { j = {}; }
-        if (!r.ok) throw new Error(j.error_description || j.msg || txt || "認証に失敗しました");
-        session = { access_token: j.access_token, refresh_token: j.refresh_token, user: j.user };
-        saveSession(); emit();
-        history.replaceState({}, document.title, location.pathname);
-        return true;
-      } catch (e) { cloudMsg("ログイン失敗: " + e.message + " [codeLen=" + (code ? code.length : 0) + " verifierLen=" + (verifier ? verifier.length : 0) + "]"); return false; }
+        const { data, error } = await sb.auth.getSession();
+        if (error) throw error;
+        if (data.session) {
+          session = toOur(data.session);
+          saveSession(); emit();
+          // SDK(detectSessionInUrl) が URL の code/state を処理済み。念のためクエリを清掃。
+          if (location.hash || /[?&](code|error|state)=/.test(location.search)) {
+            const clean = location.pathname + location.search
+              .replace(/[?&](code|error|state|error_description|error_code)=[^&]*/g, "")
+              .replace(/\?$/, "");
+            history.replaceState({}, document.title, clean);
+          }
+          return true;
+        }
+        return false;
+      } catch (e) { cloudMsg("ログイン失敗: " + (e.message || e)); return false; }
     }
 
     /* PostgREST のエラー本文を日本語の原因説明に変換する。
