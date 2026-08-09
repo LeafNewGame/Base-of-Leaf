@@ -668,7 +668,8 @@ create policy "own row" on kb_cards
           await ensureClient();
           const { data } = await sb.auth.getSession();
           if (data.session) { session = toOur(data.session); saveSession(); }
-        } catch (e) { console.warn("cloud init client err", e); }
+          else { session = null; saveSession(); } // 古いミラー(session)が「オンライン」と誤表示するのを防ぐ
+        } catch (e) { console.warn("cloud init client err", e); session = null; saveSession(); }
       }
       emit();
     }
