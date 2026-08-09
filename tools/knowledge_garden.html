@@ -205,6 +205,21 @@ body::after{
 .bulk-btn.danger{ color:#ff7a85; border-color:rgba(255,122,133,.4); }
 .bulk-btn.danger:hover:not(:disabled){ background:rgba(255,122,133,.12); border-color:#ff7a85; }
 .s-cap{ font-size:11px; color:var(--text-dim); margin:2px 0 4px; }
+.cloud-status{ font-size:12px; color:var(--text-dim); margin:8px 0 4px; padding:6px 10px; border:1px solid var(--border); border-radius:8px; background:var(--panel-2); }
+.cloud-status.online{ color:var(--accent); border-color:var(--accent); }
+.cloud-auth input{ margin-bottom:6px; }
+.btn-google{ display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:9px 12px; border-radius:9px; border:1px solid var(--border); background:#fff; color:#3c4043; font-weight:600; cursor:pointer; }
+.btn-google:hover{ background:#f6f6f6; }
+.cloud-divider{ display:flex; align-items:center; text-align:center; color:var(--text-dim); font-size:11px; margin:10px 0 4px; }
+.cloud-divider::before, .cloud-divider::after{ content:""; flex:1; height:1px; background:var(--border); }
+.cloud-divider span{ padding:0 10px; }
+.sql-help{ margin:8px 0; font-size:12.5px; color:var(--text-dim); }
+.sql-help summary{ cursor:pointer; color:var(--accent); user-select:none; }
+.sql-help ol{ padding-left:18px; }
+.sql-help pre{ background:var(--panel-2); border:1px solid var(--border); border-radius:8px; padding:10px; overflow:auto; color:var(--text); font-size:12px; line-height:1.5; }
+.sql-help code{ background:var(--panel-2); padding:1px 4px; border-radius:4px; color:var(--accent); }
+.sidebar-cloud{ font-size:11px; color:var(--text-dim); margin-top:8px; padding-top:8px; border-top:1px solid var(--border); }
+.sidebar-cloud.online{ color:var(--accent); }
 
 /* ---- 活動カレンダー（ヒートマップ） ---- */
 .cal{ padding:2px 0 4px; }
@@ -247,6 +262,7 @@ body::after{
       <button class="nav-item active" data-view="cards"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>カード</button>
       <button class="nav-item" data-view="map"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M10 10 6 7M14 10 18 7M10 14 6 17M14 14 18 17"/></svg></span>知識マップ</button>
       <button class="nav-item" data-view="stats"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>学習統計</button>
+      <button class="nav-item" data-view="calendar"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>カレンダー</button>
       <button class="nav-item" data-view="chat"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8"/><path d="M8 13h5"/></svg></span>AI対話</button>
       <button class="nav-item" data-view="review"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11A8 8 0 1 1 6.34 6.34"/><polyline points="4 4 6 8 10 6"/></svg></span>復習提案</button>
       <button class="nav-item" data-view="thoughts"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span>思考・判断・アイデア</button>
@@ -257,6 +273,7 @@ body::after{
       <button id="btn-import" class="ghost-btn" title="JSONから読み込み">⬆ インポート</button>
       <button id="btn-theme" class="ghost-btn" title="テーマ切替（ライト/ダーク）"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.6M12 19.4V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.6M19.4 12H22M4.2 19.8 6 18M18 6l1.8-1.8"/></svg> テーマ</button>
       <input type="file" id="import-file" accept="application/json" hidden />
+      <div id="sidebar-cloud" class="sidebar-cloud">☁ クラウド: 未連携</div>
     </div>
   </aside>
 
@@ -333,6 +350,23 @@ body::after{
     <section class="view" id="view-stats">
       <header class="topbar"><div class="topbar-left"><h1>学習統計</h1></div></header>
       <div id="stats-wrap" class="stats-wrap"></div>
+    </section>
+
+    <section class="view" id="view-calendar">
+      <header class="topbar">
+        <div class="topbar-left"><h1>カレンダー</h1></div>
+        <div class="topbar-right cg-nav">
+          <button id="cal-prev" class="ghost-btn" aria-label="前の月">‹</button>
+          <span id="cal-month-label" class="cg-month-label"></span>
+          <button id="cal-next" class="ghost-btn" aria-label="次の月">›</button>
+          <button id="cal-today" class="ghost-btn">今日</button>
+        </div>
+      </header>
+      <div id="cal-grid" class="cg-grid"></div>
+      <div id="cal-day" class="cg-day" hidden>
+        <div id="cal-day-head" class="cg-day-head"></div>
+        <div id="cal-tasks" class="cg-tasks"></div>
+      </div>
     </section>
 
     <section class="view" id="view-chat">
@@ -421,6 +455,51 @@ body::after{
             <input id="set-ccent" type="color" value="#5fcf8e" />
           </label>
         </div>
+        <h2>クラウド同期（アカウント）</h2>
+        <p class="hint">Supabase の<strong>無料ティア</strong>を使って、どの端末からでも同じアカウントでデータを共有できます（クレジットカード不要・500MB / 50k MAU まで無料）。下の「接続情報」に自分の Supabase プロジェクト URL と anon key を貼り、<strong>Google アカウント</strong>またはメールアドレスでログインしてください。URL / key はこのブラウザにのみ保存されます。未設定の場合は今まで通り localStorage のみで動きます。</p>
+        <details class="sql-help">
+          <summary>Supabase の用意とテーブル作成 SQL（無料）</summary>
+          <ol>
+            <li><a href="https://supabase.com" target="_blank" rel="noopener">supabase.com</a> で無料アカウント作成 → New project。</li>
+            <li>Project Settings → API の <code>Project URL</code> と <code>anon public</code> key をコピーして下の入力欄へ。</li>
+            <li>SQL Editor で以下を実行（テーブル作成 ＋ 他人アクセス拒否ポリシー）：</li>
+          </ol>
+          <pre>create table if not exists kb_cards (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  cards jsonb not null default '[]'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table kb_cards enable row level security;
+create policy "own row" on kb_cards
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);</pre>
+          <p class="hint">※Auth 設定で「Email confirmations」をオフにすると、登録後すぐにログインできます（オンのままなら確認メールのリンクを踏んでからログイン）。</p>
+          <p class="hint"><strong>Google ログインを使う場合：</strong> Supabase の Authentication → Providers で <strong>Google</strong> を有効化し、Google Cloud で作成した OAuth クライアント ID / シークレットを貼ります。さらに Authentication → URL Configuration の <strong>Redirect URLs</strong> に、このアプリの URL（デプロイ先の https のままのアドレス）を追加してください。</p>
+        </details>
+        <label>Supabase Project URL
+          <input id="set-supabase-url" type="text" placeholder="https://xxxx.supabase.co" />
+        </label>
+        <label>anon public key
+          <input id="set-supabase-key" type="password" placeholder="eyJ..." />
+        </label>
+        <div id="cloud-status" class="cloud-status">状態: 未設定</div>
+        <div id="cloud-err" class="cloud-err"></div>
+        <div id="cloud-auth" class="cloud-auth">
+          <button id="btn-cloud-google" class="btn-google"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="#4285F4" d="M22.5 12.2c0-.7-.06-1.4-.18-2.06H12v3.9h5.9a5 5 0 0 1-2.18 3.3v2.74h3.53C21.1 18.6 22.5 15.7 22.5 12.2z"/><path fill="#34A853" d="M12 23c2.95 0 5.43-.98 7.25-2.65l-3.53-2.74c-.98.66-2.24 1.05-3.72 1.05-2.86 0-5.28-1.93-6.15-4.53H2.2v2.84A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.85 14.13a6.6 6.6 0 0 1 0-4.26V7.03H2.2a11 11 0 0 0 0 9.94l3.65-2.84z"/><path fill="#EA4335" d="M12 4.75c1.62 0 3.06.56 4.2 1.65l3.14-3.14C17.43 1.16 14.95.25 12 .25A11 11 0 0 0 2.2 7.03l3.65 2.84C6.72 6.68 9.14 4.75 12 4.75z"/></svg> Google でログイン</button>
+          <div class="cloud-divider"><span>または</span></div>
+          <input id="cloud-email" type="email" placeholder="メールアドレス" />
+          <input id="cloud-pass" type="password" placeholder="パスワード（6文字以上）" />
+          <div class="settings-actions">
+            <button id="btn-cloud-signin" class="primary-btn">ログイン</button>
+            <button id="btn-cloud-signup" class="ghost-btn">新規登録</button>
+            <button id="btn-cloud-out" class="ghost-btn" hidden>ログアウト</button>
+          </div>
+          <div id="cloud-msg" class="status"></div>
+        </div>
+        <div class="settings-actions">
+          <button id="btn-cloud-up" class="ghost-btn">クラウドに保存（アップロード）</button>
+          <button id="btn-cloud-down" class="ghost-btn">クラウドから読み込み</button>
+          <button id="btn-cloud-diag" class="ghost-btn">接続診断（テーブル確認）</button>
+        </div>
         <h2>データ</h2>
         <div class="settings-actions">
           <button id="btn-seed" class="ghost-btn">サンプルデータを入れる</button>
@@ -458,6 +537,12 @@ body::after{
         </label>
       </div>
       <label class="fav-check"><input id="f-favorite" type="checkbox" /> <svg class="star-ic" viewBox="0 0 24 24" width="14" height="14"><path d="M12 2l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.8 6.1 20.8l1.2-6.6L2.5 9l6.6-.9z"/></svg> お気に入りにする</label>
+      <div class="row cal-add-row">
+        <button type="button" id="btn-add-calendar" class="ghost-btn"><svg class="cal-ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> カレンダーに追加</button>
+        <input type="date" id="f-duedate" hidden />
+        <button type="button" id="btn-clear-due" class="ghost-btn" hidden>予定解除</button>
+        <span id="due-hint" class="due-hint"></span>
+      </div>
       <label>本文
         <textarea id="f-body" rows="6" placeholder="例：任意の波形を複数の正弦波へ分解する数学的手法。"></textarea>
       </label>
@@ -530,7 +615,244 @@ body::after{
 (() => {
   "use strict";
 
-  /* ---------- ストレージ（localStorage のみ・同期） ---------- */
+  /* ---------- クラウド同期（Supabase REST / 無料ティア）
+     外部ライブラリ不要。Supabase の REST & Auth API を直接 fetch で呼ぶ。
+     テーブル: kb_cards(user_id uuid PK, cards jsonb, updated_at timestamptz)
+     ログイン情報は localStorage(kg_cloud_session) にのみ保存。 ---------- */
+  const Cloud = (() => {
+    const LS_SESSION = "kg_cloud_session";
+    let url = "", key = "";
+    let session = null;
+    let listeners = [];
+    let syncTimer = null;
+    let lastError = "";
+
+    function loadSession() { try { session = JSON.parse(localStorage.getItem(LS_SESSION) || "null"); } catch { session = null; } }
+    function saveSession() { if (session) localStorage.setItem(LS_SESSION, JSON.stringify(session)); else localStorage.removeItem(LS_SESSION); }
+    function configured() { return !!(url && key); }
+    function authed() { return !!(session && session.access_token); }
+    function email() { return (session && session.user && session.user.email) || ""; }
+
+    /* Project URL を必ず「オリジンだけ」に正規化する。
+       ユーザーが https://xxx.supabase.co/rest/v1 や 末尾スラッシュ付きを貼ると
+       /rest/v1/rest/v1/kb_cards となり PostgREST が PGRST125(Invalid path) を返すため。 */
+    function normBase(u) {
+      u = (u || "").trim().replace(/\s+/g, "");
+      if (!u) return "";
+      if (!/^https?:\/\//i.test(u)) u = "https://" + u;
+      try { return new URL(u).origin; } catch { return u.replace(/\/+$/, ""); }
+    }
+    function init(u, k) { url = normBase(u); key = (k || "").trim(); loadSession(); emit(); }
+    function setConfig(u, k) { url = normBase(u); key = (k || "").trim(); }
+    function baseUrl() { return url; }
+    function isConfigured() { return configured(); }
+
+    async function refresh() {
+      if (!session || !session.refresh_token) return false;
+      try {
+        const r = await fetch(url + "/auth/v1/token?grant_type=refresh_token", {
+          method: "POST", headers: { "Content-Type": "application/json", "apikey": key },
+          body: JSON.stringify({ refresh_token: session.refresh_token })
+        });
+        if (!r.ok) return false;
+        const j = await r.json();
+        session = { access_token: j.access_token, refresh_token: j.refresh_token, user: j.user || session.user };
+        saveSession(); emit();
+        return true;
+      } catch { return false; }
+    }
+
+    async function authFetch(path, opts) {
+      opts = opts || {};
+      opts.headers = Object.assign({ "apikey": key }, opts.headers || {});
+      let r = await fetch(url + path, opts);
+      if (r.status === 401 && session && session.refresh_token) {
+        const ok = await refresh();
+        if (ok) { opts.headers["Authorization"] = "Bearer " + session.access_token; r = await fetch(url + path, opts); }
+      }
+      return r;
+    }
+
+    async function signUp(em, pw) {
+      const r = await fetch(url + "/auth/v1/signup", {
+        method: "POST", headers: { "Content-Type": "application/json", "apikey": key },
+        body: JSON.stringify({ email: em, password: pw })
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.msg || j.message || "登録に失敗しました");
+      if (j.session) { session = { access_token: j.session.access_token, refresh_token: j.session.refresh_token, user: j.user }; saveSession(); emit(); }
+      return j;
+    }
+    async function signIn(em, pw) {
+      const r = await fetch(url + "/auth/v1/token?grant_type=password", {
+        method: "POST", headers: { "Content-Type": "application/json", "apikey": key },
+        body: JSON.stringify({ email: em, password: pw })
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error_description || j.msg || "ログインに失敗しました");
+      session = { access_token: j.access_token, refresh_token: j.refresh_token, user: j.user };
+      saveSession(); emit();
+      return session;
+    }
+    function signOut() { session = null; saveSession(); emit(); }
+
+    /* Google OAuth（PKCE・外部ライブラリ不要） */
+    function b64url(buf) {
+      return btoa(String.fromCharCode.apply(null, new Uint8Array(buf)))
+        .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    }
+    async function sha256b64url(str) {
+      const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+      return b64url(d);
+    }
+    function randomVerifier() {
+      const a = new Uint8Array(32); crypto.getRandomValues(a); return b64url(a);
+    }
+    function cloudMsg(t) { const m = $("#cloud-msg"); if (m) m.textContent = t; }
+    /* PKCE verifier の保存：localStorage を主とし sessionStorage も併用。
+       sessionStorage は Google→Supabase→アプリ のリダイレクト途中で失われることがあるため、
+       同じオリジンに残る localStorage を使うのが確実。 */
+    function pkceSet(v) { try { localStorage.setItem("kg_pkce", v); } catch (e) {} try { sessionStorage.setItem("kg_pkce", v); } catch (e) {} }
+    function pkceGet() { try { return localStorage.getItem("kg_pkce") || sessionStorage.getItem("kg_pkce") || null; } catch (e) { return null; } }
+    function pkceClear() { try { localStorage.removeItem("kg_pkce"); } catch (e) {} try { sessionStorage.removeItem("kg_pkce"); } catch (e) {} }
+    async function googleLogin() {
+      if (!configured()) { cloudMsg("先に設定画面の「Supabase URL / anon key」を入力してください（入力後はそのまま「Google でログイン」を押すか「保存設定」を押します）"); return; }
+      if (!crypto || !crypto.subtle) { cloudMsg("Googleログインは HTTPS 環境（デプロイURL）でのみ利用できます"); return; }
+      try {
+        // 暗黙的フロー(implicit, response_type=token)を使用。
+        // トークン交換用の POST リクエストを行わないため、環境によって POST 本文が失われる
+        // （Supabase が「本文が空」と見なす）問題を根本から回避できる。
+        let redir = (location.origin + location.pathname).replace(/\/+$/, "");
+        if (!redir) redir = location.origin;
+        const u = url + "/auth/v1/authorize?provider=google&response_type=token"
+          + "&apikey=" + encodeURIComponent(key)
+          + "&redirect_to=" + encodeURIComponent(redir);
+        location.href = u;
+      } catch (e) { cloudMsg("Googleログイン準備エラー: " + e.message); }
+    }
+    async function handleCallback() {
+      // --- 暗黙的フロー: トークンは URL のハッシュ(#access_token=...)に入っている（POST なし）---
+      if (location.hash && location.hash.length > 1) {
+        const hp = new URLSearchParams(location.hash.slice(1));
+        const at = hp.get("access_token");
+        const rt = hp.get("refresh_token");
+        const herr = hp.get("error");
+        if (herr) { cloudMsg("Googleログインがキャンセル/拒否されました: " + (hp.get("error_description") || herr)); history.replaceState({}, document.title, location.pathname); return false; }
+        if (at) {
+          try {
+            // ユーザー情報を取得（GET なので本文消失の問題なし）
+            const ur = await fetch(url + "/auth/v1/user?apikey=" + encodeURIComponent(key), { headers: { "Authorization": "Bearer " + at, "apikey": key } });
+            const uj = await ur.json();
+            session = { access_token: at, refresh_token: rt, user: uj };
+            saveSession(); emit();
+            history.replaceState({}, document.title, location.pathname);
+            return true;
+          } catch (e) { cloudMsg("ログイン失敗(ユーザー情報取得): " + e.message); return false; }
+        }
+      }
+      // --- PKCE フロー(フォールバック): コードがクエリ(?code=)にあれば交換 ---
+      const params = new URLSearchParams(location.search);
+      const code = params.get("code");
+      const err = params.get("error");
+      if (err) { cloudMsg("Googleログインがキャンセル/拒否されました: " + (params.get("error_description") || err)); pkceClear(); return false; }
+      if (!code) { return false; }
+      const verifier = pkceGet();
+      pkceClear();
+      if (!verifier) { cloudMsg("認証用検証コード(verifier)が見つかりません。もう一度「Google でログイン」をお試しください"); return false; }
+      try {
+        const bodyStr = "code=" + encodeURIComponent(code) + "&code_verifier=" + encodeURIComponent(verifier);
+        const tokenUrl = url + "/auth/v1/token?grant_type=pkce&apikey=" + encodeURIComponent(key);
+        const r = await fetch(tokenUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: bodyStr
+        });
+        const txt = await r.text();
+        let j; try { j = JSON.parse(txt); } catch (e) { j = {}; }
+        if (!r.ok) throw new Error(j.error_description || j.msg || txt || "認証に失敗しました");
+        session = { access_token: j.access_token, refresh_token: j.refresh_token, user: j.user };
+        saveSession(); emit();
+        history.replaceState({}, document.title, location.pathname);
+        return true;
+      } catch (e) { cloudMsg("ログイン失敗: " + e.message + " [codeLen=" + (code ? code.length : 0) + " verifierLen=" + (verifier ? verifier.length : 0) + "]"); return false; }
+    }
+
+    /* PostgREST のエラー本文を日本語の原因説明に変換する。
+       PGRST125 = パス不正（URL の入力ミス）／PGRST205・42P01 = テーブル無し／42501 = 権限(RLS) */
+    function explainRestError(t) {
+      t = t || "";
+      if (/PGRST125|Invalid path/i.test(t)) {
+        return "Supabase の URL が正しくありません。設定の「Supabase Project URL」には "
+          + "https://xxxx.supabase.co のように<オリジンのみ>を入力してください（/rest/v1 などのパスを付けない）。"
+          + "現在の接続先: " + (url || "(未設定)");
+      }
+      if (/PGRST205|PGRST202|42P01|Could not find the table|does not exist/i.test(t)) {
+        return "テーブル kb_cards が見つかりません（ref=" + (status().ref || "?") + "）。"
+          + "設定 → クラウド同期 → 「テーブル作成 SQL」をこのプロジェクトの SQL Editor で実行し、最後の "
+          + "notify pgrst, 'reload schema'; まで流してください。";
+      }
+      if (/42501|permission denied|row-level security|RLS/i.test(t)) {
+        return "権限エラーです。RLS ポリシー（own row）が作成されているか、ログイン済みかを確認してください。";
+      }
+      return "";
+    }
+
+    async function push(allCards) {
+      if (!configured() || !authed()) return false;
+      const r = await authFetch("/rest/v1/kb_cards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.access_token, "Prefer": "resolution=merge-duplicates" },
+        body: JSON.stringify({ user_id: session.user.id, cards: allCards, updated_at: new Date().toISOString() })
+      });
+      if (!r.ok) {
+        const t = await r.text();
+        const diag = explainRestError(t);
+        if (diag) {
+          lastError = diag;
+          cloudMsg(lastError);
+          console.warn("cloud push failed", r.status, t);
+          emit();
+          return false;
+        }
+        lastError = "";
+        console.warn("cloud push failed", r.status);
+        return false;
+      }
+      lastError = "";
+      emit();
+      return true;
+    }
+    async function pull() {
+      if (!configured() || !authed()) return null;
+      const r = await authFetch("/rest/v1/kb_cards?select=cards", {
+        headers: { "Authorization": "Bearer " + session.access_token }
+      });
+      if (!r.ok) {
+        const t = await r.text();
+        const diag = explainRestError(t);
+        if (diag) { lastError = diag; throw new Error(lastError); }
+        throw new Error("クラウドから取得できませんでした（" + r.status + "）");
+      }
+      lastError = "";
+      const rows = await r.json();
+      if (rows && rows.length && Array.isArray(rows[0].cards)) return rows[0].cards;
+      return [];
+    }
+    function scheduleSync() {
+      if (!authed()) return;
+      clearTimeout(syncTimer);
+      syncTimer = setTimeout(() => push(Store.getAll()), 800);
+    }
+    function onStatus(cb) { listeners.push(cb); }
+    function status() {
+      const ref = (url.match(/https?:\/\/([a-z0-9]+)\.supabase\.(co|in)/i) || [])[1] || "";
+      return { state: !configured() ? "unconfigured" : authed() ? "online" : "signedout", email: email(), error: lastError, ref };
+    }
+    function emit() { listeners.forEach((cb) => cb(status())); }
+    return { init, setConfig, isConfigured, configured, authed, signUp, signIn, signOut, googleLogin, handleCallback, push, pull, scheduleSync, onStatus, status, emit, normBase, baseUrl, refresh };
+  })();
+
+  /* ---------- ストレージ（localStorage のみ・同期 / クラウドへも同期） ---------- */
   const LS_CARDS = "kg_cards_v2";
   const LS_SETTINGS = "kg_settings";
   const Store = {
@@ -540,12 +862,14 @@ body::after{
       const i = all.findIndex((c) => c.id === card.id);
       if (i >= 0) all[i] = card; else all.push(card);
       localStorage.setItem(LS_CARDS, JSON.stringify(all));
+      Cloud.scheduleSync();
     },
     del(id) {
       const all = this.getAll().filter((c) => c.id !== id);
       localStorage.setItem(LS_CARDS, JSON.stringify(all));
+      Cloud.scheduleSync();
     },
-    clear() { localStorage.removeItem(LS_CARDS); },
+    clear() { localStorage.removeItem(LS_CARDS); Cloud.scheduleSync(); },
   };
 
   /* ---------- 設定 ---------- */
@@ -661,6 +985,7 @@ body::after{
     if (name === "review") renderReview();
     if (name === "thoughts") renderThoughts();
     if (name === "chat") populateCompareSelects();
+    if (name === "calendar") renderCalendar();
   }
 
   /* ---------- 描画: フィルタチップ ---------- */
@@ -779,6 +1104,12 @@ body::after{
     $("#f-refs").value = (c?.references || []).join("\n");
     $("#f-memo").value = c?.memo || "";
     $("#f-favorite").checked = !!c?.favorite;
+    const due = c?.dueDate || "";
+    $("#f-duedate").value = due;
+    $("#f-duedate").hidden = !due;
+    $("#btn-add-calendar").hidden = !!due;
+    $("#btn-clear-due").hidden = !due;
+    $("#due-hint").textContent = due ? ("予定日: " + due + (c?.done ? "（完了済み）" : "")) : "";
     renderLinkPicker(c);
     renderSuggest(c);
     $("#editor-delete").hidden = !id;
@@ -834,7 +1165,7 @@ body::after{
     const prevBody = c?.body || "";
     const isNew = !c;
     if (!c) {
-      c = { id: uid(), createdAt: nowISO(), viewCount: 0, versions: [] };
+      c = { id: uid(), createdAt: nowISO(), viewCount: 0, versions: [], done: false };
       cards.push(c);
     }
     const newBody = $("#f-body").value;
@@ -853,6 +1184,7 @@ body::after{
     c.tags = parseTags($("#f-tags").value);
     c.references = parseList($("#f-refs").value);
     c.memo = $("#f-memo").value;
+    c.dueDate = $("#f-duedate").value || null;
     c.relatedCardIds = $$("#f-links input:checked").map((cb) => cb.dataset.id);
     c.updatedAt = nowISO();
     c.relatedCardIds.forEach((rid) => {
@@ -1671,6 +2003,7 @@ body::after{
   /* ---------- リフレッシュ ---------- */
   function refresh() {
     cards = Store.getAll();
+    if ($("#view-calendar").classList.contains("active")) renderCalendar();
     if (!cards.length) {
       $("#card-list").innerHTML = '<div class="empty">ようこそ ' + SPROUT_SVG + ' まずは「＋ 新規カード」で知識を育てるか、設定から「サンプルデータを入れる」をお試しください。</div>';
     } else {
@@ -1729,6 +2062,8 @@ body::after{
     $("#set-key").value = s.key || "";
     $("#set-model").value = s.model || "llama-3.3-70b-versatile";
     $("#set-embed").value = s.embed || "";
+    $("#set-supabase-url").value = s.supabaseUrl || "";
+    $("#set-supabase-key").value = s.supabaseKey || "";
     const mode = s.theme || "dark";
     document.querySelectorAll('input[name="theme"]').forEach((r) => (r.checked = r.value === mode));
     $("#set-custom-base").value = s.customBase || "dark";
@@ -1741,10 +2076,23 @@ body::after{
     s.key = $("#set-key").value.trim();
     s.model = $("#set-model").value.trim();
     s.embed = $("#set-embed").value.trim();
+    s.supabaseUrl = $("#set-supabase-url").value.trim();
+    s.supabaseKey = $("#set-supabase-key").value.trim();
+    Cloud.setConfig(s.supabaseUrl, s.supabaseKey);
     Settings.save(s);
     applyTheme();
     $("#settings-status").textContent = "保存しました ✓";
     setTimeout(() => ($("#settings-status").textContent = ""), 2500);
+  }
+  /* 入力欄の Supabase URL / anon key を即時反映（保存ボタンを押さなくても動くように） */
+  function applyCloudConfigFromInputs() {
+    const u = ($("#set-supabase-url").value || "").trim();
+    const k = ($("#set-supabase-key").value || "").trim();
+    if (u && k) {
+      Cloud.setConfig(u, k);
+      const s = Settings.get(); s.supabaseUrl = u; s.supabaseKey = k; Settings.save(s);
+    }
+    return !!(u && k);
   }
 
   /* ---------- イベントバインド ---------- */
@@ -1759,6 +2107,13 @@ body::after{
     $("#editor-save").onclick = saveEditor;
     $("#editor-cancel").onclick = () => ($("#editor-backdrop").hidden = true);
     $("#editor-close").onclick = () => ($("#editor-backdrop").hidden = true);
+    // カレンダー（タスク）
+    $("#cal-prev").onclick = () => { calState.m--; if (calState.m < 0) { calState.m = 11; calState.y--; } renderCalendar(); };
+    $("#cal-next").onclick = () => { calState.m++; if (calState.m > 11) { calState.m = 0; calState.y++; } renderCalendar(); };
+    $("#cal-today").onclick = () => { const t = new Date(); calState = { y: t.getFullYear(), m: t.getMonth() }; calSelected = t.toISOString().slice(0, 10); renderCalendar(); };
+    $("#btn-add-calendar").onclick = () => { const d = $("#f-duedate"); d.hidden = false; d.value = d.value || new Date().toISOString().slice(0, 10); $("#btn-add-calendar").hidden = true; $("#btn-clear-due").hidden = false; $("#due-hint").textContent = "予定日: " + d.value; };
+    $("#btn-clear-due").onclick = () => { const d = $("#f-duedate"); d.value = ""; d.hidden = true; $("#btn-add-calendar").hidden = false; $("#btn-clear-due").hidden = true; $("#due-hint").textContent = ""; };
+    $("#f-duedate").onchange = () => { const v = $("#f-duedate").value; $("#due-hint").textContent = v ? ("予定日: " + v) : ""; };
     $("#editor-delete").onclick = deleteCard;
     $("#editor-history").onclick = () => { if (editingId) openHistory(editingId); };
     $("#history-close").onclick = () => ($("#history-backdrop").hidden = true);
@@ -1817,6 +2172,30 @@ body::after{
     $("#btn-import").onclick = () => $("#import-file").click();
     $("#import-file").onchange = (e) => { if (e.target.files[0]) importJSON(e.target.files[0]); };
     $("#btn-save-settings").onclick = saveSettings;
+    // クラウド（Supabase）
+    $("#btn-cloud-google").onclick = () => { applyCloudConfigFromInputs(); Cloud.googleLogin(); };
+    $("#btn-cloud-signin").onclick = async () => {
+      applyCloudConfigFromInputs();
+      const em = $("#cloud-email").value.trim(), pw = $("#cloud-pass").value;
+      if (!em || !pw) { cloudMsg2("メールとパスワードを入力してください"); return; }
+      try { Cloud.signIn(em, pw); cloudMsg2("ログインしました ✓"); await syncFromCloud(); updateCloudUI(); }
+      catch (e) { cloudMsg2(e.message); }
+    };
+    $("#btn-cloud-signup").onclick = async () => {
+      applyCloudConfigFromInputs();
+      const em = $("#cloud-email").value.trim(), pw = $("#cloud-pass").value;
+      if (!em || !pw) { cloudMsg2("メールとパスワードを入力してください"); return; }
+      try {
+        const j = await Cloud.signUp(em, pw);
+        if (!j.session) cloudMsg2("確認メールを送信しました。リンクを踏んでからログインしてください");
+        else { cloudMsg2("登録しました ✓"); await syncFromCloud(); }
+        updateCloudUI();
+      } catch (e) { cloudMsg2(e.message); }
+    };
+    $("#btn-cloud-out").onclick = () => { Cloud.signOut(); cloudMsg2("ログアウトしました"); updateCloudUI(); };
+    $("#btn-cloud-up").onclick = async () => { const ok = await Cloud.push(Store.getAll()); cloudMsg2(ok ? "アップロードしました ✓" : "アップロード失敗（ログインまたは設定を確認）"); };
+    $("#btn-cloud-down").onclick = async () => { await syncFromCloud(); cloudMsg2("クラウドから読み込みました ✓"); };
+    $("#btn-cloud-diag").onclick = diagnoseCloud;
     $("#btn-seed").onclick = () => { if (confirm("サンプルデータを追加しますか？（既存データは残ります）")) { seed().then(() => alert("サンプルを追加しました")); } };
     $("#btn-clear").onclick = () => { if (confirm("すべてのカードを削除します。よろしいですか？")) { Store.clear(); cards = []; refresh(); alert("削除しました"); } };
     window.addEventListener("resize", () => { if ($("#view-map").classList.contains("active")) renderMap(); });
@@ -1877,12 +2256,162 @@ body::after{
     requestAnimationFrame(loop);
   }
 
+  /* ---------- クラウド UI 連携 ---------- */
+  function cloudMsg2(t) { const m = $("#cloud-msg"); if (m) m.textContent = t; }
+  function updateCloudUI() {
+    const st = Cloud.status();
+    const cs = $("#cloud-status"), sc = $("#sidebar-cloud");
+    const signin = $("#btn-cloud-signin"), signup = $("#btn-cloud-signup"), out = $("#btn-cloud-out");
+    const refTxt = st.ref ? "（プロジェクト " + st.ref + "）" : "";
+    if (st.state === "online") {
+      const label = st.email || "アカウント";
+      if (cs) { cs.textContent = "☁ 接続中: " + label + refTxt; cs.classList.add("online"); }
+      if (sc) { sc.textContent = "☁ オンライン: " + label; sc.classList.add("online"); }
+      if (signin) signin.hidden = true; if (signup) signup.hidden = true; if (out) out.hidden = false;
+    } else if (st.state === "signedout") {
+      if (cs) { cs.textContent = "状態: ログインしてください" + refTxt; cs.classList.remove("online"); }
+      if (sc) { sc.textContent = "☁ 未ログイン" + refTxt; sc.classList.remove("online"); }
+      if (signin) signin.hidden = false; if (signup) signup.hidden = false; if (out) out.hidden = true;
+    } else {
+      if (cs) { cs.textContent = "状態: 未設定（URL / key を入力）" + refTxt; cs.classList.remove("online"); }
+      if (sc) { sc.textContent = "☁ 未連携" + refTxt; sc.classList.remove("online"); }
+      if (signin) signin.hidden = false; if (signup) signup.hidden = false; if (out) out.hidden = true;
+    }
+    const errEl = $("#cloud-err");
+    if (errEl) errEl.textContent = st.error || "";
+  }
+  async function syncFromCloud() {
+    try {
+      const remote = await Cloud.pull();
+      if (!remote) { cloudMsg2("クラウドから取得できませんでした（ログイン状態を確認）"); return; }
+      const local = Store.getAll();
+      const map = new Map();
+      local.forEach((c) => map.set(c.id, c));
+      remote.forEach((c) => {
+        const ex = map.get(c.id);
+        if (!ex || (c.updatedAt || "") > (ex.updatedAt || "")) map.set(c.id, c);
+      });
+      localStorage.setItem(LS_CARDS, JSON.stringify(Array.from(map.values())));
+      refresh();
+    } catch (e) { cloudMsg2("同期エラー: " + e.message); }
+  }
+  async function diagnoseCloud() {
+    applyCloudConfigFromInputs();
+    const u = $("#set-supabase-url").value.trim();
+    const k = $("#set-supabase-key").value.trim();
+    if (!u || !k) { cloudMsg2("まず URL と anon key を入力してください"); return; }
+    const ref = (u.match(/https?:\/\/([a-z0-9]+)\.supabase\.(co|in)/i) || [])[1] || "";
+    if (!ref) { cloudMsg2("URL の形式が正しくありません（例: https://xxxx.supabase.co）"); return; }
+    cloudMsg2("診断中… プロジェクト ref = " + ref);
+    const base = u.replace(/\/+$/, "");
+    try {
+      const r = await fetch(base + "/rest/v1/kb_cards?limit=1&select=count", { headers: { "apikey": k } });
+      const txt = await r.text();
+      if (r.status === 401) cloudMsg2("❌ 401: URL と anon key が一致しません（別のプロジェクトのキー？ ref=" + ref + "）。Supabase の同じプロジェクトから URL と key を再コピーしてください。");
+      else if (r.status === 200) cloudMsg2("✓ テーブル kb_cards は存在します（ref=" + ref + "）。ログイン後、クラウドから読み込み／保存が使えます。");
+      else if (/PGRST125|Invalid path/i.test(txt)) cloudMsg2("❌ テーブル kb_cards が見つかりません（ref=" + ref + "）。この ref のプロジェクトで「テーブル作成 SQL」を実行してください。");
+      else cloudMsg2("状態 " + r.status + " / " + txt.slice(0, 140));
+    } catch (e) { cloudMsg2("接続エラー: " + e.message); }
+  }
+  function setupCloud() {
+    const s = Settings.get();
+    Cloud.init(s.supabaseUrl || "", s.supabaseKey || "");
+    Cloud.onStatus(updateCloudUI);
+    if (/[?&]code=/.test(location.search)) {
+      Cloud.handleCallback().then((ok) => {
+        if (ok) { cloudMsg2("Googleでログインしました ✓"); syncFromCloud(); }
+        else updateCloudUI();
+      });
+    } else {
+      Cloud.refresh().then((ok) => { if (ok && Cloud.authed()) syncFromCloud(); else updateCloudUI(); });
+    }
+  }
+
+  /* ---------- カレンダー（タスク管理） ---------- */
+  let calState = { y: new Date().getFullYear(), m: new Date().getMonth() };
+  let calSelected = null;
+  function renderCalendar() {
+    const grid = $("#cal-grid"); if (!grid) return;
+    const y = calState.y, m = calState.m;
+    $("#cal-month-label").textContent = y + "年 " + (m + 1) + "月";
+    const startDow = new Date(y, m, 1).getDay();
+    const days = new Date(y, m + 1, 0).getDate();
+    const byDate = {};
+    cards.forEach((c) => { if (c.dueDate) (byDate[c.dueDate] = byDate[c.dueDate] || []).push(c); });
+    const dows = ["日", "月", "火", "水", "木", "金", "土"];
+    let html = '<div class="cg-dow">' + dows.map((d) => `<span>${d}</span>`).join("") + '</div><div class="cg-cells">';
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const pad = (n) => String(n).padStart(2, "0");
+    for (let i = 0; i < startDow; i++) html += '<span class="cg-cell blank"></span>';
+    for (let d = 1; d <= days; d++) {
+      const ds = y + "-" + pad(m + 1) + "-" + pad(d);
+      const list = byDate[ds] || [];
+      const total = list.length;
+      const doneN = list.filter((c) => c.done).length;
+      const has = total > 0;
+      const cls = "cg-cell" + (has ? " has" : "") + (ds === todayStr ? " today" : "") + (ds === calSelected ? " sel" : "");
+      const badge = has ? `<span class="cg-badge">${doneN}/${total}</span>` : "";
+      html += `<button class="${cls}" data-date="${ds}">${d}${badge}</button>`;
+    }
+    html += "</div>";
+    grid.innerHTML = html;
+    grid.querySelectorAll(".cal-cell.has").forEach((b) => { b.onclick = () => selectDay(b.dataset.date); });
+    if (calSelected) renderDayPanel();
+  }
+  function selectDay(date) {
+    calSelected = date;
+    renderCalendar();
+  }
+  function renderDayPanel() {
+    const panel = $("#cal-day"), head = $("#cal-day-head"), tasks = $("#cal-tasks");
+    if (!panel || !calSelected) { if (panel) panel.hidden = true; return; }
+    panel.hidden = false;
+    const p = calSelected.split("-");
+    head.innerHTML = `<span class="cg-day-title">${p[0]}年 ${+p[1]}月 ${+p[2]}日 のタスク</span>`;
+    const list = cards.filter((c) => c.dueDate === calSelected)
+      .sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0) || (b.importance || 3) - (a.importance || 3) || (b.updatedAt || "").localeCompare(a.updatedAt || ""));
+    if (!list.length) { tasks.innerHTML = '<div class="empty">この日の予定はありません。</div>'; return; }
+    tasks.innerHTML = "";
+    list.forEach((c) => {
+      const item = document.createElement("div");
+      item.className = "cg-task" + (c.done ? " done" : "");
+      const badge = c.type && c.type !== "knowledge" ? `<span class="type-badge type-${c.type}">${TYPE_LABEL[c.type]}</span>` : "";
+      item.innerHTML = `
+        <label class="cg-task-check">
+          <input type="checkbox" ${c.done ? "checked" : ""} data-id="${c.id}" />
+          <span class="cg-task-box">${c.done ? CHECK_ON_SVG : CHECK_OFF_SVG}</span>
+        </label>
+        <div class="cg-task-main">
+          <div class="cg-task-title">${escapeHtml(c.title)}</div>
+          <div class="cg-task-meta">
+            <span class="stars">${stars(c.importance)}</span>
+            ${badge}
+            ${c.done ? '<span class="done-tag">完了済み</span>' : ""}
+          </div>
+        </div>`;
+      const cb = item.querySelector('input[type="checkbox"]');
+      cb.onchange = () => toggleTaskDone(c.id, item);
+      tasks.appendChild(item);
+    });
+  }
+  async function toggleTaskDone(id, itemEl) {
+    const c = cards.find((x) => x.id === id); if (!c) return;
+    const willDone = !c.done;
+    if (itemEl) { itemEl.classList.add("leaving"); await new Promise((r) => setTimeout(r, 300)); }
+    c.done = willDone;
+    c.updatedAt = nowISO();
+    Store.put(c);
+    renderDayPanel();
+    if ($("#view-calendar").classList.contains("active")) renderCalendar();
+  }
+
   /* ---------- 起動 ---------- */
   function init() {
     setupFavicon();
     bindEvents();
     loadSettingsForm();
     applyTheme();
+    setupCloud();
     refresh();
   }
   init();
