@@ -289,6 +289,36 @@ body::after{
 .cg-ata-title{ font-size:13px; cursor:pointer; }
 .cg-ata-title:hover{ color:var(--accent); text-decoration:underline; }
 .cg-ata-meta{ display:flex; gap:6px; align-items:center; font-size:11px; color:var(--text-dim); margin-top:2px; }
+
+/* ---------- フォルダ（ホーム） ---------- */
+.folder-list{ display:grid; grid-template-columns:repeat(auto-fill, minmax(240px,1fr)); gap:16px; }
+.folder-card{ border:1px solid var(--border); border-radius:14px; background:var(--panel); padding:16px; cursor:pointer; transition:transform .15s, border-color .15s, box-shadow .15s; }
+.folder-card:hover{ transform:translateY(-3px); border-color:rgba(52,211,153,.5); box-shadow:0 10px 24px -14px rgba(52,211,153,.5); }
+.folder-top{ display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.folder-ico{ color:var(--accent); display:inline-flex; }
+.folder-name{ font-weight:700; font-size:16px; flex:1; }
+.folder-count{ font-size:12px; color:var(--text-dim); background:var(--panel-2); border:1px solid var(--border); padding:2px 8px; border-radius:20px; white-space:nowrap; }
+.folder-recent{ font-size:15px; color:var(--text); margin:6px 0 2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.folder-recent-cap{ font-size:11px; color:var(--text-dim); }
+
+/* ---------- フォルダ詳細：フォーマット設定 ---------- */
+.folder-fmt-box{ border:1px solid var(--border); border-radius:12px; background:var(--panel); padding:14px; margin-bottom:16px; }
+.ff-label{ display:block; font-size:13px; line-height:1.6; }
+.ff-label textarea{ margin-top:8px; min-height:110px; font-family:inherit; line-height:1.5; }
+.ff-actions{ display:flex; gap:8px; margin-top:10px; }
+
+/* ---------- モバイルメニュー ---------- */
+.menu-btn{ display:none; position:fixed; left:12px; top:12px; z-index:60; width:42px; height:42px; border-radius:10px; border:1px solid var(--border); background:var(--panel); color:var(--text); font-size:20px; line-height:1; cursor:pointer; align-items:center; justify-content:center; box-shadow:var(--shadow); }
+#menu-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:48; }
+@media (max-width: 820px){
+  #sidebar{ position:fixed; left:0; top:0; bottom:0; width:240px; transform:translateX(-100%); transition:transform .25s ease; z-index:55; box-shadow:var(--shadow); }
+  #app.sidebar-open #sidebar{ transform:translateX(0); }
+  #app.sidebar-open #menu-overlay{ display:block; }
+  .menu-btn{ display:flex; }
+  .view{ padding:64px 16px 60px; }
+  .topbar-left{ min-width:0; }
+  .folder-list{ grid-template-columns:1fr; }
+}
 </style>
 </head>
 <body>
@@ -301,6 +331,8 @@ body::after{
   <span class="firefly f5"></span>
 </div>
 <div id="app">
+  <button id="btn-menu" class="menu-btn" aria-label="メニューを開く">☰</button>
+  <div id="menu-overlay"></div>
   <aside id="sidebar">
     <div class="brand">
       <div class="brand-mark"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V11"/><path d="M12 13C12 9 9 7 5 7c0 4 3 6 7 6z"/><path d="M12 11c0-4 3-6 7-6 0 4-3 6-7 6z"/></svg></div>
@@ -310,7 +342,8 @@ body::after{
       </div>
     </div>
     <nav id="nav">
-      <button class="nav-item active" data-view="cards"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>カード</button>
+      <button class="nav-item active" data-view="home"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>ホーム</button>
+      <button class="nav-item" data-view="cards"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>一覧</button>
       <button class="nav-item" data-view="map"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M10 10 6 7M14 10 18 7M10 14 6 17M14 14 18 17"/></svg></span>知識マップ</button>
       <button class="nav-item" data-view="stats"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>学習統計</button>
       <button class="nav-item" data-view="calendar"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>カレンダー</button>
@@ -329,7 +362,7 @@ body::after{
   </aside>
 
   <main id="main">
-    <section class="view active" id="view-cards">
+    <section class="view" id="view-cards">
       <header class="topbar">
         <div class="topbar-left">
           <h1>知識カード</h1>
@@ -378,6 +411,40 @@ body::after{
         <button id="bulk-exit" class="ghost-btn">選択を終了</button>
       </div>
       <div id="card-list" class="card-list"></div>
+    </section>
+
+    <section class="view active" id="view-home">
+      <header class="topbar">
+        <div class="topbar-left">
+          <h1>ホーム</h1>
+          <p class="hint">カテゴリごとにフォルダ化しています。フォルダを開くと中のカード一覧と、そのフォルダ専用の「新規追加（固定フォーマット可）」が表示されます。</p>
+        </div>
+        <div class="topbar-right" style="display:flex;gap:8px;flex-wrap:wrap">
+          <button id="btn-home-load" class="ghost-btn" title="クラウド上のデータを読み込む（未保存の変更との統合）">⇩ クラウドから読み込み</button>
+          <button id="btn-home-new" class="primary-btn">＋ 新規カード</button>
+        </div>
+      </header>
+      <div id="folder-list" class="folder-list"></div>
+    </section>
+
+    <section class="view" id="view-folder">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="folder-back" class="ghost-btn" aria-label="戻る">‹ 戻る</button>
+          <h1 id="folder-title">フォルダ</h1>
+        </div>
+        <div class="topbar-right">
+          <button id="folder-fmt" class="ghost-btn">フォーマット設定</button>
+          <button id="folder-add" class="primary-btn">＋ このフォルダに追加</button>
+        </div>
+      </header>
+      <div id="folder-fmt-box" class="folder-fmt-box" hidden>
+        <label class="ff-label">新規カードの固定フォーマット（本文テンプレート）<br><span class="hint">このフォルダで「＋ このフォルダに追加」を押したとき、本文に自動で入力される雛形です。</span>
+          <textarea id="folder-fmt-input" rows="5" placeholder="例：&#10;・目的：&#10;・期限：&#10;・メモ："></textarea>
+        </label>
+        <div class="ff-actions"><button id="folder-fmt-save" class="primary-btn">保存</button><button id="folder-fmt-clear" class="ghost-btn">クリア</button></div>
+      </div>
+      <div id="folder-cards" class="card-list"></div>
     </section>
 
     <section class="view" id="view-map">
@@ -1057,6 +1124,8 @@ create policy "own row" on kb_cards
     if (name === "thoughts") renderThoughts();
     if (name === "chat") populateCompareSelects();
     if (name === "calendar") renderCalendar();
+    if (name === "home") renderFolders();
+    if (name === "folder") renderFolder();
   }
 
   /* ---------- 描画: フィルタチップ ---------- */
@@ -2071,15 +2140,79 @@ create policy "own row" on kb_cards
     await refresh();
   }
 
+  /* ---------- フォルダ（ホーム） ---------- */
+  const FOLDER_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
+  let currentFolderCat = null;
+  function recentTs(c) { return c.createdAt || c.updatedAt || ""; }
+  function renderFolders() {
+    const list = $("#folder-list"); if (!list) return;
+    const map = {};
+    const uncat = [];
+    cards.forEach((c) => {
+      const cats = c.categories || [];
+      if (!cats.length) uncat.push(c);
+      else cats.forEach((x) => (map[x] = map[x] || []).push(c));
+    });
+    const items = Object.keys(map).sort().map((cat) => ({ cat, list: map[cat] }));
+    if (uncat.length) items.push({ cat: "未分類", list: uncat, uncat: true });
+    if (!items.length) { list.innerHTML = '<div class="empty">カードがありません。＋ 新規カード から作りましょう。</div>'; return; }
+    list.innerHTML = "";
+    items.forEach((it) => {
+      const sorted = it.list.slice().sort((a, b) => recentTs(b).localeCompare(recentTs(a)));
+      const recent = sorted[0];
+      const el = document.createElement("div");
+      el.className = "folder-card";
+      el.innerHTML = `
+        <div class="folder-top">
+          <span class="folder-ico">${FOLDER_SVG}</span>
+          <span class="folder-name">${escapeHtml(it.cat)}</span>
+          <span class="folder-count">${it.list.length} 枚</span>
+        </div>
+        <div class="folder-recent">${recent ? escapeHtml(recent.title) : "（空）"}</div>
+        <div class="folder-recent-cap">直近に追加したカード</div>`;
+      el.onclick = () => openFolder(it.cat);
+      list.appendChild(el);
+    });
+  }
+  function openFolder(cat) { currentFolderCat = cat; setView("folder"); }
+  function renderFolder() {
+    const cat = currentFolderCat;
+    if (!cat) return;
+    $("#folder-title").textContent = cat === "未分類" ? "未分類" : ("カテゴリ: " + cat);
+    const data = cards.filter((c) => cat === "未分類" ? !(c.categories || []).length : (c.categories || []).includes(cat));
+    const list = $("#folder-cards");
+    if (!data.length) { list.innerHTML = '<div class="empty">このフォルダにはまだカードがありません。「＋ このフォルダに追加」から作りましょう。</div>'; return; }
+    const arr = data.slice().sort((a, b) => recentTs(b).localeCompare(recentTs(a)));
+    list.innerHTML = "";
+    arr.forEach((c) => list.appendChild(cardEl(c)));
+  }
+  function openFolderEditor(cat) {
+    openEditor(null);
+    if (cat && cat !== "未分類") $("#f-categories").value = cat;
+    const tpl = (Settings.get().folderTemplates || {})[cat] || "";
+    if (tpl) $("#f-body").value = tpl;
+  }
+  function saveFolderTemplate() {
+    const cat = currentFolderCat; if (!cat) return;
+    const s = Settings.get(); s.folderTemplates = s.folderTemplates || {};
+    s.folderTemplates[cat] = $("#folder-fmt-input").value;
+    Settings.save(s);
+    const btn = $("#folder-fmt-save");
+    const old = btn.textContent; btn.textContent = "保存済み ✓";
+    setTimeout(() => (btn.textContent = old), 1200);
+  }
+
   /* ---------- リフレッシュ ---------- */
   function refresh() {
     cards = Store.getAll();
     if ($("#view-calendar").classList.contains("active")) renderCalendar();
     if (!cards.length) {
       $("#card-list").innerHTML = '<div class="empty">ようこそ ' + SPROUT_SVG + ' まずは「＋ 新規カード」で知識を育てるか、設定から「サンプルデータを入れる」をお試しください。</div>';
+      renderFolders();
     } else {
       renderFilters();
       renderCards();
+      renderFolders();
     }
   }
 
@@ -2168,7 +2301,7 @@ create policy "own row" on kb_cards
 
   /* ---------- イベントバインド ---------- */
   function bindEvents() {
-    $$(".nav-item").forEach((b) => (b.onclick = () => setView(b.dataset.view)));
+    $$(".nav-item").forEach((b) => (b.onclick = () => { setView(b.dataset.view); $("#app").classList.remove("sidebar-open"); }));
     $("#btn-new").onclick = () => openEditor(null);
     $("#btn-new-thought").onclick = () => { openEditor(null); $("#f-type").value = "thought"; };
     $("#search-input").oninput = (e) => { searchQuery = e.target.value; renderCards(); };
@@ -2183,6 +2316,39 @@ create policy "own row" on kb_cards
     $("#cal-next").onclick = () => { if (calMode === "agenda") calAgendaBase = shiftDays(calAgendaBase || new Date(), 10); else { calState.m++; if (calState.m > 11) { calState.m = 0; calState.y++; } } renderCalendar(); };
     $("#cal-today").onclick = () => { const t = new Date(); if (calMode === "agenda") calAgendaBase = t; else { calState = { y: t.getFullYear(), m: t.getMonth() }; calSelected = t.toISOString().slice(0, 10); } renderCalendar(); };
     $("#cal-toggle").onclick = () => { calMode = calMode === "agenda" ? "month" : "agenda"; if (calMode === "agenda" && !calAgendaBase) calAgendaBase = new Date(); renderCalendar(); };
+    // モバイルメニュー
+    $("#btn-menu").onclick = () => $("#app").classList.toggle("sidebar-open");
+    $("#menu-overlay").onclick = () => $("#app").classList.remove("sidebar-open");
+    // フォルダ（ホーム）
+    $("#btn-home-new").onclick = () => openEditor(null);
+    const homeLoadBtn = $("#btn-home-load");
+    if (homeLoadBtn) homeLoadBtn.onclick = async () => {
+      if (!Cloud.authed()) { cloudMsg2("まだクラウドにログインしていません（設定からログインしてください）"); return; }
+      const orig = homeLoadBtn.textContent;
+      homeLoadBtn.disabled = true; homeLoadBtn.textContent = "読み込み中…";
+      try {
+        await syncFromCloud();
+        cloudMsg2("クラウドから読み込みました ✓");
+        if ($("#view-home").classList.contains("active")) renderFolders();
+      } catch (e) { cloudMsg2("読み込みエラー: " + e.message); }
+      finally { homeLoadBtn.disabled = false; homeLoadBtn.textContent = orig; }
+    };
+    $("#folder-back").onclick = () => setView("home");
+    $("#folder-add").onclick = () => openFolderEditor(currentFolderCat);
+    $("#folder-fmt").onclick = () => {
+      const box = $("#folder-fmt-box");
+      const open = box.hidden;
+      box.hidden = !open;
+      if (open) $("#folder-fmt-input").value = (Settings.get().folderTemplates || {})[currentFolderCat] || "";
+    };
+    $("#folder-fmt-save").onclick = saveFolderTemplate;
+    $("#folder-fmt-clear").onclick = () => {
+      const cat = currentFolderCat; if (!cat) return;
+      const s = Settings.get(); s.folderTemplates = s.folderTemplates || {};
+      delete s.folderTemplates[cat];
+      Settings.save(s);
+      $("#folder-fmt-input").value = "";
+    };
     $("#btn-add-calendar").onclick = () => { const d = $("#f-duedate"); d.hidden = false; d.value = d.value || new Date().toISOString().slice(0, 10); $("#btn-add-calendar").hidden = true; $("#btn-clear-due").hidden = false; $("#due-hint").textContent = "予定日: " + d.value; };
     $("#btn-clear-due").onclick = () => { const d = $("#f-duedate"); d.value = ""; d.hidden = true; $("#btn-add-calendar").hidden = false; $("#btn-clear-due").hidden = true; $("#due-hint").textContent = ""; };
     $("#f-duedate").onchange = () => { const v = $("#f-duedate").value; $("#due-hint").textContent = v ? ("予定日: " + v) : ""; };
@@ -2442,7 +2608,7 @@ create policy "own row" on kb_cards
     }
     html += "</div>";
     grid.innerHTML = html;
-    grid.querySelectorAll(".cg-cell.has").forEach((b) => { b.onclick = () => selectDay(b.dataset.date); });
+    grid.querySelectorAll(".cg-cell:not(.blank)").forEach((b) => { b.onclick = () => selectDay(b.dataset.date); });
     if (calSelected) renderDayPanel();
   }
   function renderAgenda() {
