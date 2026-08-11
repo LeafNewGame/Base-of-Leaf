@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>知識の箱庭 — Knowledge Garden</title>
+
+
+
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<noscript><div style="padding:40px;text-align:center;color:#888">このアプリは JavaScript が必要です。ブラウザで JavaScript を有効にしてください。</div></noscript>
+<div class="kg-garden" aria-hidden="true">
+  <span class="firefly f1"></span>
+  <span class="firefly f2"></span>
+  <span class="firefly f3"></span>
+  <span class="firefly f4"></span>
+  <span class="firefly f5"></span>
+</div>
+<div id="app">
+  <button id="btn-menu" class="menu-btn" aria-label="メニューを開く" aria-expanded="false">
+    <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+  </button>
+  <div id="menu-overlay"></div>
+  <aside id="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V11"/><path d="M12 13C12 9 9 7 5 7c0 4 3 6 7 6z"/><path d="M12 11c0-4 3-6 7-6 0 4-3 6-7 6z"/></svg></div>
+      <div class="brand-text">
+        <div class="brand-title">知識の箱庭</div>
+        <div class="brand-sub">Knowledge Garden</div>
+      </div>
+    </div>
+    <nav id="nav">
+      <button class="nav-item active" data-view="home"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>ホーム</button>
+      <button class="nav-item" data-view="cards"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>一覧</button>
+      <button class="nav-item" data-view="map"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M10 10 6 7M14 10 18 7M10 14 6 17M14 14 18 17"/></svg></span>知識マップ</button>
+      <button class="nav-item" data-view="stats"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>学習統計</button>
+      <button class="nav-item" data-view="calendar"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>カレンダー</button>
+      <button class="nav-item" data-view="chat"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8"/><path d="M8 13h5"/></svg></span>AI対話</button>
+      <button class="nav-item" data-view="review"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11A8 8 0 1 1 6.34 6.34"/><polyline points="4 4 6 8 10 6"/></svg></span>復習提案</button>
+      <button class="nav-item" data-view="thoughts"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span>思考・判断・アイデア</button>
+      <button class="nav-item" data-view="settings"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>設定</button>
+    </nav>
+    <div class="sidebar-foot">
+      <button id="btn-export" class="ghost-btn" title="JSONへ書き出し">⬇ エクスポート</button>
+      <button id="btn-import" class="ghost-btn" title="JSONから読み込み">⬆ インポート</button>
+      <button id="btn-theme" class="ghost-btn" title="テーマ切替（ライト/ダーク）"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.6M12 19.4V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.6M19.4 12H22M4.2 19.8 6 18M18 6l1.8-1.8"/></svg> テーマ</button>
+      <input type="file" id="import-file" accept="application/json" hidden />
+      <div id="sidebar-cloud" class="sidebar-cloud">☁ クラウド: 未連携</div>
+    </div>
+  </aside>
+
+  <main id="main">
+    <section class="view" id="view-cards">
+      <header class="topbar">
+        <div class="topbar-left">
+          <h1>知識カード</h1>
+          <div class="search-wrap">
+            <input id="search-input" type="search" placeholder="意味で検索…（例：AI / 信号処理）" />
+          </div>
+        </div>
+        <div class="topbar-right">
+          <button id="btn-select" class="ghost-btn" title="まとめて選択して操作">選択</button>
+          <button id="btn-new" class="primary-btn">＋ 新規カード</button>
+        </div>
+      </header>
+      <div class="filter-row" id="filter-row">
+        <div class="filter-group" id="category-filters"></div>
+        <div class="filter-group" id="tag-filters"></div>
+        <select id="type-filter">
+          <option value="">すべての種類</option>
+          <option value="knowledge">知識</option>
+          <option value="idea">アイデア</option>
+          <option value="thought">思考ログ</option>
+          <option value="decision">判断履歴</option>
+        </select>
+      </div>
+      <div class="sort-row" id="sort-row">
+        <span class="sort-cap">並び順</span>
+        <button class="sort-btn active" data-sort="updated-desc">新しい順</button>
+        <button class="sort-btn" data-sort="updated-asc">古い順</button>
+        <button class="sort-btn" data-sort="understanding-desc">理解度高</button>
+        <button class="sort-btn" data-sort="understanding-asc">理解度低</button>
+        <button class="sort-btn" data-sort="importance-desc">重要度高</button>
+        <button class="sort-btn" data-sort="importance-asc">重要度低</button>
+        <button class="sort-btn" data-sort="views-desc">使用回数多</button>
+        <button class="sort-btn" data-sort="fav-first">お気に入り順</button>
+        <button class="sort-btn" id="btn-fav-only"><svg class="star-ic" viewBox="0 0 24 24" width="13" height="13"><path d="M12 2l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.8 6.1 20.8l1.2-6.6L2.5 9l6.6-.9z"/></svg> お気に入りのみ</button>
+      </div>
+      <div id="bulk-bar" class="bulk-bar" hidden>
+        <span id="bulk-count" class="bulk-count">0 件選択</span>
+        <button id="bulk-all" class="ghost-btn">すべて選択</button>
+        <button id="bulk-clear" class="ghost-btn">解除</button>
+        <span class="bulk-sep"></span>
+        <button id="bulk-link" class="bulk-btn" disabled><svg class="mi-ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 12h6M10 9l-3 3 3 3M14 9l3 3-3 3"/></svg> 連結</button>
+        <button id="bulk-fav" class="bulk-btn"><svg class="star-ic" viewBox="0 0 24 24" width="14" height="14"><path d="M12 2l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.8 6.1 20.8l1.2-6.6L2.5 9l6.6-.9z"/></svg> お気に入り登録</button>
+        <button id="bulk-tag" class="bulk-btn"><svg class="mi-ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 11 3.8A2 2 0 0 0 9.6 3.2H4.9a1.9 1.9 0 0 0-1.9 1.9v4.7a2 2 0 0 0 .6 1.4l9.6 9.6a2 2 0 0 0 2.8 0l4.6-4.6a2 2 0 0 0 0-2.8z"/><circle cx="7.5" cy="7.5" r="1.3"/></svg> タグ付与</button>
+        <button id="bulk-del" class="bulk-btn danger">削除</button>
+        <span class="spacer"></span>
+        <button id="bulk-exit" class="ghost-btn">選択を終了</button>
+      </div>
+      <div id="card-list" class="card-list"></div>
+    </section>
+
+    <section class="view active" id="view-home">
+      <header class="topbar">
+        <div class="topbar-left">
+          <h1>ホーム</h1>
+          <p class="hint">カテゴリごとにフォルダ化しています。右上の「＋ 新規フォルダ」でフォルダを作ると、その中で作るカードに<strong>あらかじめタグが自動入力</strong>されます。フォルダを開くと中のカード一覧と「＋ このフォルダに追加」が表示されます。</p>
+        </div>
+        <div class="topbar-right" style="display:flex;gap:8px;flex-wrap:wrap">
+          <button id="btn-home-load" class="ghost-btn" title="クラウド上のデータを読み込む（未保存の変更との統合）">⇩ クラウドから読み込み</button>
+          <button id="btn-home-new" class="primary-btn">＋ 新規フォルダ</button>
+        </div>
+      </header>
+      <div id="folder-list" class="folder-list"></div>
+    </section>
+
+    <section class="view" id="view-folder">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="folder-back" class="ghost-btn" aria-label="戻る">‹ 戻る</button>
+          <h1 id="folder-title">フォルダ</h1>
+        </div>
+        <div class="topbar-right">
+          <button id="folder-fmt" class="ghost-btn">フォーマット設定</button>
+          <button id="folder-add" class="primary-btn">＋ このフォルダに追加</button>
+        </div>
+      </header>
+      <div id="folder-fmt-box" class="folder-fmt-box" hidden>
+        <label class="ff-label">新規カードの固定フォーマット（本文テンプレート）<br><span class="hint">このフォルダで「＋ このフォルダに追加」を押したとき、本文に自動で入力される雛形です。</span>
+          <textarea id="folder-fmt-input" rows="5" placeholder="例：&#10;・目的：&#10;・期限：&#10;・メモ："></textarea>
+        </label>
+        <div class="ff-actions"><button id="folder-fmt-save" class="primary-btn">保存</button><button id="folder-fmt-clear" class="ghost-btn">クリア</button></div>
+      </div>
+      <div id="folder-cards" class="card-list"></div>
+    </section>
+
+    <section class="view" id="view-map">
+      <header class="topbar">
+        <div class="topbar-left"><h1>知識マップ</h1></div>
+        <div class="topbar-right map-mode-wrap">
+          <button id="btn-map-2d" class="map-mode-btn active" data-mode="2d">2D</button>
+          <button id="btn-map-3d" class="map-mode-btn" data-mode="3d">3D</button>
+          <button id="btn-map-rotate" class="map-mode-btn" data-mode="rotate" hidden>自動回転</button>
+          <button id="btn-map-relayout" class="ghost-btn">再配置</button>
+        </div>
+      </header>
+      <div id="graph-wrap" class="graph-wrap">
+        <svg id="graph-svg" width="100%" height="100%"></svg>
+        <div id="graph-tip" class="graph-tip" hidden></div>
+        <div id="graph-legend" class="graph-legend" hidden></div>
+        <div id="graph-hint" class="graph-hint">ドラッグで回転</div>
+      </div>
+    </section>
+
+    <section class="view" id="view-stats">
+      <header class="topbar"><div class="topbar-left"><h1>学習統計</h1></div></header>
+      <div id="stats-wrap" class="stats-wrap"></div>
+    </section>
+
+    <section class="view" id="view-calendar">
+      <header class="topbar">
+        <div class="topbar-left"><h1>カレンダー</h1></div>
+        <div class="topbar-right cg-nav">
+          <button id="cal-prev" class="ghost-btn" aria-label="前の月">‹</button>
+          <span id="cal-month-label" class="cg-month-label"></span>
+          <button id="cal-next" class="ghost-btn" aria-label="次の月">›</button>
+          <button id="cal-today" class="ghost-btn">今日</button>
+          <button id="cal-toggle" class="ghost-btn" aria-label="表示切替">予定リスト</button>
+        </div>
+      </header>
+      <div id="cal-grid" class="cg-grid"></div>
+      <div id="cal-agenda" class="cg-agenda" hidden></div>
+      <div id="cal-day" class="cg-day" hidden>
+        <div id="cal-day-head" class="cg-day-head"></div>
+        <div id="cal-tasks" class="cg-tasks"></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-chat">
+      <header class="topbar">
+        <div class="topbar-left"><h1>AI対話（あなたの知識だけ）</h1></div>
+        <div class="topbar-right" style="display:flex;gap:8px;flex-wrap:wrap">
+          <button id="btn-compare" class="ghost-btn" title="2枚のカードをAI比較"><svg class="mi-ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16" y1="16" x2="21" y2="21"/></svg> カード比較</button>
+          <button id="btn-reconstruct" class="ghost-btn" title="知識をAI分析して不足領域を提案"><svg class="mi-ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 4h7v3a2 2 0 1 0 4 0V4h5v7h-3a2 2 0 1 0 0 4h3v5H4z"/></svg> 知識の再構築</button>
+          <button id="btn-trait" class="ghost-btn" title="特性が似ているカードをAIが引っ張り出す"><svg class="mi-ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M8 11h.01M14 8.5h.01M13.5 14h.01"/><line x1="16" y1="16" x2="21" y2="21"/></svg> 特性類似検索</button>
+        </div>
+      </header>
+      <div id="ai-tools" class="ai-tools" hidden>
+        <span>比較するカードを2枚選択：</span>
+        <select id="cmp-a"></select>
+        <select id="cmp-b"></select>
+        <button id="btn-compare-run" class="primary-btn">比較実行</button>
+        <button id="btn-compare-cancel" class="ghost-btn">閉じる</button>
+      </div>
+      <div id="trait-tools" class="ai-tools" hidden>
+        <span>特性が似ているカードを探す（参考カードを選択）：</span>
+        <select id="trait-ref"></select>
+        <button id="btn-trait-run" class="primary-btn">検索</button>
+        <button id="btn-trait-cancel" class="ghost-btn">閉じる</button>
+      </div>
+      <div id="chat-log" class="chat-log"></div>
+      <div class="chat-input-row">
+        <textarea id="chat-input" placeholder="あなたの知識について質問…（例：MOSFETって何？）"></textarea>
+        <button id="btn-chat-send" class="primary-btn">送信</button>
+      </div>
+    </section>
+
+    <section class="view" id="view-review">
+      <header class="topbar">
+        <div class="topbar-left"><h1>復習提案</h1></div>
+        <div class="topbar-right"><button id="btn-ai-review" class="ghost-btn">AIで最適化</button></div>
+      </header>
+      <div id="review-list" class="card-list"></div>
+    </section>
+
+    <section class="view" id="view-thoughts">
+      <header class="topbar">
+        <div class="topbar-left"><h1>思考・判断・アイデア</h1></div>
+        <div class="topbar-right"><button id="btn-new-thought" class="primary-btn">＋ 新規</button></div>
+      </header>
+      <div class="filter-row">
+        <select id="thought-type">
+          <option value="">すべて</option>
+          <option value="thought">思考ログ</option>
+          <option value="decision">判断履歴</option>
+          <option value="idea">アイデア</option>
+        </select>
+      </div>
+      <div id="thought-list" class="card-list"></div>
+    </section>
+
+    <section class="view" id="view-settings">
+      <header class="topbar"><div class="topbar-left"><h1>設定</h1></div></header>
+      <div class="settings-wrap">
+        <h2>AI（LLM API）</h2>
+        <p class="hint">OpenAI 互換の API を利用します。<b>初期値は Groq の無料ティア</b>（https://groq.com で無料でキーを取得、クレジットカード不要）に設定しています。キーはこのブラウザ（localStorage）にのみ保存され、外部には送信されません（API 呼び出しのみに使用）。意味検索は API 不要のローカルスコアで動作します。Embeddings は任意（未入力ならローカル検索を継続）。※ブラウザから直接呼び出すため、プロバイダが CORS を許可している必要があります（Groq/OpenAI 等は対応）。</p>
+        <label>API Base URL
+          <input id="set-baseurl" type="text" placeholder="https://api.groq.com/openai/v1" />
+        </label>
+        <label>API Key
+          <input id="set-key" type="password" placeholder="gsk_..." />
+        </label>
+        <label>Chat Model
+          <input id="set-model" type="text" placeholder="llama-3.3-70b-versatile" />
+        </label>
+        <label>Embeddings Model（任意・未入力ならローカル検索）
+          <input id="set-embed" type="text" placeholder="（空でOK）" />
+        </label>
+        <div class="settings-actions">
+          <button id="btn-save-settings" class="primary-btn">保存</button>
+          <button id="btn-test-ai" class="ghost-btn">接続テスト</button>
+          <span id="settings-status" class="status"></span>
+        </div>
+        <h2>テーマ</h2>
+        <p class="hint">外観を切り替えられます。カスタムではベース（ライト/ダーク）とアクセント色を自由に設定できます。変更はすぐに反映され、このブラウザに保存されます。</p>
+        <div class="theme-opts">
+          <label class="theme-opt"><input type="radio" name="theme" value="dark" /> ダーク（既定）</label>
+          <label class="theme-opt"><input type="radio" name="theme" value="light" /> ライト</label>
+          <label class="theme-opt"><input type="radio" name="theme" value="custom" /> カスタム</label>
+        </div>
+        <div id="custom-theme" class="custom-theme" hidden>
+          <label>ベース
+            <select id="set-custom-base">
+              <option value="dark">ダーク</option>
+              <option value="light">ライト</option>
+            </select>
+          </label>
+          <label>アクセント色
+            <input id="set-ccent" type="color" value="#5fcf8e" />
+          </label>
+        </div>
+        <h2>クラウド同期（アカウント）</h2>
+        <p class="hint">Supabase の<strong>無料ティア</strong>を使って、どの端末からでも同じアカウントでデータを共有できます（クレジットカード不要・500MB / 50k MAU まで無料）。下の「接続情報」に自分の Supabase プロジェクト URL と anon key を貼り、<strong>Google アカウント</strong>またはメールアドレスでログインしてください。URL / key はこのブラウザにのみ保存されます。未設定の場合は今まで通り localStorage のみで動きます。<br><strong>知り合いだけに共有する場合：</strong>このアプリのファイル／URL にはいかなる鍵も書き込まれていません。相手にはファイルを渡すだけで、Supabase の URL ・ anon key と Groq の API key は<strong>別途（メッセージ等で）だけ</strong>教えてください。そうすればソースコードを見られても鍵は漏れません。さらに Supabase の Authentication 設定で「新規登録を許可」をオフにすると、知らない人が勝手にアカウントを作れなくなります（あなたがユーザーを手動追加）。</p>
+        <details class="sql-help">
+          <summary>Supabase の用意とテーブル作成 SQL（無料）</summary>
+          <ol>
+            <li><a href="https://supabase.com" target="_blank" rel="noopener">supabase.com</a> で無料アカウント作成 → New project。</li>
+            <li>Project Settings → API の <code>Project URL</code> と <code>anon public</code> key をコピーして下の入力欄へ。</li>
+            <li>SQL Editor で以下を実行（テーブル作成 ＋ 他人アクセス拒否ポリシー）：</li>
+          </ol>
+          <pre>create table if not exists kb_cards (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  cards jsonb not null default '[]'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table kb_cards enable row level security;
+create policy "own row" on kb_cards
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);</pre>
+          <p class="hint">※Auth 設定で「Email confirmations」をオフにすると、登録後すぐにログインできます（オンのままなら確認メールのリンクを踏んでからログイン）。</p>
+          <p class="hint"><strong>Google ログインを使う場合：</strong> Supabase の Authentication → Providers で <strong>Google</strong> を有効化し、Google Cloud で作成した OAuth クライアント ID / シークレットを貼ります。さらに Authentication → URL Configuration の <strong>Redirect URLs</strong> に、以下の URL を<strong>そのまま（末尾スラッシュなし）</strong>追加してください：<br><code>https://7bf76b18915b4f2983eee9f43e3eb3a0.gz1.agentos-app.net</code><br>※Google ログインは必ずこのデプロイ版で完了し、クラウド同期もこの URL でご利用ください（planter から押してもここに移動します）。</p>
+        </details>
+        <label>Supabase Project URL
+          <input id="set-supabase-url" type="text" placeholder="https://xxxx.supabase.co" />
+        </label>
+        <label>anon public key
+          <input id="set-supabase-key" type="password" placeholder="eyJ..." />
+        </label>
+        <div id="cloud-status" class="cloud-status">状態: 未設定</div>
+        <div id="cloud-err" class="cloud-err"></div>
+        <div id="cloud-auth" class="cloud-auth">
+          <button id="btn-cloud-google" class="btn-google"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="#4285F4" d="M22.5 12.2c0-.7-.06-1.4-.18-2.06H12v3.9h5.9a5 5 0 0 1-2.18 3.3v2.74h3.53C21.1 18.6 22.5 15.7 22.5 12.2z"/><path fill="#34A853" d="M12 23c2.95 0 5.43-.98 7.25-2.65l-3.53-2.74c-.98.66-2.24 1.05-3.72 1.05-2.86 0-5.28-1.93-6.15-4.53H2.2v2.84A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.85 14.13a6.6 6.6 0 0 1 0-4.26V7.03H2.2a11 11 0 0 0 0 9.94l3.65-2.84z"/><path fill="#EA4335" d="M12 4.75c1.62 0 3.06.56 4.2 1.65l3.14-3.14C17.43 1.16 14.95.25 12 .25A11 11 0 0 0 2.2 7.03l3.65 2.84C6.72 6.68 9.14 4.75 12 4.75z"/></svg> Google でログイン</button>
+          <div class="cloud-divider"><span>または</span></div>
+          <input id="cloud-email" type="email" placeholder="メールアドレス" />
+          <input id="cloud-pass" type="password" placeholder="パスワード（6文字以上）" />
+          <div class="settings-actions">
+            <button id="btn-cloud-signin" class="primary-btn">ログイン</button>
+            <button id="btn-cloud-signup" class="ghost-btn">新規登録</button>
+            <button id="btn-cloud-out" class="ghost-btn" hidden>ログアウト</button>
+          </div>
+          <div id="cloud-msg" class="status"></div>
+        </div>
+        <div class="settings-actions">
+          <button id="btn-cloud-up" class="ghost-btn">クラウドに保存（アップロード）</button>
+          <button id="btn-cloud-down" class="ghost-btn">クラウドから読み込み</button>
+          <button id="btn-cloud-diag" class="ghost-btn">接続診断（テーブル確認）</button>
+        </div>
+        <h2>データ</h2>
+        <div class="settings-actions">
+          <button id="btn-seed" class="ghost-btn">サンプルデータを入れる</button>
+          <button id="btn-clear" class="danger-btn">すべて削除</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="editor-backdrop" class="backdrop" hidden>
+  <div class="modal editor">
+    <header class="modal-head">
+      <h2 id="editor-title">新規カード</h2>
+      <button id="editor-close" class="icon-btn">✕</button>
+    </header>
+    <div class="modal-body">
+      <label>タイトル
+        <input id="f-title" type="text" placeholder="例：フーリエ変換" />
+      </label>
+      <div class="row">
+        <label>種類
+          <select id="f-type">
+            <option value="knowledge">知識</option>
+            <option value="idea">アイデア</option>
+            <option value="thought">思考ログ</option>
+            <option value="decision">判断履歴</option>
+          </select>
+        </label>
+        <label>重要度 <span id="f-importance-val">★★★☆☆</span>
+          <input id="f-importance" type="range" min="1" max="5" value="3" />
+        </label>
+        <label>理解度 <span id="f-understanding-val">★★★☆☆</span>
+          <input id="f-understanding" type="range" min="1" max="5" value="3" />
+        </label>
+      </div>
+      <label class="fav-check"><input id="f-favorite" type="checkbox" /> <svg class="star-ic" viewBox="0 0 24 24" width="14" height="14"><path d="M12 2l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.8 6.1 20.8l1.2-6.6L2.5 9l6.6-.9z"/></svg> お気に入りにする</label>
+      <div class="row cal-add-row">
+        <button type="button" id="btn-add-calendar" class="ghost-btn"><svg class="cal-ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> カレンダーに追加</button>
+        <input type="date" id="f-duedate" hidden />
+        <button type="button" id="btn-clear-due" class="ghost-btn" hidden>予定解除</button>
+        <span id="due-hint" class="due-hint"></span>
+      </div>
+      <label>本文
+        <textarea id="f-body" rows="6" placeholder="例：任意の波形を複数の正弦波へ分解する数学的手法。"></textarea>
+      </label>
+      <div class="row">
+        <label>カテゴリ（カンマ区切り・複数可）
+          <input id="f-categories" type="text" placeholder="数学, 大学" />
+        </label>
+        <label>タグ（# 付き・カンマ区切り）
+          <input id="f-tags" type="text" placeholder="#信号処理, #電気電子" />
+        </label>
+      </div>
+      <label>参考資料（1行1件）
+        <textarea id="f-refs" rows="2" placeholder="https://..."></textarea>
+      </label>
+      <label>メモ
+        <textarea id="f-memo" rows="2" placeholder="自由メモ"></textarea>
+      </label>
+      <div class="field">
+        <div class="field-head">
+          <span>関連カード（リンク）</span>
+          <select id="f-links-folder" class="link-folder" title="フォルダで絞り込み">
+            <option value="">すべてのフォルダ</option>
+          </select>
+        </div>
+        <div id="f-links" class="link-picker"></div>
+      </div>
+      <div class="row">
+        <button type="button" id="btn-add-traits" class="ghost-btn">＋ 特性分析を追加</button>
+      </div>
+      <label id="traits-wrap" class="traits-wrap" hidden>特性分析（AI が「似た特性を持つカード」を引っ張り出すときに使います）
+        <textarea id="f-traits" rows="3" placeholder="例：抽象的・体系的・実用重視・視覚的・論理的・創造的"></textarea>
+      </label>
+      <div id="f-suggest" class="suggest"></div>
+    </div>
+    <footer class="modal-foot">
+      <button id="editor-history" class="ghost-btn" hidden><svg class="mi-ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> 履歴</button>
+      <button id="editor-delete" class="danger-btn" hidden>削除</button>
+      <span class="spacer"></span>
+      <button id="editor-cancel" class="ghost-btn">キャンセル</button>
+      <button id="editor-save" class="primary-btn">保存</button>
+    </footer>
+  </div>
+</div>
+
+<div id="folder-create-backdrop" class="backdrop" hidden>
+  <div class="modal editor">
+    <header class="modal-head">
+      <h2 id="folder-create-title">新規フォルダ</h2>
+      <button id="folder-create-close" class="icon-btn">✕</button>
+    </header>
+    <div class="modal-body">
+      <label>フォルダ名（カテゴリ名）
+        <input id="fldr-name" type="text" placeholder="例：電子工作、資格勉強" />
+      </label>
+      <label>自動タグ（このフォルダでカードを作ると自動入力される・カンマ区切り）
+        <input id="fldr-tags" type="text" placeholder="#Arduino, #週末" />
+      </label>
+      <label>本文テンプレート（任意・「このフォルダに追加」時に本文に自動入力）
+        <textarea id="fldr-template" rows="4" placeholder="例：&#10;・目的：&#10;・期限：&#10;・メモ："></textarea>
+      </label>
+    </div>
+    <footer class="modal-foot">
+      <button id="folder-create-delete" class="danger-btn" hidden>設定を削除</button>
+      <span class="spacer"></span>
+      <button id="folder-create-cancel" class="ghost-btn">キャンセル</button>
+      <button id="folder-create-save" class="primary-btn">保存</button>
+    </footer>
+  </div>
+</div>
+
+<div id="history-backdrop" class="backdrop" hidden>
+  <div class="modal">
+    <header class="modal-head"><h2>バージョン履歴</h2><button id="history-close" class="icon-btn">✕</button></header>
+    <div class="modal-body" id="history-list"></div>
+  </div>
+</div>
+
+<div id="export-backdrop" class="backdrop" hidden>
+  <div class="modal export-modal">
+    <header class="modal-head">
+      <h2>エクスポートするカードを選択</h2>
+      <button id="export-close" class="icon-btn">✕</button>
+    </header>
+    <div class="modal-body">
+      <p class="export-hint">選択したカードだけを JSON に書き出します。他の端末へ移動・同期するときに使えます。</p>
+      <div class="export-tools">
+        <input id="export-search" type="search" placeholder="カードを絞り込む…" />
+        <div class="export-actions">
+          <button id="export-all" class="ghost-btn">すべて選択</button>
+          <button id="export-none" class="ghost-btn">すべて解除</button>
+          <span id="export-count" class="export-count">0 件選択中</span>
+        </div>
+      </div>
+      <div id="export-list" class="export-list"></div>
+    </div>
+    <footer class="modal-foot">
+      <button id="export-cancel" class="ghost-btn">キャンセル</button>
+      <button id="export-run" class="primary-btn">選択したカードをエクスポート</button>
+    </footer>
+  </div>
+</div>
+
+<script type="module">
+  /* 公式 Supabase JS SDK を ESM で読み込み、createClient を window に公開する。
+     フォールバック CDN 付き。クラウド認証（Google OAuth / PKCE）に使用。 */
+  (async () => {
+    try {
+      const m = await import("https://esm.sh/@supabase/supabase-js@2");
+      window.__sbCreateClient = m.createClient;
+    } catch (e1) {
+      try {
+        const m = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+        window.__sbCreateClient = m.createClient;
+      } catch (e2) { console.error("Supabase SDK の読み込みに失敗しました", e1, e2); }
+    }
+    document.dispatchEvent(new Event("sb-ready"));
+  })();
+</script>
+
+
+  <script src="js/core.js"></script>
+  <script src="js/cards.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/stats.js"></script>
+  <script src="js/chat.js"></script>
+  <script src="js/io.js"></script>
+  <script src="js/folders.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/cloud-ui.js"></script>
+  <script src="js/calendar.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
