@@ -380,6 +380,7 @@
     if (name === "calendar") renderCalendar();
     if (name === "home") renderFolders();
     if (name === "folder") renderFolder();
+    if (name === "worktable" && typeof wtOnShow === "function") wtOnShow();
   }
 
   /* ---------- 描画: フィルタチップ ---------- */
