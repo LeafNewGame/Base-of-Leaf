@@ -30,12 +30,17 @@
       const local = Store.getAll();
       const map = new Map();
       local.forEach((c) => map.set(c.id, c));
+      let added = 0, overwritten = 0, kept = 0;
       remote.forEach((c) => {
         const ex = map.get(c.id);
-        if (!ex || (c.updatedAt || "") > (ex.updatedAt || "")) map.set(c.id, c);
+        if (!ex) { map.set(c.id, c); added++; }
+        // 重複（同じ id）は updatedAt が新しい方を優先して上書き（クラウド優先・新しいほう勝ち）
+        else if ((c.updatedAt || "") > (ex.updatedAt || "")) { map.set(c.id, c); overwritten++; }
+        else { kept++; }
       });
       localStorage.setItem(LS_CARDS, JSON.stringify(Array.from(map.values())));
       refresh();
+      cloudMsg2(`クラウドから読み込みました ✓（新規 ${added} 件・クラウド上書き ${overwritten} 件・保持 ${kept} 件）`);
     } catch (e) { cloudMsg2("同期エラー: " + e.message); }
   }
   async function diagnoseCloud() {

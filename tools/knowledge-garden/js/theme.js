@@ -18,6 +18,8 @@
     }
     const tb = $("#btn-theme");
     if (tb) tb.title = base === "light" ? "ダークテーマに切替" : "ライトテーマに切替";
+    if (window.ThemeFX && typeof window.ThemeFX.apply === "function") window.ThemeFX.apply(base);
+    if (typeof window.updateFavicon === "function") window.updateFavicon(base);
   }
   function currentThemeMode() {
     return (document.querySelector('input[name="theme"]:checked') || {}).value || "dark";
@@ -82,57 +84,76 @@
     return !!(u && k);
   }
 
-  /* ---------- タブアイコン（favicon）: 揺れる芽生え ---------- */
-  function setupFavicon() {
-    const link = document.createElement("link");
-    link.rel = "icon";
-    link.id = "favicon";
-    document.head.appendChild(link);
-    const size = 64;
-    const cv = document.createElement("canvas");
-    cv.width = cv.height = size;
-    const ctx = cv.getContext("2d");
-    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    function draw(t) {
-      ctx.clearRect(0, 0, size, size);
-      const cx = size / 2, baseY = size * 0.86, topY = size * 0.32;
-      const sway = reduce ? 0 : Math.sin(t) * 0.22;
-      const tipX = cx + Math.sin(sway) * 6;
-      // 茎
-      ctx.strokeStyle = "#5fcf8e";
-      ctx.lineWidth = 4; ctx.lineCap = "round";
+  /* ---------- タブアイコン（favicon）: テーマに応じて変化 ---------- */
+  var favTheme = (document.documentElement.getAttribute("data-theme")) || "dark";
+  function drawFavicon(ctx, size, theme, t) {
+    ctx.clearRect(0, 0, size, size);
+    if (theme === "mono") {
+      /* Smash Hit 風の無機質な四角いブロック（緑なし） */
+      var x = 17, y = 18, w = 26, h = 34;
+      ctx.fillStyle = "rgba(214,220,226,.96)";
+      ctx.fillRect(x, y, w, h);
+      ctx.fillStyle = "rgba(120,128,136,.95)";            // 側面（奥行き）
       ctx.beginPath();
-      ctx.moveTo(cx, baseY);
-      ctx.quadraticCurveTo(cx + Math.sin(sway) * 12, (baseY + topY) / 2, tipX, topY);
-      ctx.stroke();
-      // 葉（左右）
-      const swayDeg = sway * 180 / Math.PI;
-      const leaf = (side) => {
-        ctx.save();
-        ctx.translate(tipX, topY + 2);
-        ctx.rotate((side * (42 + swayDeg)) * Math.PI / 180);
-        ctx.fillStyle = "#5fcf8e";
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.quadraticCurveTo(side * 9, -8, side * 11, -18);
-        ctx.quadraticCurveTo(side * 2, -10, 0, 0);
-        ctx.fill();
-        ctx.restore();
-      };
-      leaf(-1); leaf(1);
-      // つぼみの光
-      const glow = reduce ? 0.55 : 0.45 + 0.45 * Math.abs(Math.sin(t * 0.9));
-      ctx.fillStyle = "rgba(143,208,255," + glow.toFixed(3) + ")";
+      ctx.moveTo(x + w, y + 2); ctx.lineTo(x + w + 8, y + 8);
+      ctx.lineTo(x + w + 8, y + 8 + h); ctx.lineTo(x + w, y + h); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,.8)";             // 縁のハイライト
+      ctx.fillRect(x + 4, y + 3, 3, h - 6);
+      return;
+    }
+    /* その他: 揺れる緑の芽生え */
+    const cx = size / 2, baseY = size * 0.86, topY = size * 0.32;
+    const sway = Math.sin(t) * 0.22;
+    const tipX = cx + Math.sin(sway) * 6;
+    ctx.strokeStyle = "#5fcf8e";
+    ctx.lineWidth = 4; ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(cx, baseY);
+    ctx.quadraticCurveTo(cx + Math.sin(sway) * 12, (baseY + topY) / 2, tipX, topY);
+    ctx.stroke();
+    const swayDeg = sway * 180 / Math.PI;
+    const leaf = (side) => {
+      ctx.save();
+      ctx.translate(tipX, topY + 2);
+      ctx.rotate((side * (42 + swayDeg)) * Math.PI / 180);
+      ctx.fillStyle = "#5fcf8e";
       ctx.beginPath();
-      ctx.arc(tipX, topY - 1, 3.4, 0, Math.PI * 2);
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(side * 9, -8, side * 11, -18);
+      ctx.quadraticCurveTo(side * 2, -10, 0, 0);
       ctx.fill();
+      ctx.restore();
+    };
+    leaf(-1); leaf(1);
+    const glow = 0.45 + 0.45 * Math.abs(Math.sin(t * 0.9));
+    ctx.fillStyle = "rgba(143,208,255," + glow.toFixed(3) + ")";
+    ctx.beginPath();
+    ctx.arc(tipX, topY - 1, 3.4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  function setupFavicon() {
+    var link = document.getElementById("favicon");
+    if (!link) { link = document.createElement("link"); link.rel = "icon"; link.id = "favicon"; document.head.appendChild(link); }
+    var size = 64;
+    var cv = document.createElement("canvas");
+    cv.width = cv.height = size;
+    var ctx = cv.getContext("2d");
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var animT = 0;
+    function frame() {
+      drawFavicon(ctx, size, favTheme, animT);
       link.href = cv.toDataURL("image/png");
     }
-    if (reduce) { draw(0); return; }
-    const start = performance.now();
-    const loop = (now) => {
-      draw((now - start) / 700);
-      setTimeout(() => requestAnimationFrame(loop), 110);
+    window.updateFavicon = function (theme) {
+      favTheme = theme || "dark";
+      if (reduce) frame();
+    };
+    if (reduce) { frame(); return; }
+    var start = performance.now();
+    var loop = function (now) {
+      animT = (now - start) / 700;
+      frame();
+      setTimeout(function () { requestAnimationFrame(loop); }, 110);
     };
     requestAnimationFrame(loop);
   }

@@ -49,7 +49,6 @@
       homeLoadBtn.disabled = true; homeLoadBtn.textContent = "読み込み中…";
       try {
         await syncFromCloud();
-        cloudMsg2("クラウドから読み込みました ✓");
         if ($("#view-home").classList.contains("active")) renderFolders();
       } catch (e) { cloudMsg2("読み込みエラー: " + e.message); }
       finally { homeLoadBtn.disabled = false; homeLoadBtn.textContent = orig; }
@@ -151,7 +150,7 @@
     };
     $("#btn-cloud-out").onclick = () => { Cloud.signOut(); cloudMsg2("ログアウトしました"); updateCloudUI(); };
     $("#btn-cloud-up").onclick = async () => { const ok = await Cloud.push(Store.getAll()); cloudMsg2(ok ? "アップロードしました ✓" : "アップロード失敗（ログインまたは設定を確認）"); };
-    $("#btn-cloud-down").onclick = async () => { await syncFromCloud(); cloudMsg2("クラウドから読み込みました ✓"); };
+    $("#btn-cloud-down").onclick = async () => { await syncFromCloud(); };
     $("#btn-cloud-diag").onclick = diagnoseCloud;
     $("#btn-seed").onclick = () => { if (confirm("サンプルデータを追加しますか？（既存データは残ります）")) { seed().then(() => alert("サンプルを追加しました")); } };
     $("#btn-clear").onclick = () => { if (confirm("すべてのカードを削除します。よろしいですか？")) { Store.clear(); cards = []; refresh(); alert("削除しました"); } };
