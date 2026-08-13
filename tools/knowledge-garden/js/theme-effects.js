@@ -108,15 +108,23 @@
     }
   }
 
-  /* モノクロ: 暗い空間に画面の端に接する無機質なモノリス（光の点なし・床なし） */
+  /* モノクロ（黒）: 暗い空間に画面の下端に接する無機質なモノリス（光の点なし・浮いたものなし） */
+  /* 浮いている右端ブロックは不要なため廃止。すべて下端に接地させ、短く・本数多く配置 */
   function mono() {
-    for (var i = 0; i < 8; i++) {
-      var onLeft = (i % 2 === 0);              // 左端 / 右端に交互に配置
-      var w = rnd(34, 82);                     // 太いブロック
-      var h = rnd(46, 92);                     // 画面端に接する（底部から立ち上がる）
-      var style = "width:" + w.toFixed(1) + "px;height:" + h.toFixed(1) + "vh;bottom:0;";
-      style += onLeft ? "left:0;" : "right:0;";
-      add(el("fx-monolith" + (onLeft ? "" : " edge-r"), style));
+    for (var b = 0; b < 13; b++) {              // 下端に沿って横に分散（左端のサイドバー直下は避ける）
+      var bh = rnd(15, 36);                      // 短く
+      add(el("fx-monolith",
+        "left:" + rnd(10, 94).toFixed(1) + "%;bottom:0;width:" + rnd(30, 68).toFixed(1) + "px;height:" + bh.toFixed(1) + "vh;"));
+    }
+  }
+
+  /* モノクロ（白）: 明るくエアリーな空間に接地する明るいモノリス（Smash Hit 風・床なし） */
+  function monoLight() {
+    add(el("fx-sh-atmos", ""));                  // 明るい空気感（ブルーム）
+    for (var b = 0; b < 13; b++) {              // 下端に沿って横に分散（左端のサイドバー直下は避ける）
+      var bh = rnd(15, 36);                      // 短く
+      add(el("fx-monolith light",
+        "left:" + rnd(10, 94).toFixed(1) + "%;bottom:0;width:" + rnd(30, 68).toFixed(1) + "px;height:" + bh.toFixed(1) + "vh;"));
     }
   }
 
@@ -152,12 +160,21 @@
   /* ノートブック: らせん製本 + 罫線（フラット） */
   function notebook() { add(el("fx-nb-binding", "")); add(el("fx-nb-lines", "")); }
 
-  /* 朝: 空（水色）→ アサヒ（右上角から差し込む光） + 花びら */
+  /* 朝: 空（水色）+ 淡い雲（光の帯・花びらはなし） */
   function morning() {
     add(el("fx-sky", ""));
-    add(el("fx-glow-top", ""));
-    radialRays("fx-beam", 12, { minW: 10, maxW: 66, minA: 3, maxA: 88, lenMin: 150, lenMax: 205, anim: "fx-beam-shine" });
-    dot("fx-petal", 14, { min: 9, max: 16, d0: 9, d1: 16, dx: 50 });
+    var clouds = 8;
+    for (var i = 0; i < clouds; i++) {
+      var w = rnd(150, 330);
+      var h = w * rnd(0.40, 0.58);
+      var top = rnd(6, 56);
+      var left = rnd(-8, 92);
+      var dur = rnd(46, 88);
+      var delay = -rnd(0, dur);
+      var style = "left:" + left.toFixed(1) + "%;top:" + top.toFixed(1) + "%;width:" + w.toFixed(1) + "px;height:" + h.toFixed(1) + "px;";
+      if (!RM) style += "animation:fx-cloud-drift " + dur.toFixed(1) + "s ease-in-out infinite;animation-delay:" + delay.toFixed(1) + "s;";
+      add(el("fx-cloud", style));
+    }
   }
 
   /* サイバー: ネオングリッド + スキャンライン + 粒子 */
@@ -168,7 +185,7 @@
   }
 
   var builders = {
-    sunset: sunset, ocean: ocean, forest: forest, mono: mono,
+    sunset: sunset, ocean: ocean, forest: forest, mono: mono, "mono-light": monoLight,
     space: space, notebook: notebook, morning: morning, cyber: cyber
   };
 

@@ -162,6 +162,15 @@
   --glass-brd:rgba(255,255,255,.1); --tip-bg:rgba(21,23,26,.96);
   --map-halo:rgba(255,255,255,.92); --map-line:rgba(63,74,85,.18);
 }
+/* モノクロ（白）: 明るくエアリーなモノクロ（Smash Hit 風） */
+[data-theme="mono-light"]{
+  --bg:#e7ebee; --bg-soft:#f2f5f7; --panel:#ffffff; --panel-2:#e4e9ed;
+  --border:#c7ced3; --text:#22272b; --text-dim:#5b636a;
+  --accent:#8b949c; --accent-2:#a7afb6; --accent2:#8b949c;
+  --warn:#b8902a; --danger:#c0564e; --shadow:0 10px 30px rgba(70,82,94,.18);
+  --glass-brd:rgba(0,0,0,.12); --tip-bg:rgba(255,255,255,.97);
+  --map-halo:rgba(255,255,255,.92); --map-line:rgba(80,90,100,.16);
+}
 [data-theme="space"]{
   --bg:#0a0a1c; --bg-soft:#111129; --panel:#171738; --panel-2:#221f4a;
   --border:#2e2c5c; --text:#eaeaff; --text-dim:#a9a6d8;

@@ -88,20 +88,79 @@
   var favTheme = (document.documentElement.getAttribute("data-theme")) || "dark";
   function drawFavicon(ctx, size, theme, t) {
     ctx.clearRect(0, 0, size, size);
-    if (theme === "mono") {
-      /* Smash Hit 風の無機質な四角いブロック（緑なし） */
-      var x = 17, y = 18, w = 26, h = 34;
-      ctx.fillStyle = "rgba(214,220,226,.96)";
-      ctx.fillRect(x, y, w, h);
-      ctx.fillStyle = "rgba(120,128,136,.95)";            // 側面（奥行き）
-      ctx.beginPath();
-      ctx.moveTo(x + w, y + 2); ctx.lineTo(x + w + 8, y + 8);
-      ctx.lineTo(x + w + 8, y + 8 + h); ctx.lineTo(x + w, y + h); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = "rgba(255,255,255,.8)";             // 縁のハイライト
-      ctx.fillRect(x + 4, y + 3, 3, h - 6);
-      return;
+    switch (theme) {
+      case "mono": {        /* 無機質な四角いブロック（暗） */
+        var x = 17, y = 18, w = 26, h = 34;
+        ctx.fillStyle = "rgba(214,220,226,.96)"; ctx.fillRect(x, y, w, h);
+        ctx.fillStyle = "rgba(120,128,136,.95)";
+        ctx.beginPath(); ctx.moveTo(x + w, y + 2); ctx.lineTo(x + w + 8, y + 8);
+        ctx.lineTo(x + w + 8, y + 8 + h); ctx.lineTo(x + w, y + h); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,.8)"; ctx.fillRect(x + 4, y + 3, 3, h - 6);
+        return;
+      }
+      case "mono-light": {  /* 無機質な四角いブロック（白・Smash Hit 風） */
+        var xl = 17, yl = 18, wl = 26, hl = 34;
+        ctx.fillStyle = "rgba(255,255,255,.98)"; ctx.fillRect(xl, yl, wl, hl);
+        ctx.strokeStyle = "rgba(120,128,136,.9)"; ctx.lineWidth = 1.5; ctx.strokeRect(xl, yl, wl, hl);
+        ctx.fillStyle = "rgba(176,184,192,.92)";
+        ctx.beginPath(); ctx.moveTo(xl + wl, yl + 2); ctx.lineTo(xl + wl + 7, yl + 7);
+        ctx.lineTo(xl + wl + 7, yl + 7 + hl); ctx.lineTo(xl + wl, yl + hl); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,.95)"; ctx.fillRect(xl + 4, yl + 3, 3, hl - 6);
+        return;
+      }
+      case "sunset": {      /* 夕焼けの太陽（円＋光線） */
+        var cx0 = size / 2, cy0 = size * 0.6;
+        ctx.fillStyle = "rgba(255,150,90,.95)"; ctx.beginPath(); ctx.arc(cx0, cy0, 15, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "rgba(255,200,140,.9)"; ctx.lineWidth = 3;
+        for (var k = 0; k < 8; k++) { var a = k * Math.PI / 4; ctx.beginPath(); ctx.moveTo(cx0 + Math.cos(a) * 19, cy0 + Math.sin(a) * 19); ctx.lineTo(cx0 + Math.cos(a) * 25, cy0 + Math.sin(a) * 25); ctx.stroke(); }
+        return;
+      }
+      case "ocean": {       /* 波（3本の弧） */
+        ctx.strokeStyle = "rgba(56,160,214,.95)"; ctx.lineWidth = 4; ctx.lineCap = "round";
+        for (var wv = 0; wv < 3; wv++) {
+          var yy = 24 + wv * 9; ctx.beginPath();
+          for (var xx = 12; xx <= size - 12; xx += 4) { var yo = yy + Math.sin((xx / 10) + wv) * 4; if (xx === 12) ctx.moveTo(xx, yo); else ctx.lineTo(xx, yo); }
+          ctx.stroke();
+        }
+        return;
+      }
+      case "forest": {      /* 葉（緑） */
+        ctx.save(); ctx.translate(size / 2, size / 2 + 2); ctx.rotate(-0.3);
+        ctx.fillStyle = "rgba(95,207,142,.95)";
+        ctx.beginPath(); ctx.moveTo(0, -22); ctx.quadraticCurveTo(16, 0, 0, 22); ctx.quadraticCurveTo(-16, 0, 0, -22); ctx.fill();
+        ctx.strokeStyle = "rgba(40,120,70,.8)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, -18); ctx.lineTo(0, 18); ctx.stroke();
+        ctx.restore(); return;
+      }
+      case "space": {       /* 円環＋星 */
+        ctx.strokeStyle = "rgba(157,123,255,.95)"; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.arc(size / 2, size / 2, 15, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = "rgba(95,208,255,.95)";
+        ctx.beginPath(); ctx.arc(size * 0.7, size * 0.32, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(size * 0.34, size * 0.66, 2, 0, Math.PI * 2); ctx.fill();
+        return;
+      }
+      case "notebook": {    /* ノート（矩形＋罫線＋赤マージン） */
+        ctx.fillStyle = "rgba(247,243,234,.98)"; ctx.fillRect(16, 14, 32, 36);
+        ctx.strokeStyle = "rgba(60,45,25,.5)"; ctx.lineWidth = 1.5;
+        for (var ln = 0; ln < 4; ln++) { var ly = 22 + ln * 7; ctx.beginPath(); ctx.moveTo(22, ly); ctx.lineTo(44, ly); ctx.stroke(); }
+        ctx.strokeStyle = "rgba(190,60,40,.7)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(26, 14); ctx.lineTo(26, 50); ctx.stroke();
+        return;
+      }
+      case "morning": {     /* 朝の黄色い太陽（円＋光線） */
+        var cxm = size / 2, cym = size / 2;
+        ctx.fillStyle = "rgba(255,206,70,.97)"; ctx.beginPath(); ctx.arc(cxm, cym, 13, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "rgba(255,232,120,.95)"; ctx.lineWidth = 3;
+        for (var rr = 0; rr < 8; rr++) { var aa = rr * Math.PI / 4; ctx.beginPath(); ctx.moveTo(cxm + Math.cos(aa) * 18, cym + Math.sin(aa) * 18); ctx.lineTo(cxm + Math.cos(aa) * 24, cym + Math.sin(aa) * 24); ctx.stroke(); }
+        return;
+      }
+      case "cyber": {       /* ネオングリッド（枠＋斜め） */
+        ctx.strokeStyle = "rgba(25,240,255,.95)"; ctx.lineWidth = 3; ctx.strokeRect(16, 16, 32, 32);
+        ctx.strokeStyle = "rgba(255,61,240,.9)"; ctx.beginPath(); ctx.moveTo(16, 48); ctx.lineTo(48, 16); ctx.stroke();
+        return;
+      }
+      default: break; /* dark / light / custom: 揺れる緑の芽生え */
     }
-    /* その他: 揺れる緑の芽生え */
+    /* デフォルト: 揺れる緑の芽生え */
     const cx = size / 2, baseY = size * 0.86, topY = size * 0.32;
     const sway = Math.sin(t) * 0.22;
     const tipX = cx + Math.sin(sway) * 6;
