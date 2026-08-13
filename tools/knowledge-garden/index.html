@@ -49,9 +49,14 @@
     <div class="sidebar-foot">
       <button id="btn-export" class="ghost-btn" title="JSONへ書き出し">⬇ エクスポート</button>
       <button id="btn-import" class="ghost-btn" title="JSONから読み込み">⬆ インポート</button>
-      <button id="btn-theme" class="ghost-btn" title="テーマ切替（ライト/ダーク）"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.6M12 19.4V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.6M19.4 12H22M4.2 19.8 6 18M18 6l1.8-1.8"/></svg> テーマ</button>
+      <button id="btn-theme" class="ghost-btn" title="テーマを選択（ライト/ダーク/各プリセット）"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.6M12 19.4V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.6M19.4 12H22M4.2 19.8 6 18M18 6l1.8-1.8"/></svg> テーマ</button>
+      <button id="btn-decor" class="ghost-btn on" title="装飾（葉・波・モノリス・光・ホタル）の表示を切替">✨ 装飾: 入</button>
       <input type="file" id="import-file" accept="application/json" hidden />
       <div id="sidebar-cloud" class="sidebar-cloud">☁ クラウド: 未連携</div>
+    </div>
+    <div id="theme-pop" class="pop-menu" hidden>
+      <div class="pop-head"><h3>テーマを選択</h3><button class="pop-close" id="theme-pop-close" aria-label="閉じる">✕</button></div>
+      <div class="theme-grid" id="theme-pop-grid"></div>
     </div>
   </aside>
 
@@ -327,7 +332,7 @@
         <h2>テーマ</h2>
         <p class="hint">外観を切り替えられます。ダーク・ライトのほか、夕焼け／オーシャン／森／モノクロ／宇宙／ノートブック／朝／サイバーの8種のプリセットから選べます。カスタムではベースとアクセント色を自由に設定できます。変更はすぐに反映され、このブラウザに保存されます。</p>
         <div class="theme-opts">
-          <div class="theme-grid">
+          <div class="theme-grid" id="theme-grid">
             <label class="theme-opt theme-swatch" title="ダーク"><input type="radio" name="theme" value="dark" /><span class="sw-dot"><i style="background:#5fcf8e"></i><i style="background:#8fd0ff"></i></span><span class="sw-name">ダーク</span></label>
             <label class="theme-opt theme-swatch" title="ライト"><input type="radio" name="theme" value="light" /><span class="sw-dot"><i style="background:#2f9e63"></i><i style="background:#2b7fc4"></i></span><span class="sw-name">ライト</span></label>
             <label class="theme-opt theme-swatch" title="夕焼け"><input type="radio" name="theme" value="sunset" /><span class="sw-dot"><i style="background:#ff8c5a"></i><i style="background:#ffc15e"></i></span><span class="sw-name">夕焼け</span></label>

@@ -113,8 +113,9 @@
     $("#btn-trait-run").onclick = runTraitSearch;
     $("#btn-reconstruct").onclick = runReconstruct;
     $("#btn-test-ai").onclick = testAI;
-    $("#btn-theme").onclick = quickToggleTheme;
-    $$('input[name="theme"]').forEach((r) => (r.onchange = () => { $("#custom-theme").hidden = r.value !== "custom"; saveThemeNow(); }));
+    $("#btn-theme").onclick = openThemePop;
+    $("#btn-decor").onclick = toggleDecor;
+    $("#theme-pop-close").onclick = closeThemePop;
     $("#set-custom-base").onchange = saveThemeNow;
     $("#set-ccent").oninput = saveThemeNow;
     $("#btn-export").onclick = openExport;
@@ -157,13 +158,48 @@
     window.addEventListener("resize", () => { if ($("#view-map").classList.contains("active")) renderMap(); });
   }
 
+  /* ---------- テーマポップアップ（サイドバーの「テーマ」ボタン） ---------- */
+  function openThemePop(e) {
+    var pop = $("#theme-pop");
+    if (!pop) return;
+    pop.hidden = !pop.hidden;
+    if (!pop.hidden && e) e.stopPropagation();   // 外側クリックで閉じる処理に影響しないよう
+  }
+  function closeThemePop() { var p = $("#theme-pop"); if (p) p.hidden = true; }
+
+  /* ---------- 装飾のオン/オフ（色合いはそのまま、葉・波・モノリス・光・ホタルなどを切る） ---------- */
+  function toggleDecor() {
+    var s = Settings.get();
+    var on = (s.decor !== false);
+    s.decor = !on;                                // 既定 undefined → 今は ON なので OFF へ
+    Settings.save(s);
+    syncDecorBtn();
+    applyTheme();
+  }
+  function syncDecorBtn() {
+    var b = $("#btn-decor");
+    if (!b) return;
+    var on = (Settings.get().decor !== false);
+    b.textContent = on ? "✨ 装飾: 入" : "装飾: 切";
+    b.classList.toggle("on", on);
+  }
+
   /* ---------- 起動 ---------- */
   function init() {
     setupFavicon();
     bindEvents();
+    buildThemeSwatches();
     loadSettingsForm();
+    syncDecorBtn();
     applyTheme();
     setupCloud();
     refresh();
+    /* ポップアップの外側をクリックしたら閉じる */
+    document.addEventListener("click", function (e) {
+      var pop = $("#theme-pop");
+      if (!pop || pop.hidden) return;
+      if (e.target.closest && (e.target.closest("#theme-pop") || e.target.closest("#btn-theme"))) return;
+      pop.hidden = true;
+    });
   }
   init();

@@ -17,8 +17,16 @@
       root.style.removeProperty("--accent2");
     }
     const tb = $("#btn-theme");
-    if (tb) tb.title = base === "light" ? "ダークテーマに切替" : "ライトテーマに切替";
-    if (window.ThemeFX && typeof window.ThemeFX.apply === "function") window.ThemeFX.apply(base);
+    if (tb) tb.title = "テーマを選択";
+    /* 装飾のオン/オフ: 色合い（CSS 変数）は残し、葉っぱ・波・モノリス・光・ホタル等の演出だけ切る */
+    const decorOn = (s.decor !== false);            // 既定は ON（undefined も ON 扱い）
+    document.body.classList.toggle("no-decor", !decorOn);
+    const fx = document.getElementById("fx-layer");
+    if (decorOn) {
+      if (window.ThemeFX && typeof window.ThemeFX.apply === "function") window.ThemeFX.apply(base);
+    } else if (fx) {
+      fx.innerHTML = "";
+    }
     if (typeof window.updateFavicon === "function") window.updateFavicon(base);
   }
   function currentThemeMode() {
@@ -215,4 +223,47 @@
       setTimeout(function () { requestAnimationFrame(loop); }, 110);
     };
     requestAnimationFrame(loop);
+  }
+
+  /* ---------- テーマ選択スウォッチ（設定画面とサイドバーのポップアップで共有） ---------- */
+  var THEME_PRESETS = [
+    { value: "dark",       name: "ダーク",         c1: "#5fcf8e", c2: "#8fd0ff" },
+    { value: "light",      name: "ライト",         c1: "#2f9e63", c2: "#2b7fc4" },
+    { value: "sunset",     name: "夕焼け",         c1: "#ff8c5a", c2: "#ffc15e" },
+    { value: "ocean",      name: "オーシャン",     c1: "#2bb7c4", c2: "#56c5f2" },
+    { value: "forest",     name: "森",             c1: "#6fcf6f", c2: "#a7d96a" },
+    { value: "mono",       name: "モノクロ（黒）", c1: "#15171a", c2: "#cfd4d9" },
+    { value: "mono-light", name: "モノクロ（白）", c1: "#e7ebee", c2: "#8b949c" },
+    { value: "space",      name: "宇宙",           c1: "#9d7bff", c2: "#5fd0ff" },
+    { value: "notebook",   name: "ノートブック",   c1: "#c2703d", c2: "#5b8c6e" },
+    { value: "morning",    name: "朝",             c1: "#f6a96b", c2: "#7fb5d6" },
+    { value: "cyber",      name: "サイバー",       c1: "#ff3df0", c2: "#19f0ff" },
+    { value: "custom",     name: "カスタム",       c1: "#5fcf8e", c2: "#8fd0ff" }
+  ];
+  function buildThemeSwatches() {
+    ["#theme-grid", "#theme-pop-grid"].forEach(function (sel) {
+      var box = $(sel);
+      if (!box) return;
+      box.innerHTML = "";
+      THEME_PRESETS.forEach(function (p) {
+        var label = document.createElement("label");
+        label.className = "theme-opt theme-swatch";
+        label.title = p.name;
+        label.innerHTML =
+          '<input type="radio" name="theme" value="' + p.value + '" />' +
+          '<span class="sw-dot"><i style="background:' + p.c1 + '"></i><i style="background:' + p.c2 + '"></i></span>' +
+          '<span class="sw-name">' + p.name + '</span>';
+        box.appendChild(label);
+      });
+    });
+    $$('input[name="theme"]').forEach(function (r) {
+      r.addEventListener("change", function () {
+        var ct = $("#custom-theme");
+        if (ct) ct.hidden = (r.value !== "custom");
+        if (typeof saveThemeNow === "function") saveThemeNow();
+        if (r.closest && r.closest("#theme-pop")) {
+          var pop = $("#theme-pop"); if (pop) pop.hidden = true;
+        }
+      });
+    });
   }

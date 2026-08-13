@@ -221,9 +221,9 @@
 .custom-theme{ display:flex; flex-wrap:wrap; gap:16px; margin-top:6px; }
 .custom-theme label{ display:inline-flex; align-items:center; gap:8px; font-size:13px; color:var(--text-dim); }
 .custom-theme input[type=color]{ width:44px; height:30px; border:1px solid var(--border); border-radius:8px; background:var(--panel); cursor:pointer; padding:2px; }
-/* テーマ選択: スウォッチグリッド */
-.theme-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(94px,1fr)); gap:10px; margin-top:4px; }
-.theme-swatch{ flex-direction:column; gap:7px; padding:9px 6px; border:1px solid var(--border); border-radius:12px; background:var(--panel); text-align:center; }
+/* テーマ選択: スウォッチ（設定画面は flex で折り返し） */
+.theme-grid{ display:flex; flex-wrap:wrap; gap:10px; margin-top:4px; }
+.theme-swatch{ flex:0 0 auto; min-width:88px; flex-direction:column; gap:7px; padding:9px 6px; border:1px solid var(--border); border-radius:12px; background:var(--panel); text-align:center; }
 .theme-swatch:hover{ border-color:var(--accent); }
 .theme-swatch input{ position:absolute; width:1px; height:1px; opacity:0; }
 .theme-swatch:has(input:checked){ border-color:var(--accent); box-shadow:0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent); }
@@ -335,6 +335,27 @@ body::after{
   88%{opacity:.7}
   100%{opacity:0;transform:translate(-12px,-250px)}
 }
+/* 装飾オフ時: ホタル（と fx-layer の演出）を隠す。色合い（CSS 変数）は維持 */
+.no-decor .kg-garden{ display:none; }
+/* 装飾オフ + サイバー: カード等の脈打つ光の縁も消す（data-theme は html、no-decor は body なので順序に注意） */
+html[data-theme="cyber"] body.no-decor .card::after,
+html[data-theme="cyber"] body.no-decor .folder-card::after,
+html[data-theme="cyber"] body.no-decor .panel::after,
+html[data-theme="cyber"] body.no-decor .modal::after{ display:none; }
+/* テーマ選択ポップアップ（サイドバーの「テーマ」ボタンから開く） */
+#theme-pop{
+  position:fixed; left:16px; bottom:62px; z-index:60;
+  width:min(340px, calc(100vw - 32px));
+  background:var(--panel); border:1px solid var(--border); border-radius:14px;
+  box-shadow:0 18px 50px rgba(0,0,0,.35); padding:14px;
+}
+#theme-pop .pop-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+#theme-pop .pop-head h3{ margin:0; font-size:14px; color:var(--text); }
+#theme-pop .pop-close{ background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:18px; line-height:1; padding:2px 6px; border-radius:8px; }
+#theme-pop .pop-close:hover{ background:var(--panel-2); color:var(--text); }
+#theme-pop .theme-grid{ max-height:46vh; overflow-y:auto; }
+/* サイドバー: 装飾オンの状態を示すアクセント */
+.ghost-btn.on{ border-color:var(--accent); color:var(--accent); }
 /* Export-selection modal */
 .export-modal{ max-width:560px; }
 .export-hint{ color:var(--text-dim); font-size:12.5px; margin:0 0 12px; }
