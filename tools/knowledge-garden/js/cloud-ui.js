@@ -1,6 +1,6 @@
 "use strict";
 /* ---------- クラウド UI 連携 ---------- */
-  function cloudMsg2(t) { const m = $("#cloud-msg"); if (m) m.textContent = t; }
+  function cloudMsg2(t, kind) { const m = $("#cloud-msg"); if (!m) return; const ic = kind === "ok" ? ICONS.check : kind === "err" ? ICONS.error : kind === "warn" ? ICONS.alert : ""; m.innerHTML = (ic ? '<span class="ki ki-sm">' + ic + "</span> " : "") + escapeHtml(t); }
   function updateCloudUI() {
     const st = Cloud.status();
     const cs = $("#cloud-status"), sc = $("#sidebar-cloud");
@@ -8,16 +8,16 @@
     const refTxt = st.ref ? "（プロジェクト " + st.ref + "）" : "";
     if (st.state === "online") {
       const label = st.email || "アカウント";
-      if (cs) { cs.textContent = "☁ 接続中: " + label + refTxt; cs.classList.add("online"); }
-      if (sc) { sc.textContent = "☁ オンライン: " + label; sc.classList.add("online"); }
+      if (cs) { cs.innerHTML = ki("cloud") + " 接続中: " + label + refTxt; cs.classList.add("online"); }
+      if (sc) { sc.innerHTML = ki("cloud") + " オンライン: " + label; sc.classList.add("online"); }
       if (signin) signin.hidden = true; if (signup) signup.hidden = true; if (out) out.hidden = false;
     } else if (st.state === "signedout") {
       if (cs) { cs.textContent = "状態: ログインしてください" + refTxt; cs.classList.remove("online"); }
-      if (sc) { sc.textContent = "☁ 未ログイン" + refTxt; sc.classList.remove("online"); }
+      if (sc) { sc.innerHTML = ki("cloud") + " 未ログイン" + refTxt; sc.classList.remove("online"); }
       if (signin) signin.hidden = false; if (signup) signup.hidden = false; if (out) out.hidden = true;
     } else {
       if (cs) { cs.textContent = "状態: 未設定（URL / key を入力）" + refTxt; cs.classList.remove("online"); }
-      if (sc) { sc.textContent = "☁ 未連携" + refTxt; sc.classList.remove("online"); }
+      if (sc) { sc.innerHTML = ki("cloud") + " 未連携" + refTxt; sc.classList.remove("online"); }
       if (signin) signin.hidden = false; if (signup) signup.hidden = false; if (out) out.hidden = true;
     }
     const errEl = $("#cloud-err");
@@ -40,7 +40,7 @@
       });
       localStorage.setItem(LS_CARDS, JSON.stringify(Array.from(map.values())));
       refresh();
-      cloudMsg2(`クラウドから読み込みました ✓（新規 ${added} 件・クラウド上書き ${overwritten} 件・保持 ${kept} 件）`);
+      cloudMsg2(`クラウドから読み込みました（新規 ${added} 件・クラウド上書き ${overwritten} 件・保持 ${kept} 件`, "ok");
     } catch (e) { cloudMsg2("同期エラー: " + e.message); }
   }
   async function diagnoseCloud() {
@@ -55,9 +55,9 @@
     try {
       const r = await fetch(base + "/rest/v1/kb_cards?limit=1&select=count", { headers: { "apikey": k } });
       const txt = await r.text();
-      if (r.status === 401) cloudMsg2("❌ 401: URL と anon key が一致しません（別のプロジェクトのキー？ ref=" + ref + "）。Supabase の同じプロジェクトから URL と key を再コピーしてください。");
-      else if (r.status === 200) cloudMsg2("✓ テーブル kb_cards は存在します（ref=" + ref + "）。ログイン後、クラウドから読み込み／保存が使えます。");
-      else if (/PGRST125|Invalid path/i.test(txt)) cloudMsg2("❌ テーブル kb_cards が見つかりません（ref=" + ref + "）。この ref のプロジェクトで「テーブル作成 SQL」を実行してください。");
+      if (r.status === 401) cloudMsg2("401: URL と anon key が一致しません（別のプロジェクトのキー？ ref=" + ref + "）。Supabase の同じプロジェクトから URL と key を再コピーしてください。", "err");
+      else if (r.status === 200) cloudMsg2("テーブル kb_cards は存在します（ref=" + ref + "）。ログイン後、クラウドから読み込み／保存が使えます。", "ok");
+      else if (/PGRST125|Invalid path/i.test(txt)) cloudMsg2("テーブル kb_cards が見つかりません（ref=" + ref + "）。この ref のプロジェクトで「テーブル作成 SQL」を実行してください。", "err");
       else cloudMsg2("状態 " + r.status + " / " + txt.slice(0, 140));
     } catch (e) { cloudMsg2("接続エラー: " + e.message); }
   }
@@ -71,7 +71,7 @@
     const hasToken = !!(location.hash && /access_token/.test(location.hash));
     if (hasCode || hasToken) {
       Cloud.handleCallback().then((ok) => {
-        if (ok) { cloudMsg2("Googleでログインしました ✓"); syncFromCloud(); }
+        if (ok) { cloudMsg2("Googleでログインしました", "ok"); syncFromCloud(); }
         else updateCloudUI();
       });
     } else {

@@ -84,8 +84,8 @@
     $("#f-type").value = c?.type || "knowledge";
     $("#f-importance").value = c?.importance || 3;
     $("#f-understanding").value = c?.understanding || 3;
-    $("#f-importance-val").textContent = stars(c?.importance || 3);
-    $("#f-understanding-val").textContent = stars(c?.understanding || 3);
+    $("#f-importance-val").innerHTML = stars(c?.importance || 3);
+    $("#f-understanding-val").innerHTML = stars(c?.understanding || 3);
     $("#f-body").value = c?.body || "";
     $("#f-categories").value = (c?.categories || []).join(", ");
     $("#f-tags").value = (c?.tags || []).join(", ");

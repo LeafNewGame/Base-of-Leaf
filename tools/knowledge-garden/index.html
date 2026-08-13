@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <title>知識の箱庭 — Knowledge Garden</title>
 
 
@@ -45,17 +45,18 @@
       <button class="nav-item" data-view="review"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11A8 8 0 1 1 6.34 6.34"/><polyline points="4 4 6 8 10 6"/></svg></span>復習提案</button>
       <button class="nav-item" data-view="thoughts"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span>思考・判断・アイデア</button>
       <button class="nav-item" data-view="settings"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>設定</button>
+      <button class="nav-item" data-view="help"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2.5-3 4"/><line x1="12" y1="17.5" x2="12" y2="17.5"/></svg></span>使い方</button>
     </nav>
     <div class="sidebar-foot">
-      <button id="btn-export" class="ghost-btn" title="JSONへ書き出し">⬇ エクスポート</button>
-      <button id="btn-import" class="ghost-btn" title="JSONから読み込み">⬆ インポート</button>
+      <button id="btn-export" class="ghost-btn" title="JSONへ書き出し"><span class="ki"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg></span> エクスポート</button>
+      <button id="btn-import" class="ghost-btn" title="JSONから読み込み"><span class="ki"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"/><path d="m7 13 5-5 5 5"/><path d="M5 3h14"/></svg></span> インポート</button>
       <button id="btn-theme" class="ghost-btn" title="テーマを選択（ライト/ダーク/各プリセット）"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.6M12 19.4V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.6M19.4 12H22M4.2 19.8 6 18M18 6l1.8-1.8"/></svg> テーマ</button>
-      <button id="btn-decor" class="ghost-btn on" title="装飾（葉・波・モノリス・光・ホタル）の表示を切替">✨ 装飾: 入</button>
+      <button id="btn-decor" class="ghost-btn on" title="装飾（葉・波・モノリス・光・ホタル）の表示を切替"><span class="ki"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 6.2L20 11l-6.2 1.8L12 19l-1.8-6.2L4 11l6.2-1.8z"/></svg></span> 装飾: 入</button>
       <input type="file" id="import-file" accept="application/json" hidden />
-      <div id="sidebar-cloud" class="sidebar-cloud">☁ クラウド: 未連携</div>
+      <div id="sidebar-cloud" class="sidebar-cloud"><span class="ki"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.6 1.5A3.5 3.5 0 0 0 6 19z"/></svg></span> クラウド: 未連携</div>
     </div>
     <div id="theme-pop" class="pop-menu" hidden>
-      <div class="pop-head"><h3>テーマを選択</h3><button class="pop-close" id="theme-pop-close" aria-label="閉じる">✕</button></div>
+      <div class="pop-head"><h3>テーマを選択</h3><button class="pop-close" id="theme-pop-close" aria-label="閉じる"><span class="ki"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg></span></button></div>
       <div class="theme-grid" id="theme-pop-grid"></div>
     </div>
   </aside>
@@ -410,6 +411,30 @@ create policy "own row" on kb_cards
         </div>
       </div>
     </section>
+
+    <section class="view" id="view-help">
+      <header class="topbar">
+        <div class="topbar-left">
+          <h1>使い方</h1>
+          <p class="hint">はじめての方へ。このアプリの機能と、よく使う操作をまとめました。</p>
+        </div>
+      </header>
+      <p class="help-intro">「知識の箱庭」は、学んだことをカードとして育て、フォルダやマップで整理できるナレッジツールです。左のメニューから各画面を開けます。</p>
+      <div class="help-grid">
+        <div class="card help-card"><h3><span class="ki ki-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/></svg></span> ホーム</h3><p>カードをカテゴリ（フォルダ）ごとに整理して一覧表示します。右上の「＋ 新規フォルダ」でフォルダを作ると、その中に作るカードに <strong>あらかじめタグが自動入力</strong>されます。フォルダをタップすると中のカードが見られます。</p></div>
+        <div class="card help-card"><h3><span class="ki ki-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="14" height="16" rx="2"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h5"/></svg></span> 一覧</h3><p>すべてのカードを一ヶ所で見られます。<strong>意味で検索</strong>（例：AI / 信号処理）や、種類・カテゴリ・タグで絞り込めます。「＋ 新規カード」で新しいカードを追加できます。</p></div>
+        <div class="card help-card"><h3><span class="ki ki-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7 7l4 9"/><path d="M17 7l-4 9"/></svg></span> 知識マップ</h3><p>カード同士のつながりをネットワーク図で可視化します。<strong>2D / 3D</strong> 表示を切り替え、「自動回転」でぐるぐる回すこともできます。「再配置」でレイアウトし直せます。</p></div>
+        <div class="card help-card"><h3><span class="ki ki-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M9.5 20V4"/><path d="M15 20v-7"/><path d="M20.5 20V8"/></svg></span> 学習統計</h3><p>保存したカードの数や理解度・重要度などのバランスを確認できます。何を強化すべきかの目安にしてください。</p></div>
+        <div class="card help-card"><h3><span class="ki ki-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18"/><path d="M8 2v4"/><path d="M16 2v4"/></svg></span> カレンダー</h3><p>復習やタスクの予定をカレンダー（月）またはアジェンダ（リスト）で管理します。カードから予定を登録できます。</p></div>
+        <div class="card help-card"><h3><span class="ki ki-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18c1.5 0 2-1 2-2s-1-1.5-1-2.5.5-1.5 1.5-1.5h2a4 4 0 0 0 4-4c0-3.9-4-6-8.5-6z"/><circle cx="7.5" cy="11" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="16.5" cy="11" r="1"/></svg></span> ワークテーテル</h3><p>手書きのメモや図を自由に描けるキャンバスです。ペン・消しゴム・図形・テキストなどを使って、関係を図解したりアイデアを広げたりできます。</p></div>
+        <div class="card help-card"><h3><span class="ki ki-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-6.5A8 8 0 1 1 21 12z"/></svg></span> AI対話</h3><p>保存したカードをもとに AI と対話できます。わからないことを聞いたり、関連するカードを引っ張り出したりするのに使います。</p></div>
+        <div class="card help-card"><h3><span class="ki ki-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-9 9 9 9 0 0 1-8-5"/><path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 8 5"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg></span> 復習提案</h3><p>AI が、いまの知識の構成から <strong>復習すべきカード</strong> や <strong>足りない領域</strong> を提案します。定期的に開くと定着しやすくなります。</p></div>
+        <div class="card help-card"><h3><span class="ki ki-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.2 1 2.5h6c0-1.3.2-1.7 1-2.5A6 6 0 0 0 12 3z"/></svg></span> 思考・判断・アイデア</h3><p>ふと思ったこと（思考ログ）、決定した理由（判断履歴）、ひらめき（アイデア）をカードとして残せます。後で振り返るのに便利です。</p></div>
+        <div class="card help-card"><h3><span class="ki ki-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> 設定</h3><p>テーマ（ダーク / ライト / 8種のプリセット）、<strong>装飾のオンオフ</strong>（葉・波・モノリス・光・ホタル）、クラウド連携（Google ログインで同期）、エクスポート / インポートができます。</p></div>
+        <div class="card help-card"><h3><span class="ki ki-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.6 1.5A3.5 3.5 0 0 0 6 19z"/></svg></span> クラウドで同期</h3><p>設定から Google ログインすると、複数の端末でデータを共有できます。ホームの「<strong>クラウドから読み込み</strong>」で他端末のカードを取り込めます（同じカードは新しい方を優先）。読み込み後はその画面に新しいカードがすぐ反映されます。</p></div>
+        <div class="card help-card"><h3><span class="ki ki-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18c1.5 0 2-1 2-2s-1-1.5-1-2.5.5-1.5 1.5-1.5h2a4 4 0 0 0 4-4c0-3.9-4-6-8.5-6z"/><circle cx="7.5" cy="11" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="16.5" cy="11" r="1"/></svg></span> テーマを変える</h3><p>サイドバーの「テーマ」ボタンでカラーテーマを選べます。背景の演出（装飾）は「装飾」ボタンでいつでも消せます。色合いはそのまま維持されます。</p></div>
+      </div>
+    </section>
   </main>
 </div>
 
@@ -417,7 +442,7 @@ create policy "own row" on kb_cards
   <div class="modal editor">
     <header class="modal-head">
       <h2 id="editor-title">新規カード</h2>
-      <button id="editor-close" class="icon-btn">✕</button>
+      <button id="editor-close" class="icon-btn"><span class="ki"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg></span></button>
     </header>
     <div class="modal-body">
       <label>タイトル
@@ -432,10 +457,10 @@ create policy "own row" on kb_cards
             <option value="decision">判断履歴</option>
           </select>
         </label>
-        <label>重要度 <span id="f-importance-val">★★★☆☆</span>
+        <label>重要度 <span id="f-importance-val" class="stars"></span>
           <input id="f-importance" type="range" min="1" max="5" value="3" />
         </label>
-        <label>理解度 <span id="f-understanding-val">★★★☆☆</span>
+        <label>理解度 <span id="f-understanding-val" class="stars"></span>
           <input id="f-understanding" type="range" min="1" max="5" value="3" />
         </label>
       </div>
@@ -494,7 +519,7 @@ create policy "own row" on kb_cards
   <div class="modal editor">
     <header class="modal-head">
       <h2 id="folder-create-title">新規フォルダ</h2>
-      <button id="folder-create-close" class="icon-btn">✕</button>
+      <button id="folder-create-close" class="icon-btn"><span class="ki"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg></span></button>
     </header>
     <div class="modal-body">
       <label>フォルダ名（カテゴリ名）
@@ -520,7 +545,7 @@ create policy "own row" on kb_cards
   <div class="modal">
     <header class="modal-head">
       <h2>カードから文字を引っ張り出す</h2>
-      <button id="wt-pick-close" class="icon-btn">✕</button>
+      <button id="wt-pick-close" class="icon-btn"><span class="ki"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg></span></button>
     </header>
     <div class="modal-body">
       <p class="hint">選んだカードの内容をワークテーブルに貼り付けます。貼り付けたあとに文字を編集しても<strong>元のカードには影響しません</strong>（ダブルクリックで編集できます）。</p>
@@ -554,7 +579,7 @@ create policy "own row" on kb_cards
 
 <div id="history-backdrop" class="backdrop" hidden>
   <div class="modal">
-    <header class="modal-head"><h2>バージョン履歴</h2><button id="history-close" class="icon-btn">✕</button></header>
+    <header class="modal-head"><h2>バージョン履歴</h2><button id="history-close" class="icon-btn"><span class="ki"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg></span></button></header>
     <div class="modal-body" id="history-list"></div>
   </div>
 </div>
@@ -563,7 +588,7 @@ create policy "own row" on kb_cards
   <div class="modal export-modal">
     <header class="modal-head">
       <h2>エクスポートするカードを選択</h2>
-      <button id="export-close" class="icon-btn">✕</button>
+      <button id="export-close" class="icon-btn"><span class="ki"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg></span></button>
     </header>
     <div class="modal-body">
       <p class="export-hint">選択したカードだけを JSON に書き出します。他の端末へ移動・同期するときに使えます。</p>

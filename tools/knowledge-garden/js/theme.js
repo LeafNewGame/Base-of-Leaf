@@ -78,7 +78,7 @@
     Cloud.setConfig(s.supabaseUrl, s.supabaseKey);
     Settings.save(s);
     applyTheme();
-    $("#settings-status").textContent = "保存しました ✓";
+    $("#settings-status").innerHTML = ki("check") + " 保存しました";
     setTimeout(() => ($("#settings-status").textContent = ""), 2500);
   }
   /* 入力欄の Supabase URL / anon key を即時反映（保存ボタンを押さなくても動くように） */

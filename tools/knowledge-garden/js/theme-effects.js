@@ -130,7 +130,16 @@
 
   /* 宇宙: 星 + 銀河 + 中央の円環 + 周囲を回る光の点（数を絞りつつ広く拡散） */
   function space() {
-    dot("fx-star", 80, { min: 1, max: 3, d0: 2.5, d1: 6 });
+    // 星は画面全体にランダムに散らす（top を付けないと上端にたまるので必ず設定）
+    for (var i = 0; i < 80; i++) {
+      var s = rnd(1, 3);
+      var style = "left:" + rnd(0, 100).toFixed(2) + "%;top:" + rnd(2, 96).toFixed(2) + "%;width:" + s.toFixed(1) + "px;height:" + s.toFixed(1) + "px;";
+      if (!RM) {
+        style += "animation-duration:" + rnd(2.5, 6).toFixed(2) + "s;";
+        style += "animation-delay:-" + rnd(0, 6).toFixed(2) + "s;";
+      }
+      add(el("fx-star", style));
+    }
     add(el("fx-galaxy", ""));
     add(el("fx-ring", ""));
     var orbits = [

@@ -5,7 +5,6 @@
     const total = cards.length;
     const thisMonth = cards.filter((c) => c.createdAt && new Date(c.createdAt).getMonth() === new Date().getMonth() && new Date(c.createdAt).getFullYear() === new Date().getFullYear()).length;
     const catCount = {}; cards.forEach((c) => (c.categories || []).forEach((x) => (catCount[x] = (catCount[x] || 0) + 1)));
-    const avgU = total ? (cards.reduce((s, c) => s + (c.understanding || 3), 0) / total) : 0;
     const totalViews = cards.reduce((s, c) => s + (c.viewCount || 0), 0);
     const years = {}; cards.forEach((c) => { if (c.createdAt) { const y = new Date(c.createdAt).getFullYear(); years[y] = (years[y] || 0) + 1; } });
     const typeCount = {}; cards.forEach((c) => { const t = c.type || "knowledge"; typeCount[t] = (typeCount[t] || 0) + 1; });
@@ -18,7 +17,6 @@
     wrap.innerHTML = `
       <div class="stat-card"><div class="big">${total}</div><div class="label">総カード数</div></div>
       <div class="stat-card"><div class="big">${thisMonth}</div><div class="label">今月追加</div></div>
-      <div class="stat-card"><div class="big">${stars(Math.round(avgU))}</div><div class="label">平均理解度</div></div>
       <div class="stat-card"><div class="big">${totalViews}</div><div class="label">総閲覧回数</div></div>
       <div class="stat-card" style="grid-column: span 2;">
         <h3>カテゴリ分布</h3>

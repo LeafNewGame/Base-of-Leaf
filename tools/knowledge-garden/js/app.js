@@ -2,7 +2,10 @@
 /* ---------- リフレッシュ ---------- */
   function refresh() {
     cards = Store.getAll();
+    // 読み込み直後など、今開いている画面も即座に再描画して新しいカードを反映させる
     if ($("#view-calendar").classList.contains("active")) renderCalendar();
+    if ($("#view-folder").classList.contains("active")) renderFolder();
+    if ($("#view-map").classList.contains("active")) renderMap();
     if (!cards.length) {
       $("#card-list").innerHTML = '<div class="empty">ようこそ ' + SPROUT_SVG + ' まずは「＋ 新規カード」で知識を育てるか、設定から「サンプルデータを入れる」をお試しください。</div>';
       renderFolders();
@@ -20,8 +23,8 @@
     $("#btn-new-thought").onclick = () => { openEditor(null); $("#f-type").value = "thought"; };
     $("#search-input").oninput = (e) => { searchQuery = e.target.value; renderCards(); };
     $("#type-filter").onchange = (e) => { filters.type = e.target.value; renderCards(); };
-    $("#f-importance").oninput = (e) => ($("#f-importance-val").textContent = stars(+e.target.value));
-    $("#f-understanding").oninput = (e) => ($("#f-understanding-val").textContent = stars(+e.target.value));
+    $("#f-importance").oninput = (e) => ($("#f-importance-val").innerHTML = stars(+e.target.value));
+    $("#f-understanding").oninput = (e) => ($("#f-understanding-val").innerHTML = stars(+e.target.value));
     $("#editor-save").onclick = saveEditor;
     $("#editor-cancel").onclick = () => ($("#editor-backdrop").hidden = true);
     $("#editor-close").onclick = () => ($("#editor-backdrop").hidden = true);
@@ -135,7 +138,7 @@
       applyCloudConfigFromInputs();
       const em = $("#cloud-email").value.trim(), pw = $("#cloud-pass").value;
       if (!em || !pw) { cloudMsg2("メールとパスワードを入力してください"); return; }
-      try { Cloud.signIn(em, pw); cloudMsg2("ログインしました ✓"); await syncFromCloud(); updateCloudUI(); }
+      try { Cloud.signIn(em, pw); cloudMsg2("ログインしました", "ok"); await syncFromCloud(); updateCloudUI(); }
       catch (e) { cloudMsg2(e.message); }
     };
     $("#btn-cloud-signup").onclick = async () => {
@@ -145,12 +148,12 @@
       try {
         const j = await Cloud.signUp(em, pw);
         if (!j.session) cloudMsg2("確認メールを送信しました。リンクを踏んでからログインしてください");
-        else { cloudMsg2("登録しました ✓"); await syncFromCloud(); }
+        else { cloudMsg2("登録しました", "ok"); await syncFromCloud(); }
         updateCloudUI();
       } catch (e) { cloudMsg2(e.message); }
     };
     $("#btn-cloud-out").onclick = () => { Cloud.signOut(); cloudMsg2("ログアウトしました"); updateCloudUI(); };
-    $("#btn-cloud-up").onclick = async () => { const ok = await Cloud.push(Store.getAll()); cloudMsg2(ok ? "アップロードしました ✓" : "アップロード失敗（ログインまたは設定を確認）"); };
+    $("#btn-cloud-up").onclick = async () => { const ok = await Cloud.push(Store.getAll()); cloudMsg2(ok ? "アップロードしました" : "アップロード失敗（ログインまたは設定を確認）", ok ? "ok" : "err"); };
     $("#btn-cloud-down").onclick = async () => { await syncFromCloud(); };
     $("#btn-cloud-diag").onclick = diagnoseCloud;
     $("#btn-seed").onclick = () => { if (confirm("サンプルデータを追加しますか？（既存データは残ります）")) { seed().then(() => alert("サンプルを追加しました")); } };
@@ -180,7 +183,7 @@
     var b = $("#btn-decor");
     if (!b) return;
     var on = (Settings.get().decor !== false);
-    b.textContent = on ? "✨ 装飾: 入" : "装飾: 切";
+    b.innerHTML = on ? ki("decor") + " 装飾: 入" : "装飾: 切";
     b.classList.toggle("on", on);
   }
 
@@ -194,6 +197,10 @@
     applyTheme();
     setupCloud();
     refresh();
+    $("#f-importance-val").innerHTML = stars(3);
+    $("#f-understanding-val").innerHTML = stars(3);
+    $("#f-importance-val").innerHTML = stars(3);
+    $("#f-understanding-val").innerHTML = stars(3);
     /* ポップアップの外側をクリックしたら閉じる */
     document.addEventListener("click", function (e) {
       var pop = $("#theme-pop");

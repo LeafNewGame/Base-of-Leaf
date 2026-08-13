@@ -93,7 +93,7 @@
       thinking.innerHTML = escapeHtml(answer).replace(/\n/g, "<br>");
       if (top.length) thinking.appendChild(srcLinks(top));
     } catch (e) {
-      thinking.innerHTML = "⚠️ AI エラー: " + escapeHtml(e.message) + "<br>以下は関連カードの表示です：<br>" + top.map((c) => "• " + escapeHtml(c.title)).join("<br>");
+      thinking.innerHTML = ki("alert") + " AI エラー: " + escapeHtml(e.message) + "<br>以下は関連カードの表示です：<br>" + top.map((c) => "• " + escapeHtml(c.title)).join("<br>");
       if (top.length) thinking.appendChild(srcLinks(top));
     }
     log.scrollTop = log.scrollHeight;
@@ -114,7 +114,7 @@
     const cand = reviewCandidates();
     if (!cand.length) { alert("今のところ復習候補はありません"); return; }
     const list = $("#review-list");
-    const ctx = cand.map((c) => `・${c.title}（重要度${stars(c.importance)}/理解度${stars(c.understanding)}/閲覧${c.viewCount || 0}回/カテゴリ:${(c.categories || []).join(",")}）`).join("\n");
+    const ctx = cand.map((c) => `・${c.title}（重要度${starsText(c.importance)}/理解度${starsText(c.understanding)}/閲覧${c.viewCount || 0}回/カテゴリ:${(c.categories || []).join(",")}）`).join("\n");
     list.innerHTML = '<div class="ai-review-box" style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px"><span class="ai-think"></span> AI が最適化中…</div>';
     const sys = "あなたは学習コーチです。ユーザーの知識カードをもとに、今週優先して復習すべき順番トップ5とその理由を日本語で提案してください。";
     const user = `以下の復習候補から優先順位を提案してください：\n${ctx}`;
@@ -122,7 +122,7 @@
       const ans = await callLLM(sys, user, { max_tokens: 900 });
       list.innerHTML = '<div class="ai-review-box" style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px"><b><span class="ai-think"></span> AI による今週の復習優先順位</b><br>' + escapeHtml(ans).replace(/\n/g, "<br>") + '</div>';
     } catch (e) {
-      list.innerHTML = '<div class="ai-review-box" style="background:var(--panel);border:1px solid var(--danger);border-radius:10px;padding:14px;margin-bottom:14px">⚠️ AI エラー: ' + escapeHtml(e.message) + '</div>';
+      list.innerHTML = '<div class="ai-review-box" style="background:var(--panel);border:1px solid var(--danger);border-radius:10px;padding:14px;margin-bottom:14px">ki("alert") + " AI エラー: ' + escapeHtml(e.message) + '</div>';
     }
     cand.forEach((c) => list.appendChild(cardEl(c)));
   }
@@ -143,14 +143,14 @@
     const log = $("#chat-log");
     const sys = "あなたはユーザーのナレッジAIです。提供された2つのカードを比較し、共通点・相違点・関係性を日本語で簡潔に説明してください。";
     const user = `カード1:\nタイトル: ${a.title}\n種類: ${TYPE_LABEL[a.type] || a.type}\nカテゴリ: ${(a.categories || []).join(", ")}\nタグ: ${(a.tags || []).join(", ")}\n本文:\n${a.body || ""}\n\nカード2:\nタイトル: ${b.title}\n種類: ${TYPE_LABEL[b.type] || b.type}\nカテゴリ: ${(b.categories || []).join(", ")}\nタグ: ${(b.tags || []).join(", ")}\n本文:\n${b.body || ""}\n\nこの2つを比較してください。`;
-    const thinking = divMsg("ai", "🤔 比較中…");
+    const thinking = divMsg("ai", ki("thinking") + " 比較中…");
     log.appendChild(thinking); log.scrollTop = log.scrollHeight;
     try {
       const ans = await callLLM(sys, user, { max_tokens: 900 });
       thinking.innerHTML = escapeHtml(ans).replace(/\n/g, "<br>");
       thinking.appendChild(srcLinks([a, b]));
     } catch (e) {
-      thinking.innerHTML = "⚠️ AI エラー: " + escapeHtml(e.message);
+      thinking.innerHTML = ki("alert") + " AI エラー: " + escapeHtml(e.message);
     }
     log.scrollTop = log.scrollHeight;
   }
@@ -159,17 +159,17 @@
     if (!Settings.aiReady()) { alert("設定で無料の API（Groq 等）を入力してください。"); return; }
     if (!cards.length) { alert("カードがありません"); return; }
     const sample = cards.slice().sort((x, y) => (y.importance - x.importance)).slice(0, 40);
-    const ctx = sample.map((c) => `・${c.title}（カテゴリ:${(c.categories || []).join(",")}/タグ:${(c.tags || []).join(",")}/理解度${stars(c.understanding)}）`).join("\n");
+    const ctx = sample.map((c) => `・${c.title}（カテゴリ:${(c.categories || []).join(",")}/タグ:${(c.tags || []).join(",")}/理解度${starsText(c.understanding)}）`).join("\n");
     const sys = "あなたはユーザーの学習アドバイザーです。ユーザーのナレッジカード一覧を分析し、不足している知識領域や、次に学ぶべきテーマを日本語で提案してください。";
     const user = `カード一覧（重要度順・上位${sample.length}件）:\n${ctx}\n\n分析と提案をお願いします。`;
     const log = $("#chat-log");
-    const thinking = divMsg("ai", "🤔 分析中…");
+    const thinking = divMsg("ai", ki("thinking") + " 分析中…");
     log.appendChild(thinking); log.scrollTop = log.scrollHeight;
     try {
       const ans = await callLLM(sys, user, { max_tokens: 1000, temperature: 0.5 });
       thinking.innerHTML = escapeHtml(ans).replace(/\n/g, "<br>");
     } catch (e) {
-      thinking.innerHTML = "⚠️ AI エラー: " + escapeHtml(e.message);
+      thinking.innerHTML = ki("alert") + " AI エラー: " + escapeHtml(e.message);
     }
     log.scrollTop = log.scrollHeight;
   }
@@ -179,7 +179,7 @@
     const btn = $("#btn-test-ai"); const old = btn.textContent; btn.textContent = "テスト中…"; btn.disabled = true;
     try {
       const ans = await callLLM("短く返答してください。", "こんにちは、動作確認です。", { max_tokens: 30 });
-      $("#settings-status").textContent = "接続OK ✓: " + ans.slice(0, 40);
+      $("#settings-status").innerHTML = ki("check") + " 接続OK: " + escapeHtml(ans.slice(0, 40));
     } catch (e) {
       $("#settings-status").textContent = "失敗: " + e.message.slice(0, 80);
     } finally {
@@ -213,7 +213,7 @@
       thinking.innerHTML = escapeHtml(ans).replace(/\n/g, "<br>");
       thinking.appendChild(srcLinks([ref, ...pool.slice(0, 3)]));
     } catch (e) {
-      thinking.innerHTML = "⚠️ AI エラー: " + escapeHtml(e.message);
+      thinking.innerHTML = ki("alert") + " AI エラー: " + escapeHtml(e.message);
     }
     log.scrollTop = log.scrollHeight;
   }

@@ -71,7 +71,7 @@
     s.folderTemplates[cat] = $("#folder-fmt-input").value;
     Settings.save(s);
     const btn = $("#folder-fmt-save");
-    const old = btn.textContent; btn.textContent = "保存済み ✓";
+    const old = btn.textContent; btn.innerHTML = ki("check") + " 保存済み";
     setTimeout(() => (btn.textContent = old), 1200);
   }
 

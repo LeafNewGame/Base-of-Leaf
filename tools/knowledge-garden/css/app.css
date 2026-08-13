@@ -98,10 +98,20 @@
   /* 知識マップを縮小して画面に収める（PCより小さく） */
   .graph-wrap{ min-height:46vh; transform:scale(.9); transform-origin:top center; }
   .graph-legend{ font-size:10px; padding:6px 8px; }
+  /* スマホでキーボードを開いた瞬間の自動拡大（iOS）を防ぐ：フォーム入力は 16px 以上 */
+  input[type="search"], input[type="text"], input[type="password"], input[type="email"], input[type="number"], textarea, select{ font-size:16px; }
 }
 
 /* ---- 新規フォルダモーダル / 特性分析 ---- */
 .folder-card.has-config{ border-left:3px solid var(--accent); }
+
+/* ---- 使い方（ヘルプ）画面 ---- */
+.help-intro{ color:var(--text-dim); margin:-6px 0 16px; max-width:760px; line-height:1.7; }
+.help-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; }
+.help-card{ padding:14px 16px; }
+.help-card h3{ margin:0 0 6px; font-size:15px; }
+.help-card p{ margin:0; font-size:13px; line-height:1.7; color:var(--text-dim); }
+.help-card strong{ color:var(--text); }
 .traits-wrap{ display:block; }
 .trait-tag{ background:rgba(143,208,255,.18); color:var(--accent-2); border-color:transparent; }
 #trait-tools select, #ai-tools select{ min-width:160px; }
@@ -340,6 +350,8 @@ body::after{
 }
 /* 装飾オフ時: ホタル（と fx-layer の演出）を隠す。色合い（CSS 変数）は維持 */
 .no-decor .kg-garden{ display:none; }
+/* 緑の光の点（ホタル）はダーク・ライトのみ。それ以外のテーマでは非表示（色合いは維持） */
+html:not([data-theme="dark"]):not([data-theme="light"]) .kg-garden{ display:none; }
 /* 装飾オフ + サイバー: カード等の脈打つ光の縁も消す（data-theme は html、no-decor は body なので順序に注意） */
 html[data-theme="cyber"] body.no-decor .card::after,
 html[data-theme="cyber"] body.no-decor .folder-card::after,
@@ -469,3 +481,14 @@ html[data-theme="cyber"] body.no-decor .modal::after{ display:none; }
 
 /* --surface 未定義でカレンダーの背景が透けていた不具合の修正（テーマ追従） */
 :root{ --surface: var(--panel); }
+
+/* インライン機能アイコン（絵文字の代わり / ナビの SVG と同様の line スタイル） */
+.ki{ display:inline-flex; align-items:center; justify-content:center; width:1em; height:1em; vertical-align:-0.15em; flex:0 0 auto; }
+.ki svg{ width:100%; height:100%; display:block; }
+.ki-sm{ width:14px; height:14px; vertical-align:-3px; }
+.ghost-btn .ki{ width:16px; height:16px; margin-right:3px; }
+.sidebar-cloud .ki{ width:15px; height:15px; margin-right:2px; }
+.help-card h3{ display:flex; align-items:center; gap:8px; line-height:1.3; }
+.help-card h3 .ki{ width:20px; height:20px; flex:0 0 auto; }
+.icon-btn svg, .pop-close svg{ width:18px; height:18px; }
+.stars svg{ width:13px; height:13px; vertical-align:-2px; margin-right:1px; }
