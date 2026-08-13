@@ -85,6 +85,9 @@
   .menu-btn{ display:flex; }
   .view{ padding:64px 16px 60px; }
   .topbar-left{ min-width:0; }
+  /* スマホではタイトル・紹介文・ボタンを縦積みにして文字が縦に潰れるのを防ぐ */
+  .topbar{ flex-direction:column; align-items:stretch; gap:12px; }
+  .topbar-right{ width:100%; }
   .folder-list{ grid-template-columns:1fr; }
   /* 文字は常に横書き（自然な流れ） */
   body, .view, .topbar, .topbar-left, .topbar-right, .card, .folder-card,
