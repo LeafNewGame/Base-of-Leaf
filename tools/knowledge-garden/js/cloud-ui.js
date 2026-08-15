@@ -1,6 +1,22 @@
 "use strict";
 /* ---------- クラウド UI 連携 ---------- */
   function cloudMsg2(t, kind) { const m = $("#cloud-msg"); if (!m) return; const ic = kind === "ok" ? ICONS.check : kind === "err" ? ICONS.error : kind === "warn" ? ICONS.alert : ""; m.innerHTML = (ic ? '<span class="ki ki-sm">' + ic + "</span> " : "") + escapeHtml(t); }
+
+  /* 同一内容カードの重複排除: タイトル+本文が完全に一致するカードを 1 つにまとめる
+     （別端末で同じカードを作った場合など、id が異なっても内容が同じなら重複とみなす）。
+     ただし「内容が部分的に違う」カードは残すため、完全一致のみを対象とする。 */
+  function normText(s) { return (s || "").replace(/\s+/g, " ").trim().toLowerCase(); }
+  function dedupeByContent(list) {
+    const seen = new Map(); const out = [];
+    for (const c of list) {
+      if (!c || typeof c !== "object") continue;
+      const key = normText(c.title) + "|" + normText(c.body);
+      const ex = seen.get(key);
+      if (!ex) { seen.set(key, c); out.push(c); }
+      else if ((c.updatedAt || "") > (ex.updatedAt || "")) { const i = out.indexOf(ex); if (i >= 0) out[i] = c; seen.set(key, c); }
+    }
+    return out;
+  }
   function updateCloudUI() {
     const st = Cloud.status();
     const cs = $("#cloud-status"), sc = $("#sidebar-cloud");
@@ -27,20 +43,35 @@
     try {
       const remote = await Cloud.pull();
       if (!remote) { cloudMsg2("クラウドから取得できませんでした（ログイン状態を確認）"); return; }
+      // リモート内の重複を id でまとめる（同じ id は updatedAt が新しい方を優先）
+      const rmap = new Map();
+      remote.forEach((c) => {
+        if (!c || typeof c !== "object") return;
+        if (!c.id) c.id = uid();
+        const ex = rmap.get(c.id);
+        if (!ex || (c.updatedAt || "") > (ex.updatedAt || "")) rmap.set(c.id, c);
+      });
       const local = Store.getAll();
       const map = new Map();
-      local.forEach((c) => map.set(c.id, c));
+      local.forEach((c) => {
+        if (!c || typeof c !== "object") return;
+        if (!c.id) c.id = uid();
+        map.set(c.id, c);
+      });
       let added = 0, overwritten = 0, kept = 0;
-      remote.forEach((c) => {
-        const ex = map.get(c.id);
-        if (!ex) { map.set(c.id, c); added++; }
-        // 重複（同じ id）は updatedAt が新しい方を優先して上書き（クラウド優先・新しいほう勝ち）
-        else if ((c.updatedAt || "") > (ex.updatedAt || "")) { map.set(c.id, c); overwritten++; }
+      rmap.forEach((c, id) => {
+        const ex = map.get(id);
+        if (!ex) { map.set(id, c); added++; }
+        // 同じ id は updatedAt が新しい方を優先（クラウド優先・新しいほう勝ち）
+        else if ((c.updatedAt || "") > (ex.updatedAt || "")) { map.set(id, c); overwritten++; }
         else { kept++; }
       });
-      localStorage.setItem(LS_CARDS, JSON.stringify(Array.from(map.values())));
+      // 内容が完全に一致するカード（別端末で作られた同内容カード等）を 1 つにまとめる
+      const merged = dedupeByContent(Array.from(map.values()));
+      localStorage.setItem(LS_CARDS, JSON.stringify(merged));
+      cards = merged;
       refresh();
-      cloudMsg2(`クラウドから読み込みました（新規 ${added} 件・クラウド上書き ${overwritten} 件・保持 ${kept} 件`, "ok");
+      cloudMsg2(`クラウドから読み込みました（新規 ${added} 件・クラウド上書き ${overwritten} 件・保持 ${kept} 件・重複排除 ${map.size - merged.length} 件）`, "ok");
     } catch (e) { cloudMsg2("同期エラー: " + e.message); }
   }
   async function diagnoseCloud() {

@@ -253,7 +253,10 @@
       localStorage.setItem(LS_CARDS, JSON.stringify(all));
       Cloud.scheduleSync();
     },
-    clear() { localStorage.removeItem(LS_CARDS); Cloud.scheduleSync(); },
+    // ローカルのみ消去。クラウドへ「空」を同期してしまうと、
+    // 「全部削除 → クラウドから読み込み」で何も復元できなくなるため push しない。
+    // （クラウド側の削除が必要な場合は別途専用操作を用意する）
+    clear() { localStorage.removeItem(LS_CARDS); },
   };
 
   /* ---------- 設定 ---------- */

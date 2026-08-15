@@ -65,11 +65,40 @@
 .folder-recent{ font-size:14.5px; line-height:1.45; color:var(--text); margin:8px 0 4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .folder-recent-cap{ font-size:11px; color:var(--text-dim); }
 
-/* ---------- フォルダ詳細：フォーマット設定 ---------- */
+/* ---------- フォルダ詳細：フォーマット設定（フィールドビルダ） ---------- */
 .folder-fmt-box{ border:1px solid var(--border); border-radius:12px; background:var(--panel); padding:14px; margin-bottom:16px; }
-.ff-label{ display:block; font-size:13px; line-height:1.6; }
-.ff-label textarea{ margin-top:8px; min-height:110px; font-family:inherit; line-height:1.5; }
-.ff-actions{ display:flex; gap:8px; margin-top:10px; }
+.ff-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+.ff-head strong{ font-size:14px; color:var(--text); }
+.ff-link{ font-size:12px; padding:5px 10px; }
+.ff-label{ display:block; font-size:12.5px; color:var(--text-dim); line-height:1.6; }
+.ff-label .hint{ display:block; margin-top:2px; font-size:11.5px; }
+.ff-label textarea{ margin-top:8px; min-height:90px; font-family:inherit; line-height:1.5; }
+.ff-fields-head{ display:flex; align-items:baseline; gap:8px; margin:6px 0 8px; font-size:13px; font-weight:600; color:var(--text); flex-wrap:wrap; }
+.ff-fields-head .hint{ font-weight:400; }
+.ff-fields{ display:flex; flex-direction:column; gap:8px; margin-bottom:10px; }
+.ff-row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.ff-row .ff-name{ flex:1 1 38%; min-width:96px; }
+.ff-row .ff-def{ flex:1 1 38%; min-width:96px; }
+.ff-type{ display:inline-flex; align-items:center; gap:5px; background:var(--panel-2); border:1px solid var(--border); color:var(--text); border-radius:9px; padding:7px 10px; cursor:pointer; white-space:nowrap; font-size:12px; }
+.ff-type:hover{ border-color:var(--accent); }
+.ff-del{ background:transparent; border:none; color:var(--text-dim); cursor:pointer; font-size:16px; line-height:1; padding:4px 6px; border-radius:8px; }
+.ff-del:hover{ color:var(--danger); background:rgba(255,107,107,.12); }
+.ff-add-row{ display:flex; align-items:center; gap:8px; margin-top:4px; }
+.ff-add-row .spacer{ flex:1; }
+
+/* カードエディタ内のカスタム入力項目 */
+.cf-wrap{ border:1px dashed var(--border); border-radius:12px; padding:12px; margin-bottom:14px; background:var(--bg-soft); }
+.cf-cap{ font-size:12px; color:var(--text-dim); margin-bottom:8px; }
+.cf-row{ display:flex; flex-direction:column; gap:4px; margin-bottom:10px; }
+.cf-row:last-child{ margin-bottom:0; }
+.cf-name{ font-size:12.5px; color:var(--text); font-weight:600; }
+.cf-input textarea, .cf-input input{ margin-top:0; }
+.cf-toggle{ display:inline-flex; align-items:center; justify-content:center; gap:8px; background:var(--panel); border:1px solid var(--border); color:var(--text-dim); padding:7px 18px; border-radius:9px; cursor:pointer; font-weight:700; width:max-content; min-width:84px; }
+.cf-toggle.on{ background:var(--accent); color:#08130c; border-color:var(--accent); }
+
+/* カード一覧のフィールド要約 */
+.kc-fields{ font-size:11.5px; color:var(--text-dim); margin-top:6px; display:flex; flex-wrap:wrap; gap:4px 8px; }
+.kc-fields .kcf{ background:var(--panel-2); border-radius:6px; padding:2px 7px; }
 
 /* ---------- モバイルメニュー ---------- */
 .menu-btn{ display:none; position:fixed; left:12px; top:12px; z-index:60; width:44px; height:44px; border-radius:10px; border:1px solid var(--border); background:var(--panel); color:var(--text); cursor:pointer; align-items:center; justify-content:center; flex-direction:column; gap:5px; padding:0; box-shadow:var(--shadow); }
@@ -79,9 +108,13 @@
 #app.sidebar-open .menu-btn .bar:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
 #menu-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:48; }
 @media (max-width: 820px){
-  #sidebar{ position:fixed; left:0; top:0; bottom:0; width:240px; padding:70px 14px 18px; transform:translateX(-100%); transition:transform .25s ease; z-index:55; box-shadow:var(--shadow); }
+  #sidebar{ position:fixed; left:0; top:0; bottom:0; width:240px; padding:70px 14px 18px; transform:translateX(-100%); transition:transform .25s ease; z-index:55; box-shadow:var(--shadow); overflow:hidden; }
   #app.sidebar-open #sidebar{ transform:translateX(0); }
   #app.sidebar-open #menu-overlay{ display:block; }
+  /* メニュー一覧が多いときに上下スライドできるよう、ナビ内をスクロール可能に（ヘッダー・フッターは固定） */
+  #nav{ flex:1 1 auto; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; padding-right:2px; }
+  #nav::-webkit-scrollbar{ width:6px; }
+  #nav::-webkit-scrollbar-thumb{ background:var(--border); border-radius:6px; }
   .menu-btn{ display:flex; }
   .view{ padding:64px 16px 60px; }
   .topbar-left{ min-width:0; }

@@ -51,28 +51,89 @@
     list.innerHTML = "";
     arr.forEach((c) => list.appendChild(cardEl(c)));
   }
+  let editorFolderCat = null;
   function openFolderEditor(cat) {
+    editorFolderCat = cat || null;
     openEditor(null);
     if (cat && cat !== "未分類") {
       $("#f-categories").value = cat;
       const def = (Settings.get().folders || []).find((f) => f.name === cat);
-      if (def) {
-        if (def.tags && def.tags.length) $("#f-tags").value = def.tags.join(", ");
-        if (def.template) $("#f-body").value = def.template;
-      } else {
-        const tpl = (Settings.get().folderTemplates || {})[cat] || "";
-        if (tpl) $("#f-body").value = tpl;
-      }
+      if (def && def.tags && def.tags.length) $("#f-tags").value = def.tags.join(", ");
+      const fmt = getFolderFormat(cat);
+      if (fmt.body) $("#f-body").value = fmt.body;
     }
+  }
+
+  /* ---------- フォーマット入力（フィールドビルダ） ---------- */
+  // 各枠のサイズは「一行（タイトルサイズ）」か「テンプレート枠（大きい）」の2種類のみ
+  function fieldTypeMeta(t) {
+    if (t === "box") return { type: "box", label: "テンプレート枠（大きい）" };
+    return { type: "line", label: "一行（タイトルサイズ）" };
+  }
+  function getFolderFormat(cat) {
+    const s = Settings.get();
+    const tpl = (s.folderTemplates || {})[cat];
+    const def = (s.folders || []).find((f) => f.name === cat);
+    let body = "", fields = [];
+    if (typeof tpl === "string") { body = tpl; }
+    else if (tpl && typeof tpl === "object") { body = tpl.body || ""; fields = tpl.fields || []; }
+    if (!body && def && def.template) body = def.template;
+    if (!fields.length && def && def.fields) fields = def.fields;
+    fields = fields.map((f) => {
+      const type = f.type === "box" ? "box" : "line";
+      return { name: f.name || "", type, def: (f.def != null ? f.def : "") };
+    });
+    return { body, fields };
+  }
+  function openFolderFormat() {
+    const cat = currentFolderCat; if (!cat) return;
+    const fmt = getFolderFormat(cat);
+    $("#folder-fmt-body").value = fmt.body || "";
+    const box = $("#folder-fields"); box.innerHTML = "";
+    (fmt.fields || []).forEach((f) => box.appendChild(makeFieldRow(f)));
+    $("#folder-fmt-box").hidden = false;
+  }
+  function makeFieldRow(f) {
+    const meta = fieldTypeMeta(f.type);
+    const row = document.createElement("div");
+    row.className = "ff-row";
+    row.dataset.type = meta.type;
+    row.innerHTML =
+      '<input class="ff-name" type="text" placeholder="名前（例：タイトル・日付・本文）" value="' + escapeHtml(f.name || "") + '" />' +
+      '<input class="ff-def" type="text" placeholder="あらかじめ入る内容（例：日記・11/3）" value="' + escapeHtml(f.def || "") + '" />' +
+      '<button type="button" class="ff-type" title="クリックでサイズを切替（一行 ↔ テンプレート枠）">' +
+        '<span class="ff-type-label">' + meta.label + '</span></button>' +
+      '<button type="button" class="ff-del" title="削除" aria-label="削除"><span class="ki ki-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg></span></button>';
+    row.querySelector(".ff-type").onclick = () => {
+      const next = row.dataset.type === "line" ? "box" : "line";
+      row.dataset.type = next;
+      row.querySelector(".ff-type-label").textContent = fieldTypeMeta(next).label;
+    };
+    row.querySelector(".ff-del").onclick = () => row.remove();
+    return row;
   }
   function saveFolderTemplate() {
     const cat = currentFolderCat; if (!cat) return;
+    const fields = [];
+    $$("#folder-fields .ff-row").forEach((row) => {
+      const name = row.querySelector(".ff-name").value.trim();
+      if (!name) return;
+      fields.push({ name, type: row.dataset.type || "line", def: row.querySelector(".ff-def").value });
+    });
     const s = Settings.get(); s.folderTemplates = s.folderTemplates || {};
-    s.folderTemplates[cat] = $("#folder-fmt-input").value;
+    s.folderTemplates[cat] = { body: $("#folder-fmt-body").value, fields };
     Settings.save(s);
     const btn = $("#folder-fmt-save");
     const old = btn.textContent; btn.innerHTML = ki("check") + " 保存済み";
     setTimeout(() => (btn.textContent = old), 1200);
+  }
+  function clearFolderFormat() {
+    const cat = currentFolderCat; if (!cat) return;
+    const s = Settings.get(); s.folderTemplates = s.folderTemplates || {};
+    delete s.folderTemplates[cat];
+    Settings.save(s);
+    $("#folder-fmt-body").value = "";
+    $("#folder-fields").innerHTML = "";
   }
 
   /* ---------- フォルダ定義（新規フォルダ・自動タグ） ---------- */
@@ -83,7 +144,6 @@
     const def = cat ? (Settings.get().folders || []).find((f) => f.name === cat) : null;
     $("#fldr-name").value = def ? def.name : (cat || "");
     $("#fldr-tags").value = def && def.tags ? def.tags.join(", ") : "";
-    $("#fldr-template").value = def ? (def.template || "") : "";
     $("#folder-create-delete").hidden = !def;
     $("#folder-create-backdrop").hidden = false;
     $("#fldr-name").focus();
@@ -96,9 +156,8 @@
       s.folders = s.folders.filter((f) => f.name !== folderModalCat);
     }
     const tags = parseTags($("#fldr-tags").value);
-    const template = $("#fldr-template").value;
     const idx = s.folders.findIndex((f) => f.name === name);
-    const entry = { name, tags, template };
+    const entry = { name, tags };
     if (idx >= 0) s.folders[idx] = entry; else s.folders.push(entry);
     Settings.save(s);
     $("#folder-create-backdrop").hidden = true;

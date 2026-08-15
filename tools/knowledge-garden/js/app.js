@@ -58,15 +58,11 @@
     };
     $("#folder-back").onclick = () => setView("home");
     $("#folder-add").onclick = () => openFolderEditor(currentFolderCat);
-    $("#folder-fmt").onclick = () => openFolderModal(currentFolderCat);
+    $("#folder-fmt").onclick = () => openFolderFormat();
+    $("#folder-fmt-open-modal").onclick = () => openFolderModal(currentFolderCat);
+    $("#btn-add-field").onclick = () => $("#folder-fields").appendChild(makeFieldRow({ name: "", type: "line" }));
     $("#folder-fmt-save").onclick = saveFolderTemplate;
-    $("#folder-fmt-clear").onclick = () => {
-      const cat = currentFolderCat; if (!cat) return;
-      const s = Settings.get(); s.folderTemplates = s.folderTemplates || {};
-      delete s.folderTemplates[cat];
-      Settings.save(s);
-      $("#folder-fmt-input").value = "";
-    };
+    $("#folder-fmt-clear").onclick = clearFolderFormat;
     $("#btn-add-calendar").onclick = () => { const d = $("#f-duedate"); d.hidden = false; d.value = d.value || new Date().toISOString().slice(0, 10); $("#btn-add-calendar").hidden = true; $("#btn-clear-due").hidden = false; $("#due-hint").textContent = "予定日: " + d.value; };
     $("#btn-clear-due").onclick = () => { const d = $("#f-duedate"); d.value = ""; d.hidden = true; $("#btn-add-calendar").hidden = false; $("#btn-clear-due").hidden = true; $("#due-hint").textContent = ""; };
     $("#f-duedate").onchange = () => { const v = $("#f-duedate").value; $("#due-hint").textContent = v ? ("予定日: " + v) : ""; };

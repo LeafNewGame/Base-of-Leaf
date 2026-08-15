@@ -55,6 +55,7 @@
       </div>
       <h3>${escapeHtml(c.title)}</h3>
       <div class="body">${escapeHtml(c.body || "")}</div>
+      ${fieldsSummaryHtml(c)}
       <div class="meta">
         <span class="stars" title="重要度${c.importance}/理解度${c.understanding}">${stars(c.importance)}</span>
         <span class="stars">${stars(c.understanding)}</span>
@@ -105,10 +106,73 @@
     populateLinkFolderSelect();
     renderLinkPicker(c);
     renderSuggest(c);
+    renderCustomFields(c);
     $("#editor-delete").hidden = !id;
     $("#editor-history").hidden = !id;
     if (id) { c.viewCount = (c.viewCount || 0) + 1; c.lastViewed = nowISO(); Store.put(c); }
     $("#editor-backdrop").hidden = false;
+  }
+
+  /* ---------- カスタム入力項目（フォルダのフォーマット） ---------- */
+  function renderCustomFields(c) {
+    const box = $("#f-custom-fields");
+    let fields = [];
+    if (c && c.fields && c.fields.length) {
+      fields = c.fields.map((f) => ({ name: f.name, type: f.type, value: (f.value != null ? f.value : "") }));
+    } else if (!c && editorFolderCat) {
+      const fmt = getFolderFormat(editorFolderCat);
+      fields = (fmt.fields || []).map((f) => ({ name: f.name, type: f.type, value: (f.def != null ? f.def : "") }));
+    }
+    box.innerHTML = "";
+    if (!fields.length) { box.hidden = true; return; }
+    box.hidden = false;
+    const cap = document.createElement("div");
+    cap.className = "cf-cap";
+    cap.textContent = "このフォルダの入力項目";
+    box.appendChild(cap);
+    fields.forEach((f) => {
+      const meta = fieldTypeMeta(f.type);
+      const row = document.createElement("div");
+      row.className = "cf-row";
+      row.dataset.type = meta.type;
+      const nm = document.createElement("div");
+      nm.className = "cf-name";
+      nm.textContent = f.name || "（項目名未設定）";
+      const inp = document.createElement("div");
+      inp.className = "cf-input";
+      if (meta.type === "box") {
+        const ta = document.createElement("textarea");
+        ta.rows = 4; ta.className = "cf-textarea"; ta.value = f.value || "";
+        inp.appendChild(ta);
+      } else {
+        const i = document.createElement("input");
+        i.type = "text"; i.className = "cf-text"; i.value = f.value || "";
+        inp.appendChild(i);
+      }
+      row.appendChild(nm); row.appendChild(inp);
+      box.appendChild(row);
+    });
+  }
+  function collectCustomFields() {
+    const box = $("#f-custom-fields");
+    if (box.hidden) return [];
+    const out = [];
+    $$("#f-custom-fields .cf-row").forEach((row) => {
+      const name = row.querySelector(".cf-name").textContent;
+      const type = row.dataset.type;
+      const el = row.querySelector("textarea, input");
+      const value = el ? el.value : "";
+      out.push({ name, type, value });
+    });
+    return out;
+  }
+  function fieldsSummaryHtml(c) {
+    if (!c.fields || !c.fields.length) return "";
+    const parts = c.fields
+      .filter((f) => (f.value || "").toString().trim() !== "")
+      .map((f) => '<span class="kcf">' + escapeHtml(f.name) + ": " + escapeHtml(String(f.value)) + "</span>");
+    if (!parts.length) return "";
+    return '<div class="kc-fields">' + parts.join("") + "</div>";
   }
 
   function populateLinkFolderSelect() {
@@ -199,6 +263,7 @@
     c.traits = $("#f-traits").value.trim();
     c.dueDate = $("#f-duedate").value || null;
     c.relatedCardIds = $$("#f-links input:checked").map((cb) => cb.dataset.id);
+    c.fields = collectCustomFields();
     c.updatedAt = nowISO();
     c.relatedCardIds.forEach((rid) => {
       const other = cards.find((x) => x.id === rid);

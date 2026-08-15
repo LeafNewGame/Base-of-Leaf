@@ -139,10 +139,24 @@
         </div>
       </header>
       <div id="folder-fmt-box" class="folder-fmt-box" hidden>
-        <label class="ff-label">新規カードの固定フォーマット（本文テンプレート）<br><span class="hint">このフォルダで「＋ このフォルダに追加」を押したとき、本文に自動で入力される雛形です。</span>
-          <textarea id="folder-fmt-input" rows="5" placeholder="例：&#10;・目的：&#10;・期限：&#10;・メモ："></textarea>
+        <div class="ff-head">
+          <strong>入力フォーマット設定</strong>
+          <button id="folder-fmt-open-modal" type="button" class="ghost-btn ff-link">フォルダ設定（名前・自動タグ）</button>
+        </div>
+        <label class="ff-label">自由本文テンプレート（任意）<br><span class="hint">「このフォルダに追加」を押したとき、本文に自動入力される雛形です。</span>
+          <textarea id="folder-fmt-body" rows="4" placeholder="例：&#10;・目的：&#10;・期限：&#10;・メモ："></textarea>
         </label>
-        <div class="ff-actions"><button id="folder-fmt-save" class="primary-btn">保存</button><button id="folder-fmt-clear" class="ghost-btn">クリア</button></div>
+        <div class="ff-fields-head">
+          <span>入力項目（枠）</span>
+          <span class="hint">各枠に「名前（テーマ）」と「あらかじめ入る内容」を設定します。サイズはボタンで「一行」↔「テンプレート枠」に切り替えられます（例：タイトル（日記）・日付（11/3）・本文（本文））。</span>
+        </div>
+        <div id="folder-fields" class="ff-fields"></div>
+        <div class="ff-add-row">
+          <button id="btn-add-field" type="button" class="ghost-btn">＋ 入力欄を追加</button>
+          <span class="spacer"></span>
+          <button id="folder-fmt-clear" type="button" class="ghost-btn">クリア</button>
+          <button id="folder-fmt-save" type="button" class="primary-btn">保存</button>
+        </div>
       </div>
       <div id="folder-cards" class="card-list"></div>
     </section>
@@ -474,6 +488,7 @@ create policy "own row" on kb_cards
       <label>本文
         <textarea id="f-body" rows="6" placeholder="例：任意の波形を複数の正弦波へ分解する数学的手法。"></textarea>
       </label>
+      <div id="f-custom-fields" class="cf-wrap" hidden></div>
       <div class="row">
         <label>カテゴリ（カンマ区切り・複数可）
           <input id="f-categories" type="text" placeholder="数学, 大学" />
@@ -527,9 +542,6 @@ create policy "own row" on kb_cards
       </label>
       <label>自動タグ（このフォルダでカードを作ると自動入力される・カンマ区切り）
         <input id="fldr-tags" type="text" placeholder="#Arduino, #週末" />
-      </label>
-      <label>本文テンプレート（任意・「このフォルダに追加」時に本文に自動入力）
-        <textarea id="fldr-template" rows="4" placeholder="例：&#10;・目的：&#10;・期限：&#10;・メモ："></textarea>
       </label>
     </div>
     <footer class="modal-foot">
