@@ -7,6 +7,40 @@
     <title>Patchnote</title>
     <link rel="stylesheet" href="../style.css">
 
+    <style>
+        .patch{
+            max-width:760px;
+            margin:10px 0 30px;
+        }
+        .patch h1{
+            font-size:26px;
+            margin:6px 0 4px;
+        }
+        .home-link{
+            display:inline-block;
+            color:#228b22;
+            font-size:13px;
+            text-decoration:underline;
+            margin-bottom:18px;
+        }
+        .patch h3{
+            margin:26px 0 8px;
+            padding-bottom:6px;
+            border-bottom:2px solid #228b22;
+            color:#1b5e20;
+            font-size:17px;
+        }
+        .patch ul{
+            margin:0;
+            padding-left:20px;
+        }
+        .patch li{
+            margin:6px 0;
+            font-size:14px;
+            line-height:1.6;
+        }
+    </style>
+
 </head>
 
 <body>
@@ -27,7 +61,7 @@
     <nav id="menu">
         <ul>
             <li><a href="../index.html">ホーム</a></li>
-            <li><a href="../tools/planning_tool.html">計画整理ツール</a>
+            <li><a href="../tools/planning_tool.html">計画整理ツール</a></li>
             <li><a href="../tools/memo_tool.html">メモツール</a></li>
             <li><a href="../tools/habit_tool.html">習慣化ツール</a></li>
             <li><a href="../tools/patchnote.html">パッチノート</a></li>
@@ -36,12 +70,110 @@
     </nav>
  </header>
 
- <h3>2026/8/6：数値登録フォーム実装中</h3>
+ <div class="patch">
 
-    <li><a href="../index.html">ホームに戻る</a></li>
     <h1>パッチノート</h1>
+    <a class="home-link" href="../index.html">← ホームに戻る</a>
+
+    <h3>2026/8/17 — 習慣化ツール 大型アップデート</h3>
+    <ul>
+        <li>習慣カードに「詳細」ボタンを追加（目標・記録方法・単位・累計・最近の記録などをモーダルで確認）</li>
+        <li>「連続継続日数」を正しく計算（日を空けたらリセットされるように修正）</li>
+        <li>「合計継続日数」を新たに表示（記録のあった日数の総計・リセットなし）</li>
+        <li>「記録する」押下時にカード上部へ入力フォームを表示し、回数・時間を入力して記録可能に</li>
+        <li>カードUIを調整（ページヘッダー・達成/未達成バッジ・統計グリッド等）</li>
+        <li>既存の localStorage データを引き継ぎ、旧形式もそのまま読み込めるように対応</li>
+    </ul>
+
+    <h3>2026/8/15 — フォーマット設定</h3>
+    <ul>
+        <li>フォルダ内の入力フォーマットを設定できる機能を追加</li>
+    </ul>
+
+    <h3>2026/8/14 — 一部修正</h3>
+    <ul>
+        <li>細かな不具合の修正</li>
+    </ul>
+
+    <h3>2026/8/13 — 表示・デザイン調整</h3>
+    <ul>
+        <li>スマホ版の画面調整</li>
+        <li>テーマ（背景装飾）のオン・オフ切り替えを追加</li>
+        <li>デザイン修正</li>
+        <li>テーマを追加（カスタマイズの幅を拡大）</li>
+    </ul>
+
+    <h3>2026/8/11 — ワークテーブル・構成変更</h3>
+    <ul>
+        <li>ワークテーブルを追加</li>
+        <li>ファイルを分割して構成を整理</li>
+    </ul>
+
+    <h3>2026/8/10 — フォルダ機能</h3>
+    <ul>
+        <li>フォルダ機能を実装</li>
+        <li>フォーマット修正</li>
+    </ul>
+
+    <h3>2026/8/9〜8/10 — 同期・アカウント・ログイン</h3>
+    <ul>
+        <li>カレンダー表示形式を変更</li>
+        <li>データ同期システムを完成</li>
+        <li>アカウント連携機能を追加</li>
+        <li>Googleログインを公式 Supabase SDK（PKCE）へ修正し、リダイレクト不具合を解消</li>
+        <li>クラウド・Groq キーを外部（設定のみ）に分離</li>
+    </ul>
+
+    <h3>2026/8/7 — 知識の箱庭 β版導入</h3>
+    <ul>
+        <li>知識の箱庭（ナレッジ管理）β版を導入</li>
+    </ul>
+
+    <h3>2026/8/6 — 基盤</h3>
+    <ul>
+        <li>パッチノートページを作成</li>
+        <li>回数登録フォームを実装中</li>
+    </ul>
+
+    <h3>2026/8/5 — 習慣化ツール</h3>
+    <ul>
+        <li>時間経過の認識を追加</li>
+    </ul>
+
+    <h3>2026/8/4 — 習慣化ツール機能修正</h3>
+    <ul>
+        <li>習慣化ツールの機能を修正</li>
+    </ul>
+
+    <h3>2026/8/2 — 習慣化アプリ</h3>
+    <ul>
+        <li>習慣化アプリの機能を一部追加（基礎部分）</li>
+    </ul>
+
+    <h3>2026/8/1 — 習慣化ツール基本表示</h3>
+    <ul>
+        <li>習慣化ツールの基本表示を追加</li>
+    </ul>
+
+    <h3>2026/7/26 — 変更内容</h3>
+    <ul>
+        <li>各種変更を反映</li>
+    </ul>
+
+    <h3>2026/7/16 — アニメーション実験</h3>
+    <ul>
+        <li>アニメーションの実験を実施</li>
+    </ul>
+
+    <h3>2026/6/30 — ずれ修正</h3>
+    <ul>
+        <li>レイアウトのズレを修正</li>
+    </ul>
+
+ </div>
+
     <footer>
-      <p>実装日 2026/6/12</p>
+      <p>最終更新日 2026/8/17</p>
     </footer>
  <script src="../script.js"></script>
 </body>
