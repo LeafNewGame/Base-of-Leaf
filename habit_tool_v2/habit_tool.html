@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HabitTool（詳細版・統合用）</title>
+    <link rel="stylesheet" href="../style.css">
+
+    <style>
+        /* ===== このフォルダ専用のデザイン（元の style.css の .habit-card / .modal-content 等を踏襲・拡張） ===== */
+
+        /* ページヘッダー（少しデザイン） */
+        .page-head{
+            background: linear-gradient(135deg, #2e7d32, #228b22);
+            color:#fff;
+            border-radius:16px;
+            padding:22px 24px;
+            margin: 6px 0 22px;
+            box-shadow:0 6px 18px rgba(34,139,34,.25);
+        }
+        .page-head h1{ margin:0 0 6px; font-size:26px; }
+        .page-head h2{ margin:0; font-size:14px; font-weight:400; opacity:.92; }
+        .page-head .home-link{ color:#eafff0; font-size:13px; text-decoration:underline; }
+
+        /* 新規追加ボタン */
+        #addHabit{
+            background:#228b22;
+            color:#fff;
+            border:none;
+            padding:12px 22px;
+            border-radius:10px;
+            font-size:15px;
+            cursor:pointer;
+            box-shadow:0 4px 10px rgba(34,139,34,.3);
+            margin-bottom:18px;
+        }
+        #addHabit:hover{ filter:brightness(1.07); }
+
+        /* カードのデザイン */
+        .habit-card{
+            display:flex;
+            flex-direction:column;
+            border-top:4px solid #228b22;
+        }
+        .hk-head{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:10px;
+            border-bottom:1px solid #eef3ee;
+            padding-bottom:10px;
+            margin-bottom:12px;
+        }
+        .hk-head h2{ margin:0; font-size:18px; color:#1b5e20; }
+        .hk-badge{
+            font-size:12px;
+            padding:3px 10px;
+            border-radius:999px;
+            white-space:nowrap;
+        }
+        .hk-badge.done{ background:#e6f4ea; color:#228b22; }
+        .hk-badge.todo{ background:#fdecea; color:#c0392b; }
+
+        /* 3つの統計（連続 / 合計 / 累計） */
+        .hk-stats{
+            display:grid;
+            grid-template-columns:repeat(3,1fr);
+            gap:8px;
+            margin-bottom:14px;
+        }
+        .hk-stat{
+            background:#f3fbf3;
+            border:1px solid #e2f0e2;
+            border-radius:10px;
+            padding:8px 6px;
+            text-align:center;
+        }
+        .hk-num{ font-size:18px; font-weight:700; color:#228b22; }
+        .hk-cap{ font-size:11px; color:#5a7a5e; margin-top:2px; }
+
+        /* アクションボタン行 */
+        .hk-actions{ display:flex; gap:8px; margin-top:auto; }
+        .hk-actions button{ flex:1; }
+
+        /* カード内インラインフォーム（達成で上に表示） */
+        .record-form{
+            margin:0 0 14px;
+            padding:12px;
+            border:1px dashed #228b22;
+            border-radius:10px;
+            background:#f3fbf3;
+        }
+        .record-form[hidden]{ display:none; }
+        .record-form label{ display:block; font-size:13px; color:#228b22; margin-bottom:6px; }
+        .record-form input{
+            width:100%; padding:9px 10px; border:1px solid #ccc;
+            border-radius:8px; font-size:15px; box-sizing:border-box;
+        }
+        .rf-actions{ display:flex; gap:8px; margin-top:10px; }
+        .mini-btn{ flex:1; padding:9px; border:none; border-radius:8px; cursor:pointer; font-size:14px; }
+        .rf-ok{ background:#228b22; color:#fff; }
+        .rf-cancel{ background:#eee; color:#333; }
+
+        /* ボタン類 */
+        .habit-card button{
+            margin:8px 6px 0 0;
+            padding:9px 12px;
+            border:none;
+            border-radius:8px;
+            cursor:pointer;
+            font-size:14px;
+        }
+        .btn-record{ background:#228b22; color:#fff; }
+        .btn-detail{ background:#fff; color:#228b22; border:1px solid #228b22; }
+        .btn-delete{ background:#fdecea; color:#c0392b; }
+
+        /* 詳細モーダル */
+        #detailModal{
+            display:none; position:fixed; top:0; left:0;
+            width:100%; height:100%;
+            background:rgba(0,0,0,0.5);
+            justify-content:center; align-items:center;
+            z-index:2000;
+        }
+        .detail-row{
+            display:flex; justify-content:space-between; gap:12px;
+            padding:7px 0; border-bottom:1px solid #eee; font-size:14px;
+        }
+        .detail-row .k{ color:#228b22; }
+        .detail-sub{ margin:12px 0 4px; font-weight:700; color:#228b22; font-size:13px; }
+        .detail-list{ max-height:160px; overflow:auto; margin:0; padding-left:18px; font-size:13px; }
+
+        /* モーダル内ラベル整え */
+        .modal-content label{ display:block; margin-top:10px; font-size:13px; color:#333; }
+        .modal-content input, .modal-content select{
+            width:100%; padding:9px 10px; margin-top:4px;
+            border:1px solid #ccc; border-radius:8px; font-size:14px; box-sizing:border-box;
+        }
+    </style>
+
+</head>
+
+<body>
+
+ <header>
+    <a href="../index.html">
+      <img src="../images/hub-icon.png"
+      alt="PLANTERのロゴ" class="icon">
+    </a>
+
+    <button id="menu-btn" class="menu-btn">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <nav id="menu">
+        <ul>
+            <li><a href="../index.html">ホーム</a></li>
+            <li><a href="../tools/planning_tool.html">計画整理ツール</a></li>
+            <li><a href="../tools/memo_tool.html">メモツール</a></li>
+            <li><a href="../tools/habit_tool.html">習慣化ツール</a></li>
+            <li><a href="../tools/patchnote.html">パッチノート</a></li>
+            <li><a href="../tools/blog.html">開発者より</a></li>
+        </ul>
+    </nav>
+ </header>
+
+<div class="page-head">
+    <a class="home-link" href="../index.html">← ホームに戻る</a>
+    <h1>習慣化アプリ（詳細版）</h1>
+    <h2>連続継続日数・合計継続日数を表示し、達成時に上にフォームが出て回数を入力できます。</h2>
+</div>
+
+<button id="addHabit">
+   新しい習慣を追加
+</button>
+
+<div id="habitModal">
+
+    <div class="modal-content">
+
+        <h2>新しい習慣を追加</h2>
+
+        <label>習慣名</label>
+        <input id="habitName">
+
+        <label>目標</label>
+        <input id="habitGoal">
+
+        <label>記録方法</label>
+        <select id="habitType">
+            <option value="check">達成・未達成</option>
+            <option value="count">回数</option>
+            <option value="time">時間</option>
+        </select>
+
+        <div id="unitArea">
+          <label>単位</label>
+          <input id="habitUnit" placeholder="例：回、分、ページ、km">
+        </div>
+
+        <br></br>
+
+        <button id="saveHabit">保存</button>
+        <button id="closeModal">閉じる</button>
+
+    </div>
+
+</div>
+
+<!-- 詳細モーダル -->
+<div id="detailModal">
+    <div class="modal-content">
+        <div id="detailBody"></div>
+        <button id="closeDetail">閉じる</button>
+    </div>
+</div>
+
+<div id="habitList"></div>
+
+    <footer>
+      <p>最終更新日 2026/8/17</p>
+    </footer>
+ <script src="habit_tool.js"></script>
+ <script src="../script.js"></script>
+</body>
+
+

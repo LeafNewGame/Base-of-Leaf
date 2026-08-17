@@ -1,11 +1,6 @@
-// ===== HabitTool（習慣化ツール・統合版） =====
+// ===== HabitTool v2（詳細フォルダ版） =====
 // 元の habit_tool.js の書き方（getElementById / addEventListener / createElement /
-// localStorage）を踏襲。
-// 追加：詳細ボタン、連続継続日数、合計継続日数、達成時のインライン入力フォーム。
-//
-// 統合时注意：保存キーは元と同じ "habits" を使用。
-// 古い形式（records なし・totalDays なし）のデータも正規化して読み込むので、
-// 既存の localStorage データは失われません。
+// localStorage）を踏襲。追加：詳細ボタン、連続継続日数、合計継続日数、達成時のインライン入力フォーム。
 
 const habitName = document.getElementById("habitName");
 const habitGoal = document.getElementById("habitGoal");
@@ -22,43 +17,11 @@ const detailModal = document.getElementById("detailModal");
 const detailBody  = document.getElementById("detailBody");
 const closeDetail = document.getElementById("closeDetail");
 
-// 保存キーは元ファイルと同じ "habits"
+// 統合時に元データと混ざらないよう別キーで保存
 let habits =
 JSON.parse(
-    localStorage.getItem("habits")
+    localStorage.getItem("habits_v2")
 ) || [];
-
-if(!Array.isArray(habits)){
-    habits = [];
-}
-
-// 旧形式データを新形式に正規化（records がない等）
-function normalizeHabit(h){
-    if(!h || typeof h !== "object") return;
-    if(!Array.isArray(h.records)) h.records = [];
-    h.name = (typeof h.name === "string") ? h.name : "";
-    h.goal  = (h.goal != null) ? h.goal : "";
-    h.type  = h.type || "check";
-    h.unit  = (typeof h.unit === "string") ? h.unit : "";
-    h.streak = (typeof h.streak === "number") ? h.streak : 0;
-    // 旧データは totalDays がないため、streak をそのまま引き継ぐ
-    h.totalDays = (typeof h.totalDays === "number") ? h.totalDays : h.streak;
-    h.counter = (typeof h.counter === "number") ? h.counter : 0;
-    h.todaycounter = (typeof h.todaycounter === "number") ? h.todaycounter : 0;
-    h.completed = !!h.completed;
-    h.lastCompletedDate = h.lastCompletedDate || "";
-}
-habits.forEach(normalizeHabit);
-
-// 旧 v2 テストデータ（habits_v2）の引き継ぎ：
-// 本番の habits が空の場合のみ、重複を避けるために一度だけ使う。
-if(habits.length === 0){
-    const v2 = JSON.parse(localStorage.getItem("habits_v2")) || [];
-    if(Array.isArray(v2) && v2.length){
-        v2.forEach(normalizeHabit);
-        habits = v2;
-    }
-}
 
 
 /* ---------- 日付ヘルパ ---------- */
@@ -428,7 +391,6 @@ function checkDate(){
             habit.completed = false;
             habit.todaycounter = 0;
         }
-        // records がある場合のみ再計算（旧データの streak を消さないため）
         if(habit.records && habit.records.length){
             habit.streak = computeStreak(habit.records) || 0;
             habit.totalDays = computeTotalDays(habit.records);
@@ -439,7 +401,7 @@ function checkDate(){
 
 function save(){
     localStorage.setItem(
-        "habits",
+        "habits_v2",
         JSON.stringify(habits)
     );
 }

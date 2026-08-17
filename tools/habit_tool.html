@@ -27,7 +27,7 @@
     <nav id="menu">
         <ul>
             <li><a href="../index.html">ホーム</a></li>
-            <li><a href="../tools/planning_tool.html">計画整理ツール</a>
+            <li><a href="../tools/planning_tool.html">計画整理ツール</a></li>
             <li><a href="../tools/memo_tool.html">メモツール</a></li>
             <li><a href="../tools/habit_tool.html">習慣化ツール</a></li>
             <li><a href="../tools/patchnote.html">パッチノート</a></li>
@@ -36,17 +36,15 @@
     </nav>
  </header>
 
-<li><a href="../index.html">ホームに戻る</a></li>
-<h1>習慣化アプリ</h1>
-<h2>現在別計画（知識の箱庭）に着手しているため、開発が一時的に遅れます</h2>
-
-
-
+<div class="page-head">
+    <a class="home-link" href="../index.html">← ホームに戻る</a>
+    <h1>習慣化アプリ</h1>
+    <h2>連続継続日数・合計継続日数を表示し、達成時に上にフォームが出て回数を入力できます。</h2>
+</div>
 
 <button id="addHabit">
    新しい習慣を追加
 </button>
-
 
 <div id="habitModal">
 
@@ -57,12 +55,8 @@
         <label>習慣名</label>
         <input id="habitName">
 
-        <br></br>
-
         <label>目標</label>
         <input id="habitGoal">
-
-        <br></br>
 
         <label>記録方法</label>
 
@@ -96,29 +90,12 @@
 
 </div>
 
-<div id="recordModal">
-
+<!-- 詳細モーダル -->
+<div id="detailModal">
     <div class="modal-content">
-
-        <h2>今回の記録(製作中)</h2>
-
-        <input
-            id="recordValue"
-            type="number"
-            placeholder="数値を入力してください">
-
-        <br><br>
-
-        <button id="saveRecord">
-            保存
-        </button>
-
-        <button id="closeRecord">
-            閉じる
-        </button>
-
+        <div id="detailBody"></div>
+        <button id="closeDetail">閉じる</button>
     </div>
-
 </div>
 
 <div id="habitList">
@@ -126,9 +103,8 @@
 </div>
 
     <footer>
-      <p>最終更新日 2026/8/6</p>
+      <p>最終更新日 2026/8/17</p>
     </footer>
  <script src="habit_tool.js"></script>
  <script src="../script.js"></script>
 </body>
-
