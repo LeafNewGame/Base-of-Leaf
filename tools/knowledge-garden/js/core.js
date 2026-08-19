@@ -411,6 +411,8 @@
     if (name === "home") renderFolders();
     if (name === "folder") renderFolder();
     if (name === "worktable" && typeof wtOnShow === "function") wtOnShow();
+    if (name === "book" && typeof renderBook === "function") renderBook();
+    if (name === "record" && typeof renderRecord === "function") renderRecord();
   }
 
   /* ---------- 描画: フィルタチップ ---------- */

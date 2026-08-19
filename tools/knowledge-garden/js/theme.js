@@ -21,6 +21,8 @@
     /* 装飾のオン/オフ: 色合い（CSS 変数）は残し、葉っぱ・波・モノリス・光・ホタル等の演出だけ切る */
     const decorOn = (s.decor !== false);            // 既定は ON（undefined も ON 扱い）
     document.body.classList.toggle("no-decor", !decorOn);
+    /* ノート風（白紙・罫線）フォーム */
+    document.body.classList.toggle("note-style", !!s.noteStyle);
     const fx = document.getElementById("fx-layer");
     if (decorOn) {
       if (window.ThemeFX && typeof window.ThemeFX.apply === "function") window.ThemeFX.apply(base);
@@ -89,6 +91,7 @@
     $("#set-custom-base").value = s.customBase || "dark";
     $("#set-ccent").value = s.customAccent || "#5fcf8e";
     $("#custom-theme").hidden = mode !== "custom";
+    $("#set-notestyle").checked = !!s.noteStyle;
   }
   function saveSettings() {
     const s = Settings.get();
@@ -98,6 +101,7 @@
     s.embed = $("#set-embed").value.trim();
     s.supabaseUrl = $("#set-supabase-url").value.trim();
     s.supabaseKey = $("#set-supabase-key").value.trim();
+    s.noteStyle = $("#set-notestyle").checked;
     Cloud.setConfig(s.supabaseUrl, s.supabaseKey);
     Settings.save(s);
     applyTheme();

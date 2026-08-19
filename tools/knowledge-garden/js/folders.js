@@ -151,9 +151,19 @@
   function saveFolderModal() {
     const name = $("#fldr-name").value.trim();
     if (!name) { alert("フォルダ名は必須です"); return; }
-    const s = Settings.get(); s.folders = s.folders || [];
-    if (folderModalCat && folderModalCat !== name) {
-      s.folders = s.folders.filter((f) => f.name !== folderModalCat);
+    const s = Settings.get(); s.folders = s.folders || {}; s.folders = (s.folders instanceof Array) ? s.folders : []; s.folderTemplates = s.folderTemplates || {};
+    const oldName = folderModalCat;
+    const renamed = oldName && oldName !== name;
+    const oldDef = renamed ? (s.folders || []).find((f) => f.name === oldName) : null;
+    if (renamed) {
+      s.folders = s.folders.filter((f) => f.name !== oldName);
+      // フォーマット設定（folderTemplates）を旧名→新名へ引き継ぐ（リネームで消えないように）
+      if (s.folderTemplates[oldName] && !s.folderTemplates[name]) s.folderTemplates[name] = s.folderTemplates[oldName];
+      // 旧 def に template/fields があれば救済（新形式へ）
+      else if (!s.folderTemplates[name] && oldDef && (oldDef.template || (oldDef.fields && oldDef.fields.length))) {
+        s.folderTemplates[name] = { body: oldDef.template || "", fields: oldDef.fields || [] };
+      }
+      delete s.folderTemplates[oldName];
     }
     const tags = parseTags($("#fldr-tags").value);
     const idx = s.folders.findIndex((f) => f.name === name);

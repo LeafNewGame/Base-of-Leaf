@@ -41,6 +41,8 @@
       <button class="nav-item" data-view="stats"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>学習統計</button>
       <button class="nav-item" data-view="calendar"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>カレンダー</button>
       <button class="nav-item" data-view="worktable"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3h13A2.5 2.5 0 0 1 21 5.5v9A2.5 2.5 0 0 1 18.5 17h-13A2.5 2.5 0 0 1 3 14.5z"/><path d="M8 21l2-4M16 21l-2-4"/><path d="M7 12.5c1.6-3.2 3-3.2 4.6 0 1.2-2.2 2.4-2.2 3.6 0"/></svg></span>ワークテーブル</button>
+      <button class="nav-item" data-view="record"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4z"/><path d="M14 6l4 4"/></svg></span>記録</button>
+      <button class="nav-item" data-view="book"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3H12v15H5.5A2.5 2.5 0 0 0 3 20.5z"/><path d="M21 5.5A2.5 2.5 0 0 0 18.5 3H12v15h6.5a2.5 2.5 0 0 1 2.5 2.5z"/></svg></span>本棚</button>
       <button class="nav-item" data-view="chat"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8"/><path d="M8 13h5"/></svg></span>AI対話</button>
       <button class="nav-item" data-view="review"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11A8 8 0 1 1 6.34 6.34"/><polyline points="4 4 6 8 10 6"/></svg></span>復習提案</button>
       <button class="nav-item" data-view="thoughts"><span class="ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span>思考・判断・アイデア</button>
@@ -52,6 +54,7 @@
       <button id="btn-import" class="ghost-btn" title="JSONから読み込み"><span class="ki"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"/><path d="m7 13 5-5 5 5"/><path d="M5 3h14"/></svg></span> インポート</button>
       <button id="btn-theme" class="ghost-btn" title="テーマを選択（ライト/ダーク/各プリセット）"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.6M12 19.4V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.6M19.4 12H22M4.2 19.8 6 18M18 6l1.8-1.8"/></svg> テーマ</button>
       <button id="btn-decor" class="ghost-btn on" title="装飾（葉・波・モノリス・光・ホタル）の表示を切替"><span class="ki"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 6.2L20 11l-6.2 1.8L12 19l-1.8-6.2L4 11l6.2-1.8z"/></svg></span> 装飾: 入</button>
+      <button id="btn-record" class="ghost-btn" title="記録フォームタブを開く"><span class="ki"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4z"/><path d="M14 6l4 4"/></svg></span> 記録フォーム</button>
       <input type="file" id="import-file" accept="application/json" hidden />
       <div id="sidebar-cloud" class="sidebar-cloud"><span class="ki"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.6 1.5A3.5 3.5 0 0 0 6 19z"/></svg></span> クラウド: 未連携</div>
     </div>
@@ -144,7 +147,7 @@
           <button id="folder-fmt-open-modal" type="button" class="ghost-btn ff-link">フォルダ設定（名前・自動タグ）</button>
         </div>
         <label class="ff-label">自由本文テンプレート（任意）<br><span class="hint">「このフォルダに追加」を押したとき、本文に自動入力される雛形です。</span>
-          <textarea id="folder-fmt-body" rows="4" placeholder="例：&#10;・目的：&#10;・期限：&#10;・メモ："></textarea>
+          <textarea id="folder-fmt-body" class="note-paper" rows="4" placeholder="例：&#10;・目的：&#10;・期限：&#10;・メモ："></textarea>
         </label>
         <div class="ff-fields-head">
           <span>入力項目（枠）</span>
@@ -215,6 +218,7 @@
           <button id="wt-open" class="wt-btn"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v10"/><path d="m8 9 4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg> ボードを開く</button>
           <button id="wt-save-png" class="wt-btn"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V5"/><path d="m8 9 4-4 4 4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg> 画像で保存</button>
           <button id="wt-save-board" class="wt-btn accent"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M8 4v5h7"/><rect x="8" y="13" width="8" height="6" rx="1"/></svg> ボードで保存</button>
+          <button id="wt-fullscreen" class="wt-btn" title="全画面表示（Esc で戻る）"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V5a1 1 0 0 1 1-1h4"/><path d="M20 9V5a1 1 0 0 0-1-1h-4"/><path d="M4 15v4a1 1 0 0 0 1 1h4"/><path d="M20 15v4a1 1 0 0 1-1 1h-4"/></svg> 全画面</button>
           <input type="file" id="wt-file-image" accept="image/*" hidden />
           <input type="file" id="wt-file-board" accept=".json,application/json" hidden />
         </div>
@@ -266,6 +270,159 @@
           <span id="wt-count">0 個の要素</span>
           <span id="wt-dirty" class="wt-dirty" hidden>未保存（エクスポートしてください）</span>
         </div>
+
+        <div id="wt-dock" class="wt-dock">
+          <div class="wt-dock-group">
+            <button class="wt-tool" data-tool="select" title="選択・移動（V）"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m5 3 14 8.5-6 1.2L10.6 19z"/></svg></button>
+            <button class="wt-tool" data-tool="pen" title="手書きペン（P）"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4z"/><path d="M14 6l4 4"/></svg></button>
+            <button class="wt-tool" data-tool="eraser" title="消しゴム（E）"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 20 3.5 15.5a2 2 0 0 1 0-2.8l8-8a2 2 0 0 1 2.8 0l5 5a2 2 0 0 1 0 2.8L14 20z"/><path d="M8 20h11"/></svg></button>
+            <button class="wt-tool" data-tool="text" title="テキストボックス（T）"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 6V4.5h14V6"/><path d="M12 4.5V20"/><path d="M9 20h6"/></svg></button>
+            <button class="wt-tool" data-tool="rect" title="四角（R）"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="14" rx="2.5"/></svg></button>
+            <button class="wt-tool" data-tool="ellipse" title="円（O）"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="12" rx="8.5" ry="7"/></svg></button>
+            <button class="wt-tool" data-tool="arrow" title="矢印（A）"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19 20 5"/><path d="M13 5h7v7"/></svg></button>
+            <button class="wt-tool" data-tool="line" title="直線（L）"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19 20 5"/></svg></button>
+            <button class="wt-tool" data-tool="hand" title="手のひら（H）"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 11V5.5a1.5 1.5 0 1 1 3 0V11"/><path d="M11 10.5V4.5a1.5 1.5 0 1 1 3 0V11"/><path d="M14 11V6.5a1.5 1.5 0 1 1 3 0V14"/><path d="M8 11V9a1.5 1.5 0 1 0-3 0v5a7 7 0 0 0 7 7h1a6 6 0 0 0 6-6"/></svg></button>
+          </div>
+          <span class="wt-sep"></span>
+          <span id="wt-dock-colors" class="wt-colors"></span>
+          <span class="wt-sep"></span>
+          <div class="wt-dock-group">
+            <button id="wt-dock-undo" class="wt-tool" title="元に戻す（Ctrl+Z）"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h9a5 5 0 0 1 0 10H7"/><path d="m4 8 4-4M4 8l4 4"/></svg></button>
+            <button id="wt-dock-redo" class="wt-tool" title="やり直す（Ctrl+Shift+Z）"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 8h-9a5 5 0 0 0 0 10h6"/><path d="m20 8-4-4M20 8l-4 4"/></svg></button>
+            <button id="wt-dock-del" class="wt-tool" title="選択したものを削除（Delete）"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4.5h6V7"/><path d="M6.5 7 7.5 20h9l1-13"/></svg></button>
+            <button id="wt-dock-clear" class="wt-btn" title="すべて消去">全消去</button>
+          </div>
+          <span class="wt-sep"></span>
+          <div class="wt-dock-group">
+            <button id="wt-dock-pick" class="wt-btn" title="カードから引用">引用</button>
+            <button id="wt-dock-png" class="wt-btn" title="画像で保存">画像</button>
+            <button id="wt-dock-board" class="wt-btn accent" title="ボードで保存">保存</button>
+          </div>
+          <button id="wt-dock-exit" class="wt-dock-exit" title="全画面を終了（Esc）">✕ 全画面終了</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-record">
+      <header class="topbar">
+        <div class="topbar-left">
+          <h1>記録フォーム</h1>
+          <p class="hint">このタブはいつでも開けます。カードをここで記録し、「保存」で一覧に追加できます。入力中の内容は自動で下書き保存されるので、別のタブを開いて戻ってきても消えません。</p>
+        </div>
+        <div class="topbar-right" style="display:flex;gap:8px;flex-wrap:wrap">
+          <button id="r-clear" class="ghost-btn">クリア</button>
+          <button id="r-save" class="primary-btn">保存（カードに追加）</button>
+        </div>
+      </header>
+      <div class="record-wrap">
+        <div class="record-card">
+          <label>タイトル
+            <input id="r-title" type="text" placeholder="例：フーリエ変換" />
+          </label>
+          <div class="row">
+            <label>種類
+              <select id="r-type">
+                <option value="knowledge">知識</option>
+                <option value="idea">アイデア</option>
+                <option value="thought">思考ログ</option>
+                <option value="decision">判断履歴</option>
+              </select>
+            </label>
+            <label>重要度 <span id="r-importance-val" class="stars"></span>
+              <input id="r-importance" type="range" min="1" max="5" value="3" />
+            </label>
+            <label>理解度 <span id="r-understanding-val" class="stars"></span>
+              <input id="r-understanding" type="range" min="1" max="5" value="3" />
+            </label>
+          </div>
+          <label class="fav-check"><input id="r-favorite" type="checkbox" /> <svg class="star-ic" viewBox="0 0 24 24" width="14" height="14"><path d="M12 2l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.8 6.1 20.8l1.2-6.6L2.5 9l6.6-.9z"/></svg> お気に入りにする</label>
+          <label>本文
+            <textarea id="r-body" class="note-paper" rows="10" placeholder="例：任意の波形を複数の正弦波へ分解する数学的手法。"></textarea>
+          </label>
+          <div class="row">
+            <label>カテゴリ（カンマ区切り・複数可）
+              <input id="r-categories" type="text" placeholder="数学, 大学" />
+            </label>
+            <label>タグ（# 付き・カンマ区切り）
+              <input id="r-tags" type="text" placeholder="#信号処理, #電気電子" />
+            </label>
+          </div>
+          <label>参考資料（1行1件）
+            <textarea id="r-refs" rows="2" placeholder="https://..."></textarea>
+          </label>
+          <label>メモ
+            <textarea id="r-memo" rows="2" placeholder="自由メモ"></textarea>
+          </label>
+          <div class="record-foot">
+            <span id="r-status" class="status"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-book">
+      <header class="topbar">
+        <div class="topbar-left">
+          <h1>本棚</h1>
+          <p class="hint">カテゴリ（またはフォルダ）ごとに本が作られます。本をクリックすると取り出して読めます。開いた本では左右の矢印、または ← → キーでページをめくれます（Esc で本棚へ戻ります）。ページ内の文字（タイトル・本文・フィールド）はクリックすると直接編集でき、自動保存されます。</p>
+        </div>
+        <div class="topbar-right" id="book-topbar-right" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <span id="book-ind" class="book-page-ind" hidden>0 / 0</span>
+          <button id="book-fullscreen" class="ghost-btn" title="本を全画面表示（Esc で戻る）"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V5a1 1 0 0 1 1-1h4"/><path d="M20 9V5a1 1 0 0 0-1-1h-4"/><path d="M4 15v4a1 1 0 0 0 1 1h4"/><path d="M20 15v4a1 1 0 0 1-1 1h-4"/></svg> 全画面</button>
+          <button id="book-back" class="ghost-btn" hidden>‹ 本棚へ</button>
+        </div>
+      </header>
+
+      <!-- 本棚（カテゴリごとの本） -->
+      <div id="book-shelf" class="book-shelf">
+        <div class="shelf-row">
+          <div class="shelf-books" id="shelf-special"></div>
+          <div class="shelf-board"></div>
+        </div>
+        <div class="shelf-row">
+          <div class="shelf-books" id="shelf-cats"></div>
+          <div class="shelf-board"></div>
+        </div>
+        <p class="shelf-foot">※ 本は「カテゴリ」または「フォルダ」ごとに作られます。カードにカテゴリをつけると、ここに本が増えていきます。</p>
+      </div>
+
+      <!-- 読書（両開きの本） -->
+      <div id="book-reader" class="book-reader" hidden>
+        <button id="book-fs-exit" class="book-fs-exit" hidden aria-label="全画面を終了" title="全画面を終了（Esc）">✕</button>
+        <div id="book-stage" class="book-stage">
+          <div class="book" id="book-book">
+            <button id="book-arrow-l" class="book-arrow book-arrow-l" type="button" aria-label="前のページ" title="前のページ">‹</button>
+            <div class="book-page book-left" id="book-left">
+              <div class="bp-inner">
+                <div class="bp-type"></div>
+                <h2 class="bp-title" contenteditable="true" spellcheck="false" data-ph="(無題)"></h2>
+                <div class="bp-stars"></div>
+                <div class="bp-meta-line"></div>
+                <div class="bp-body" contenteditable="true" spellcheck="false" data-ph="（本文なし。クリックして書き込めます）"></div>
+                <div class="bp-fields"></div>
+                <div class="bp-meta"></div>
+                <div class="bp-end" hidden>─ このページは空白です ─</div>
+              </div>
+              <div class="book-pageno book-pageno-l"></div>
+            </div>
+            <div class="book-gutter"></div>
+            <div class="book-page book-right" id="book-right">
+              <div class="bp-inner">
+                <div class="bp-type"></div>
+                <h2 class="bp-title" contenteditable="true" spellcheck="false" data-ph="(無題)"></h2>
+                <div class="bp-stars"></div>
+                <div class="bp-meta-line"></div>
+                <div class="bp-body" contenteditable="true" spellcheck="false" data-ph="（本文なし。クリックして書き込めます）"></div>
+                <div class="bp-fields"></div>
+                <div class="bp-meta"></div>
+                <div class="bp-end" hidden>─ このページは空白です ─</div>
+              </div>
+              <div class="book-pageno book-pageno-r"></div>
+            </div>
+            <button id="book-arrow-r" class="book-arrow book-arrow-r" type="button" aria-label="次のページ" title="次のページ">›</button>
+          </div>
+        </div>
+        <div id="book-empty" class="book-empty" hidden>この本にはまだカードがありません。</div>
       </div>
     </section>
 
@@ -378,6 +535,9 @@
             <input id="set-ccent" type="color" value="#5fcf8e" />
           </label>
         </div>
+        <h2>表示・入力</h2>
+        <label class="row-check"><input id="set-notestyle" type="checkbox" /> 記録フォームをノート（罫線）風にする</label>
+        <p class="hint">オンにすると、カードの「本文」やクイック記録などの入力欄が白紙ノート風（罫線付き）になります。</p>
         <h2>クラウド同期（アカウント）</h2>
         <p class="hint">Supabase の<strong>無料ティア</strong>を使って、どの端末からでも同じアカウントでデータを共有できます（クレジットカード不要・500MB / 50k MAU まで無料）。下の「接続情報」に自分の Supabase プロジェクト URL と anon key を貼り、<strong>Google アカウント</strong>またはメールアドレスでログインしてください。URL / key はこのブラウザにのみ保存されます。未設定の場合は今まで通り localStorage のみで動きます。<br><strong>知り合いだけに共有する場合：</strong>このアプリのファイル／URL にはいかなる鍵も書き込まれていません。相手にはファイルを渡すだけで、Supabase の URL ・ anon key と Groq の API key は<strong>別途（メッセージ等で）だけ</strong>教えてください。そうすればソースコードを見られても鍵は漏れません。さらに Supabase の Authentication 設定で「新規登録を許可」をオフにすると、知らない人が勝手にアカウントを作れなくなります（あなたがユーザーを手動追加）。</p>
         <details class="sql-help">
@@ -491,7 +651,7 @@ create policy "own row" on kb_cards
         <span id="due-hint" class="due-hint"></span>
       </div>
       <label>本文
-        <textarea id="f-body" rows="6" placeholder="例：任意の波形を複数の正弦波へ分解する数学的手法。"></textarea>
+        <textarea id="f-body" class="note-paper" rows="6" placeholder="例：任意の波形を複数の正弦波へ分解する数学的手法。"></textarea>
       </label>
       <div id="f-custom-fields" class="cf-wrap" hidden></div>
       <div class="row">
@@ -659,6 +819,8 @@ create policy "own row" on kb_cards
   <script src="js/worktable-tools.js"></script>
   <script src="js/worktable-io.js"></script>
   <script src="js/theme-effects.js"></script>
+  <script src="js/features.js"></script>
   <script src="js/app.js"></script>
+
 </body>
 </html>

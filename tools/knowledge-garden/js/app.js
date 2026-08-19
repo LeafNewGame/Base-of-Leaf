@@ -194,6 +194,7 @@
     applyTheme();
     setupCloud();
     refresh();
+    if (typeof initFeatures === "function") initFeatures();
     $("#f-importance-val").innerHTML = stars(3);
     $("#f-understanding-val").innerHTML = stars(3);
     $("#f-importance-val").innerHTML = stars(3);

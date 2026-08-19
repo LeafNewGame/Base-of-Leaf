@@ -23,8 +23,8 @@ function wtSetTool(name) {
 /* ---------- ツールバーの表示を状態に合わせる ---------- */
 function wtSyncUI() {
   const q = (s) => document.querySelector(s);
-  document.querySelectorAll("#wt-bar .wt-tool[data-tool]").forEach((b) => b.classList.toggle("active", b.dataset.tool === WT.tool));
-  document.querySelectorAll("#wt-colors .wt-sw").forEach((b) => b.classList.toggle("active", b.dataset.color === WT.color));
+  document.querySelectorAll(".wt-tool[data-tool]").forEach((b) => b.classList.toggle("active", b.dataset.tool === WT.tool));
+  document.querySelectorAll(".wt-sw").forEach((b) => b.classList.toggle("active", b.dataset.color === WT.color));
   const wrap = q("#wt-wrap"); if (wrap) wrap.dataset.tool = WT.tool;
   const zv = q("#wt-zoom-val"); if (zv) zv.textContent = Math.round(WT.view.s * 100) + "%";
   const cnt = q("#wt-count"); if (cnt) cnt.textContent = WT.els.length + " 個の要素";
