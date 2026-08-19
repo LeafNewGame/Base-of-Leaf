@@ -53,11 +53,34 @@
     const ct = $("#custom-theme"); if (ct) ct.hidden = (next !== "custom");
   }
 
+  async function fetchModels() {
+    const baseurl = ($("#set-baseurl").value || "").trim().replace(/\/+$/, "");
+    const key = ($("#set-key").value || "").trim();
+    const status = $("#settings-status");
+    const dl = $("#model-list");
+    if (!baseurl || !key) { status.textContent = "先に baseurl と key を入力してください。"; return; }
+    const btn = $("#btn-fetch-models"); const old = btn.textContent; btn.textContent = "取得中…"; btn.disabled = true;
+    try {
+      const res = await fetch(baseurl + "/models", { headers: { "Authorization": "Bearer " + key } });
+      if (!res.ok) { const t = await res.text().catch(() => ""); throw new Error(res.status + ": " + t.slice(0, 160)); }
+      const data = await res.json();
+      const ids = (data.data || []).map((m) => m.id).filter(Boolean).sort();
+      if (!ids.length) { status.textContent = "モデル一覧が空、または応答形式が想定と異なります。"; return; }
+      dl.innerHTML = ids.map((id) => '<option value="' + escapeHtml(id) + '"></option>').join("");
+      status.innerHTML = ki("check") + " 取得 " + ids.length + " 件（入力欄で選択可）。例: " + ids.slice(0, 3).map(escapeHtml).join("、 ");
+    } catch (e) {
+      status.textContent = "取得失敗: " + e.message;
+    } finally {
+      btn.textContent = old; btn.disabled = false;
+      setTimeout(() => { status.textContent = ""; }, 8000);
+    }
+  }
+
   function loadSettingsForm() {
     const s = Settings.get();
     $("#set-baseurl").value = s.baseurl || "https://api.groq.com/openai/v1";
     $("#set-key").value = s.key || "";
-    $("#set-model").value = s.model || "llama-3.3-70b-versatile";
+    $("#set-model").value = s.model || "llama-3.1-8b-instant";
     $("#set-embed").value = s.embed || "";
     $("#set-supabase-url").value = s.supabaseUrl || "";
     $("#set-supabase-key").value = s.supabaseKey || "";

@@ -334,8 +334,13 @@
           <input id="set-key" type="password" placeholder="gsk_..." />
         </label>
         <label>Chat Model
-          <input id="set-model" type="text" placeholder="llama-3.3-70b-versatile" />
+          <input id="set-model" type="text" placeholder="llama-3.1-8b-instant" list="model-list" autocomplete="off" />
+          <datalist id="model-list"></datalist>
         </label>
+        <div class="settings-actions" style="margin-top:-4px">
+          <button id="btn-fetch-models" class="ghost-btn" type="button">利用可能モデルを取得</button>
+          <span class="hint" style="display:block">baseurl と key を入力後、このボタンで「その環境で本当に使えるモデル名」を一覧取得します。404/モデル未検出が出る場合は baseurl がその key のプロバイダと一致していません。</span>
+        </div>
         <label>Embeddings Model（任意・未入力ならローカル検索）
           <input id="set-embed" type="text" placeholder="（空でOK）" />
         </label>

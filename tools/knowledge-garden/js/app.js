@@ -112,6 +112,7 @@
     $("#btn-trait-run").onclick = runTraitSearch;
     $("#btn-reconstruct").onclick = runReconstruct;
     $("#btn-test-ai").onclick = testAI;
+    $("#btn-fetch-models").onclick = fetchModels;
     $("#btn-theme").onclick = openThemePop;
     $("#btn-decor").onclick = toggleDecor;
     $("#theme-pop-close").onclick = closeThemePop;
