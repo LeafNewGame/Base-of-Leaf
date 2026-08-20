@@ -129,11 +129,9 @@ function wtRenderPick() {
   if (!list) return;
   const q = (document.getElementById("wt-pick-search").value || "").trim().toLowerCase();
   const folder = document.getElementById("wt-pick-folder").value;
-  const type = document.getElementById("wt-pick-type").value;
   let arr = wtPickCards();
   if (folder === "__none__") arr = arr.filter((c) => !(c.categories || []).length);
   else if (folder) arr = arr.filter((c) => (c.categories || []).includes(folder));
-  if (type) arr = arr.filter((c) => (c.type || "knowledge") === type);
   if (q) arr = arr.filter((c) => ((c.title || "") + " " + (c.body || "") + " " + (c.tags || []).join(" ")).toLowerCase().includes(q));
   arr = arr.slice().sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")));
   if (!arr.length) { list.innerHTML = '<div class="wt-pick-empty">該当するカードがありません</div>'; wtPickCount(); return; }
@@ -148,7 +146,7 @@ function wtRenderPick() {
       '<span class="wt-pick-title">' + escapeHtml(c.title || "(無題)") + "</span>" +
       '<span class="wt-pick-sub">' + escapeHtml((c.body || "").replace(/\s+/g, " ").slice(0, 70)) + "</span>" +
       "</span>" +
-      '<span class="wt-pick-badge">' + escapeHtml(TYPE_LABEL[c.type] || "知識") + "</span>";
+      '<span class="wt-pick-badge">' + escapeHtml("カード") + "</span>";
     const cb = row.querySelector("input");
     cb.onchange = () => { if (cb.checked) WT._picked.add(c.id); else WT._picked.delete(c.id); wtPickCount(); };
     list.appendChild(row);
@@ -181,8 +179,8 @@ function wtInsertPicked() {
         id: wtUid(), t: "card", x: x, y: y, w: W,
         title: c.title || "(無題)",
         body: (c.body || "").slice(0, 1200),
-        meta: [(TYPE_LABEL[c.type] || "知識")].concat((c.tags || []).slice(0, 4)).join("  "),
-        tone: WT_TYPE_TONE[c.type] || "#5fcf8e",
+        meta: (c.tags || []).slice(0, 4).join("  "),
+        tone: "#5fcf8e",
         fs: 14, cardId: c.id,
       };
       colY[col] = y + wtCardHeight(el) + GAP;
@@ -309,7 +307,6 @@ function wtBindIO() {
     q("wt-pick-run").onclick = wtInsertPicked;
     q("wt-pick-search").oninput = wtRenderPick;
     q("wt-pick-folder").onchange = wtRenderPick;
-    q("wt-pick-type").onchange = wtRenderPick;
     bd.addEventListener("click", (e) => { if (e.target === bd) close(); });
   }
 

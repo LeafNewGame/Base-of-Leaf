@@ -1,141 +1,14 @@
 "use strict";
 /* =========================================================================
    知識の箱庭 — 追加機能まとめ（features.js）
-   ■ 記録フォーム（専用タブ「記録」＝カード記録フォーム）
    ■ 本形式ビュー（両開きの白い罫線ノートブック・ページめくり）
    ■ ワークテーブル 全画面表示 ＋ 全画面用ツールドック
-   （ノート風罫線は theme.js + app.css で処理）
    このファイルは app.js より先に読み込まれ、app.js の init() から
    initFeatures() を呼ぶことで起動する。
    ========================================================================= */
 
-/* ---------- 共通: ローカルキー ---------- */
-const LS_REC = "kg_record_draft";
-
 /* ============================================================
-   1) 記録フォーム（専用タブ #view-record）
-   ============================================================ */
-function initRecordView() {
-  const ids = ["r-title", "r-type", "r-importance", "r-importance-val", "r-understanding", "r-understanding-val", "r-favorite", "r-body", "r-categories", "r-tags", "r-refs", "r-memo", "r-save", "r-clear", "r-status"];
-  const el = {};
-  ids.forEach((id) => (el[id] = $("#" + id)));
-
-  const saveDraft = () => {
-    try {
-      localStorage.setItem(LS_REC, JSON.stringify({
-        title: el["r-title"].value, type: el["r-type"].value,
-        importance: el["r-importance"].value, understanding: el["r-understanding"].value,
-        favorite: el["r-favorite"].checked, body: el["r-body"].value,
-        categories: el["r-categories"].value, tags: el["r-tags"].value,
-        refs: el["r-refs"].value, memo: el["r-memo"].value
-      }));
-    } catch (e) {}
-  };
-  const restoreDraft = () => {
-    let d = null;
-    try { d = JSON.parse(localStorage.getItem(LS_REC) || "null"); } catch (e) {}
-    if (!d) return;
-    el["r-title"].value = d.title || "";
-    el["r-type"].value = d.type || "knowledge";
-    el["r-importance"].value = d.importance || 3;
-    el["r-understanding"].value = d.understanding || 3;
-    el["r-favorite"].checked = !!d.favorite;
-    el["r-body"].value = d.body || "";
-    el["r-categories"].value = d.categories || "";
-    el["r-tags"].value = d.tags || "";
-    el["r-refs"].value = d.refs || "";
-    el["r-memo"].value = d.memo || "";
-    syncStars();
-  };
-  const syncStars = () => {
-    if (el["r-importance-val"]) el["r-importance-val"].innerHTML = stars(+el["r-importance"].value || 3);
-    if (el["r-understanding-val"]) el["r-understanding-val"].innerHTML = stars(+el["r-understanding"].value || 3);
-  };
-  const flash = (msg) => {
-    if (!el["r-status"]) return;
-    el["r-status"].textContent = msg;
-    clearTimeout(el["r-status"]._t);
-    el["r-status"]._t = setTimeout(() => (el["r-status"].textContent = ""), 2200);
-  };
-  const clearAll = () => {
-    ["r-title", "r-body", "r-categories", "r-tags", "r-refs", "r-memo"].forEach((k) => (el[k].value = ""));
-    el["r-type"].value = "knowledge";
-    el["r-importance"].value = 3; el["r-understanding"].value = 3;
-    el["r-favorite"].checked = false;
-    syncStars();
-    try { localStorage.removeItem(LS_REC); } catch (e) {}
-  };
-
-  // 入力中は自動で下書き保存
-  ["r-title", "r-body", "r-categories", "r-tags", "r-refs", "r-memo"].forEach((k) => {
-    el[k].addEventListener("input", saveDraft);
-  });
-  el["r-type"].addEventListener("change", saveDraft);
-  el["r-favorite"].addEventListener("change", saveDraft);
-  el["r-importance"].addEventListener("input", () => { syncStars(); saveDraft(); });
-  el["r-understanding"].addEventListener("input", () => { syncStars(); saveDraft(); });
-
-  // 保存
-  el["r-save"].onclick = () => {
-    const title = (el["r-title"].value || "").trim() || (el["r-body"].value || "").split("\n")[0].trim().slice(0, 80) || "無題のカード";
-    const c = {
-      id: uid(), createdAt: nowISO(), viewCount: 0, versions: [], done: false,
-      title, body: (el["r-body"].value || "").trim(), type: el["r-type"].value || "knowledge",
-      importance: +el["r-importance"].value || 3, understanding: +el["r-understanding"].value || 3,
-      favorite: !!el["r-favorite"].checked,
-      categories: parseTags(el["r-categories"].value),
-      tags: parseTags(el["r-tags"].value),
-      references: (el["r-refs"].value || "").split("\n").map((s) => s.trim()).filter(Boolean),
-      fields: [], memo: (el["r-memo"].value || "").trim()
-    };
-    if (!c.body && !c.title) { alert("本文かタイトルを入力してください"); return; }
-    Store.put(c);
-    cards.push(c);
-    refresh();
-    clearAll();
-    flash("カードを保存しました ✓");
-  };
-  // クリア
-  el["r-clear"].onclick = () => {
-    if (confirm("入力内容をクリアしますか？（下書きも削除されます）")) { clearAll(); flash("クリアしました"); }
-  };
-  // サイドバーの「記録フォーム」ボタン → このタブを開く
-  const sideBtn = $("#btn-record");
-  if (sideBtn) sideBtn.onclick = () => setView("record");
-
-  syncStars();
-  restoreDraft();
-}
-
-/* setView("record") から呼ばれる：下書きを再表示 */
-function renderRecord() {
-  const v = $("#view-record");
-  if (!v || !v.classList.contains("active")) return;
-  // initRecordView がまだ実行されていなければ何もしない（起動時に実行済み）
-  const t = $("#r-title");
-  if (!t) return;
-  // 下書きを再適用（別タブを開いて戻ってきた場合に復元）
-  try {
-    const d = JSON.parse(localStorage.getItem(LS_REC) || "null");
-    if (d) {
-      t.value = d.title || "";
-      $("#r-type").value = d.type || "knowledge";
-      $("#r-importance").value = d.importance || 3;
-      $("#r-understanding").value = d.understanding || 3;
-      $("#r-favorite").checked = !!d.favorite;
-      $("#r-body").value = d.body || "";
-      $("#r-categories").value = d.categories || "";
-      $("#r-tags").value = d.tags || "";
-      $("#r-refs").value = d.refs || "";
-      $("#r-memo").value = d.memo || "";
-      if ($("#r-importance-val")) $("#r-importance-val").innerHTML = stars(+d.importance || 3);
-      if ($("#r-understanding-val")) $("#r-understanding-val").innerHTML = stars(+d.understanding || 3);
-    }
-  } catch (e) {}
-}
-
-/* ============================================================
-   2) 本形式ビュー（カテゴリごとの本棚 ＋ 両開きの本）
+   1) 本形式ビュー（カテゴリごとの本棚 ＋ 両開きの本）
    ============================================================ */
 let bookList = [];
 let bookIndex = 0;
@@ -144,12 +17,21 @@ let bookSourceVal = "__all__";   // 現在開いている本のソース
 let bookReadMode = false;         // false=本棚, true=読書
 const SHELF_COLORS = ["#8a5a44", "#5b7b6e", "#4f6d8a", "#9a6b3f", "#7a5b8a", "#a8554e", "#5e7d4f", "#b08a3e", "#4a6b7a", "#864f5e", "#6b6f4a", "#7a4f6b"];
 
+/* ページの並び順（記録日時） asc=古い順（1ページ目が最も古い） / desc=新しい順 */
+function bookOrderDir() {
+  const v = (Settings.get() || {}).bookOrder;
+  return v === "desc" ? "desc" : "asc";
+}
+function bookOrderLabel() { return bookOrderDir() === "asc" ? "古い順" : "新しい順"; }
+
 function bookSourceCards() {
   const src = bookSourceVal;
   let data = cards.slice();
   if (src === "__uncat__") data = data.filter((c) => !(c.categories || []).length);
   else if (src && src !== "__all__") data = data.filter((c) => (c.categories || []).includes(src));
-  data.sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""));
+  // ページ順は「記録日時」で決まる（記録日時を編集するとページの並びが変わる）
+  const sign = bookOrderDir() === "desc" ? -1 : 1;
+  data.sort((a, b) => sign * cardRecordedAt(a).localeCompare(cardRecordedAt(b)));
   return data;
 }
 
@@ -210,10 +92,11 @@ function openBook(src) {
     void reader.offsetWidth; // アニメを再スタートさせるための reflow
     reader.classList.add("book-open");
   }
-  const ind = $("#book-ind"), back = $("#book-back"), fsb = $("#book-fullscreen");
+  const ind = $("#book-ind"), back = $("#book-back"), fsb = $("#book-fullscreen"), ord = $("#book-order");
   if (ind) ind.hidden = false;
   if (back) back.hidden = false;
   if (fsb) fsb.hidden = false;
+  if (ord) { ord.hidden = false; ord.textContent = "並び順: " + bookOrderLabel(); }
   bookShow(0, 0);
 }
 
@@ -226,11 +109,12 @@ function closeBook() {
     reader.hidden = true;
   }
   if (shelf) shelf.hidden = false;
-  const ind = $("#book-ind"), back = $("#book-back"), fsb = $("#book-fullscreen"), fsx = $("#book-fs-exit");
+  const ind = $("#book-ind"), back = $("#book-back"), fsb = $("#book-fullscreen"), fsx = $("#book-fs-exit"), ord = $("#book-order");
   if (ind) ind.hidden = true;
   if (back) back.hidden = true;
   if (fsb) fsb.hidden = true;
   if (fsx) fsx.hidden = true;
+  if (ord) ord.hidden = true;
 }
 
 /* 1ページ＝1カードでページに書き込む */
@@ -252,9 +136,7 @@ function fillBookPage(pageEl, c, pageNo, total) {
     if (pn) pn.textContent = pageNo + " / " + total;
     return;
   }
-  const typeBadge = (c.type && c.type !== "knowledge")
-    ? '<span class="type-badge type-' + c.type + '">' + escapeHtml((TYPE_LABEL[c.type] || c.type)) + "</span>" : "";
-  inner.querySelector(".bp-type").innerHTML = typeBadge;
+  inner.querySelector(".bp-type").innerHTML = "";
   inner.querySelector(".bp-title").textContent = c.title || "";
   inner.querySelector(".bp-stars").innerHTML =
     '<span class="stars" title="重要度">' + stars(c.importance || 3) + "</span>" +
@@ -270,7 +152,12 @@ function fillBookPage(pageEl, c, pageNo, total) {
     '<div class="bp-field"><span class="bp-fname">' + escapeHtml(f.name) + '</span><span class="bp-fval" contenteditable="true" spellcheck="false" data-fname="' + escapeHtml(f.name) + '">' + escapeHtml(String(f.value)) + "</span></div>"
   ).join("");
   const upd = c.updatedAt ? new Date(c.updatedAt).toLocaleDateString() : "";
-  inner.querySelector(".bp-meta").innerHTML = upd ? '<span class="bp-upd">更新: ' + upd + "</span>" : "";
+  const recVal = isoToLocalInput(cardRecordedAt(c));
+  inner.querySelector(".bp-meta").innerHTML =
+    '<span class="bp-rec"><span class="bp-k">記録</span>'
+    + '<input type="datetime-local" step="60" class="bp-created" value="' + recVal + '" title="記録日時（変更するとページの並び順が変わります）">'
+    + "</span>"
+    + (upd ? '<span class="bp-upd">更新: ' + upd + "</span>" : "");
   if (pn) pn.textContent = pageNo + " / " + total;
 }
 
@@ -383,20 +270,57 @@ function initBook() {
     const updEl = inner.querySelector(".bp-upd");
     if (updEl) updEl.textContent = "更新: " + new Date().toLocaleDateString();
   };
+  /* ---- 記録日時をページ上で直接編集（ページの並び順が変わる） ---- */
+  const saveRecordedAt = (inp) => {
+    const pageEl = inp.closest(".book-page");
+    if (!pageEl) return;
+    const id = pageEl.dataset.id;
+    if (!id) return;
+    const card = cards.find((c) => c.id === id);
+    if (!card) return;
+    const iso = localInputToISO(inp.value);
+    if (!iso || iso === card.createdAt) return;
+    card.createdAt = iso;
+    Store.put(card);
+    // 並べ替え後も同じカードを開いたままにする
+    const list = bookSourceCards();
+    const idx = list.findIndex((c) => c.id === id);
+    bookShow(idx < 0 ? bookIndex : idx, 0);
+  };
+
   const bb = $("#book-book");
   if (bb) {
     bb.addEventListener("input", (e) => {
+      if (e.target.classList && e.target.classList.contains("bp-created")) return;
       const pageEl = e.target.closest ? e.target.closest(".book-page") : null;
       if (!pageEl) return;
       clearTimeout(bookEditTimer);
       bookEditTimer = setTimeout(() => savePageEdit(pageEl), 600);
     });
     bb.addEventListener("blur", (e) => {
+      if (e.target.classList && e.target.classList.contains("bp-created")) return;
       const pageEl = e.target.closest ? e.target.closest(".book-page") : null;
       if (!pageEl) return;
       clearTimeout(bookEditTimer);
       savePageEdit(pageEl);
     }, true);
+    bb.addEventListener("change", (e) => {
+      if (!e.target.classList || !e.target.classList.contains("bp-created")) return;
+      saveRecordedAt(e.target);
+    });
+  }
+
+  /* ---- ページの並び順（記録日時 古い順 / 新しい順） ---- */
+  const ordBtn = $("#book-order");
+  if (ordBtn) {
+    ordBtn.textContent = "並び順: " + bookOrderLabel();
+    ordBtn.onclick = () => {
+      const s = Settings.get() || {};
+      s.bookOrder = bookOrderDir() === "asc" ? "desc" : "asc";
+      Settings.save(s);
+      ordBtn.textContent = "並び順: " + bookOrderLabel();
+      bookShow(0, 0);
+    };
   }
 
   /* ---- 本の全画面表示 ---- */
@@ -513,7 +437,6 @@ function initWtDock() {
    起動
    ============================================================ */
 function initFeatures() {
-  initRecordView();
   initBook();
   initWtFullscreen();
   initWtDock();

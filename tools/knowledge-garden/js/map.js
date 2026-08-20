@@ -3,7 +3,8 @@
   let currentMap3D = null;
   function buildGraphData(W, H) {
     const nodes = cards.map((c) => ({
-      id: c.id, title: c.title, type: c.type || "knowledge", importance: c.importance || 3,
+      id: c.id, title: c.title, importance: c.importance || 3,
+      cats: c.categories || [], tags: c.tags || [], gl: c.groupLabel || "",
       x: (Math.random() - 0.5) * W, y: (Math.random() - 0.5) * H, z: (Math.random() - 0.5) * Math.min(W, H),
       vx: 0, vy: 0, vz: 0
     }));
@@ -16,9 +17,11 @@
     return { W, H, nodes, links };
   }
   function runLayout2D(data) {
-    const { W, H, nodes, links } = data;
-    nodes.forEach((n) => { n.x += W / 2; n.y += H / 2; });
-    const ITER = 140, k = 90, rep = 9000, center = 0.01;
+    const { nodes, links } = data;
+    const SC = 3;                       // 点同士の距離を約3倍に広げる（仮想キャンバスを3倍に）
+    const W = data.W * SC, H = data.H * SC;
+    nodes.forEach((n) => { n.x = n.x * SC + W / 2; n.y = n.y * SC + H / 2; });
+    const ITER = 140, k = 90 * SC, rep = 9000 * SC * SC, center = 0.01;
     for (let it = 0; it < ITER; it++) {
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
@@ -86,19 +89,123 @@
     g.onmouseenter = () => { tip.hidden = false; tip.innerHTML = `<b>${escapeHtml(n.title)}</b>`; };
     g.onmousemove = (e) => { const rect = wrap.getBoundingClientRect(); tip.style.left = (e.clientX - rect.left + 12) + "px"; tip.style.top = (e.clientY - rect.top + 12) + "px"; };
     g.onmouseleave = () => { tip.hidden = true; };
-    g.onclick = () => openEditor(n.id);
+    g.onclick = () => { if (mapDragged) return; openEditor(n.id); };
   }
   function updateMapLegend() {
     const el = $("#graph-legend");
-    const types = [...new Set(cards.map((c) => c.type || "knowledge"))].filter((t) => TYPE_COLOR[t]);
-    if (types.length < 2) { el.hidden = true; return; }
-    el.innerHTML = types.map((t) => `<span><i style="background:${TYPE_COLOR[t]}"></i>${escapeHtml(TYPE_LABEL[t] || t)}</span>`).join("");
-    el.hidden = false;
+    if (el) el.hidden = true; // 種類分類を廃止したため凡例は非表示
+  }
+  /* ---------- 2D 表示の拡大縮小・移動（ワークテーブル同様） ---------- */
+  let mapView = { x: 0, y: 0, k: 0.5 };
+  let mapDrag = null;
+  let mapDragged = false;
+  function applyMapView() {
+    const c = $("#graph-content");
+    if (c) c.setAttribute("transform", `translate(${mapView.x},${mapView.y}) scale(${mapView.k})`);
+  }
+  function mapResetView() {
+    const wrap = $("#graph-wrap");
+    const W = wrap.clientWidth || 900, H = wrap.clientHeight || 600;
+    mapView = { x: -W * 0.25, y: -H * 0.25, k: 0.5 };
+    applyMapView();
+  }
+  function mapZoomAt(cx, cy, factor) {
+    const nk = Math.max(0.15, Math.min(8, mapView.k * factor));
+    const cxp = (cx - mapView.x) / mapView.k;
+    const cyp = (cy - mapView.y) / mapView.k;
+    mapView.k = nk;
+    mapView.x = cx - cxp * nk;
+    mapView.y = cy - cyp * nk;
+    applyMapView();
+  }
+  function initMapPanZoom() {
+    const wrap = $("#graph-wrap");
+    if (!wrap || wrap.dataset.pz) return;
+    wrap.dataset.pz = "1";
+    wrap.addEventListener("wheel", (e) => {
+      if (mapMode !== "2d") return;
+      e.preventDefault();
+      const rect = wrap.getBoundingClientRect();
+      mapZoomAt(e.clientX - rect.left, e.clientY - rect.top, e.deltaY < 0 ? 1.15 : 1 / 1.15);
+    }, { passive: false });
+    wrap.addEventListener("pointerdown", (e) => {
+      if (mapMode !== "2d") return;
+      mapDrag = { sx: e.clientX, sy: e.clientY, ox: mapView.x, oy: mapView.y, moved: 0 };
+      wrap.classList.add("is-panning");
+    });
+    window.addEventListener("pointermove", (e) => {
+      if (!mapDrag || mapMode !== "2d") return;
+      const dx = e.clientX - mapDrag.sx, dy = e.clientY - mapDrag.sy;
+      if (Math.hypot(dx, dy) > 4) {
+        mapDrag.moved = 1;
+        mapView.x = mapDrag.ox + dx; mapView.y = mapDrag.oy + dy;
+        applyMapView();
+      }
+    });
+    window.addEventListener("pointerup", () => {
+      if (!mapDrag) return;
+      mapDragged = !!mapDrag.moved;
+      mapDrag = null;
+      wrap.classList.remove("is-panning");
+      setTimeout(() => (mapDragged = false), 60);
+    });
+  }
+  /* ---------- 連結グループの見出し ---------- */
+  let mapShowLabels = true;
+  function modeOf(arr) {
+    const m = {};
+    arr.forEach((v) => { if (v) m[v] = (m[v] || 0) + 1; });
+    let best = null, bestN = 0;
+    Object.keys(m).forEach((k) => { if (m[k] > bestN) { best = k; bestN = m[k]; } });
+    return best;
+  }
+  function clusterLabelText(comp) {
+    // AI 判定で記入されたグループ見出し（GROUP:）を最優先
+    const gl = modeOf(comp.map((n) => n.gl || "").filter(Boolean));
+    if (gl) return gl;
+    const cat = modeOf([].concat(...comp.map((n) => n.cats || [])));
+    if (cat) return cat;
+    const tag = modeOf([].concat(...comp.map((n) => n.tags || [])));
+    if (tag) return tag.replace(/^#/, "");
+    // タイトルから共通の語を探す（2文字以上・複数カードに出現）
+    const toks = {};
+    comp.forEach((n) => {
+      tokenize(n.title || "").forEach((tk) => { if (tk.length >= 2) toks[tk] = (toks[tk] || 0) + 1; });
+    });
+    let best = null, bestN = 1;
+    Object.keys(toks).forEach((k) => { if (toks[k] > bestN) { best = k; bestN = toks[k]; } });
+    if (best) return best;
+    return comp.length + "枚のグループ";
+  }
+  function buildClusterLabels(nodes, links) {
+    const adj = new Map();
+    nodes.forEach((n) => adj.set(n.id, []));
+    links.forEach((l) => { adj.get(l.a.id).push(l.b); adj.get(l.b.id).push(l.a); });
+    const visited = new Set();
+    const out = [];
+    nodes.forEach((n) => {
+      if (visited.has(n.id)) return;
+      const comp = [];
+      const stack = [n];
+      visited.add(n.id);
+      while (stack.length) {
+        const cur = stack.pop(); comp.push(cur);
+        (adj.get(cur.id) || []).forEach((nb) => { if (!visited.has(nb.id)) { visited.add(nb.id); stack.push(nb); } });
+      }
+      if (comp.length < 2) return; // 連結していない点には見出しを付けない
+      const xs = comp.map((x) => x.x), ys = comp.map((x) => x.y);
+      out.push({
+        x: (Math.min(...xs) + Math.max(...xs)) / 2,
+        y: Math.min(...ys) - 16,
+        text: clusterLabelText(comp),
+      });
+    });
+    return out;
   }
   function drawMap2D(data) {
     const { W, H, nodes, links } = data;
     const NS = "http://www.w3.org/2000/svg";
-    const svg = $("#graph-svg");
+    const svg = $("#graph-content") || $("#graph-svg");
     links.forEach((l) => {
       const ln = document.createElementNS(NS, "line");
       ln.setAttribute("x1", l.a.x); ln.setAttribute("y1", l.a.y);
@@ -113,7 +220,7 @@
       const r = 4 + n.importance;
       const circ = document.createElementNS(NS, "circle");
       circ.setAttribute("r", r);
-      circ.setAttribute("fill", TYPE_COLOR[n.type] || TYPE_COLOR.knowledge);
+      circ.setAttribute("fill", TYPE_COLOR.knowledge);
       const txt = document.createElementNS(NS, "text");
       txt.setAttribute("x", r + 4); txt.setAttribute("y", 4);
       txt.setAttribute("fill", "var(--text)");
@@ -122,6 +229,17 @@
       bindGraphNodeEvents(g, n);
       svg.appendChild(g);
     });
+    // 連結グループの見出し（カテゴリ/タグ/共通語を代表ラベルに）
+    if (mapShowLabels) {
+      buildClusterLabels(nodes, links).forEach((cl) => {
+        const t = document.createElementNS(NS, "text");
+        t.setAttribute("class", "graph-cluster-label");
+        t.setAttribute("x", cl.x);
+        t.setAttribute("y", cl.y);
+        t.textContent = cl.text;
+        svg.appendChild(t);
+      });
+    }
   }
   function startMap3D(data) {
     const wrap = $("#graph-wrap");
@@ -142,6 +260,7 @@
       const nodeLayer = document.createElementNS(NS, "g"); nodeLayer.setAttribute("class", "map3d-nodes"); svg.appendChild(nodeLayer);
 
       const focal = Math.max(data.W, data.H) * 0.62;
+      const ZOOM3D = 1.3; // 3D も間隔を少し広げて表示（中心から1.3倍）
       function project(n) {
         const { W, H } = data;
         const cy = Math.cos(state.rotY), sy = Math.sin(state.rotY);
@@ -151,7 +270,7 @@
         const y1 = n.y * cx - z1 * sx;
         const z2 = n.y * sx + z1 * cx;
         const scale = focal / (focal + z2);
-        return { x: x1 * scale + W / 2, y: y1 * scale + H / 2, z: z2, scale };
+        return { x: x1 * scale * ZOOM3D + W / 2, y: y1 * scale * ZOOM3D + H / 2, z: z2, scale };
       }
       const ringR = Math.min(data.W, data.H) * 0.5;
       const floorY = Math.min(data.W, data.H) * 0.34;
@@ -175,7 +294,7 @@
         const r = 3 + n.importance * 0.7;
         const circ = document.createElementNS(NS, "circle");
         circ.setAttribute("r", r);
-        circ.setAttribute("fill", TYPE_COLOR[n.type] || TYPE_COLOR.knowledge);
+        circ.setAttribute("fill", TYPE_COLOR.knowledge);
         circ.setAttribute("stroke", "rgba(255,255,255,.5)");
         circ.setAttribute("stroke-width", "0.6");
         const txt = document.createElementNS(NS, "text");
@@ -274,11 +393,25 @@
       const svg = $("#graph-svg");
       svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
       svg.innerHTML = "";
+      const NS = "http://www.w3.org/2000/svg";
+      const content = document.createElementNS(NS, "g");
+      content.setAttribute("id", "graph-content");
+      svg.appendChild(content);
       if (!cards.length) { svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="var(--text-dim)" font-size="14">カードがありません</text>'; return; }
       const data = buildGraphData(w, h);
       updateMapLegend();
-      if (mapMode === "2d") { runLayout2D(data); drawMap2D(data); }
-      else { runLayout3D(data); startMap3D(data); }
+      const hint = $("#graph-hint");
+      if (mapMode === "2d") {
+        mapView = { x: -w * 0.25, y: -h * 0.25, k: 0.5 };
+        runLayout2D(data);
+        drawMap2D(data);
+        applyMapView();
+        if (hint) hint.textContent = "ホイールで拡大縮小・ドラッグで移動";
+      } else {
+        if (hint) hint.textContent = "ドラッグで回転";
+        runLayout3D(data);
+        startMap3D(data);
+      }
     };
     draw();
   }

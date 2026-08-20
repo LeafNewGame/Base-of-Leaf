@@ -307,6 +307,23 @@
   const nowISO = () => new Date().toISOString();
   const TYPE_LABEL = { knowledge: "知識", idea: "アイデア", thought: "思考ログ", decision: "判断履歴" };
 
+  /* ---------- 記録日時（本棚のページ順に使う） ----------
+     保存は ISO（UTC）、画面の入力欄は datetime-local（ローカル時刻）なので相互変換する。 */
+  function isoToLocalInput(iso) {
+    const d = iso ? new Date(iso) : new Date();
+    if (isNaN(d.getTime())) return "";
+    const p = (n) => String(n).padStart(2, "0");
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) +
+      "T" + p(d.getHours()) + ":" + p(d.getMinutes());
+  }
+  function localInputToISO(v) {
+    if (!v) return null;
+    const d = new Date(v); // オフセットなしの日時文字列はローカル時刻として解釈される
+    return isNaN(d.getTime()) ? null : d.toISOString();
+  }
+  /* カードの「記録日時」。未設定の古いカードは更新日時で代用する。 */
+  function cardRecordedAt(c) { return (c && (c.createdAt || c.updatedAt)) || ""; }
+
   function normTag(t) {
     t = (t || "").trim();
     if (!t) return "";
@@ -405,14 +422,12 @@
     if (name === "map") renderMap(); else stopMapLoop();
     if (name === "stats") renderStats();
     if (name === "review") renderReview();
-    if (name === "thoughts") renderThoughts();
     if (name === "chat") populateCompareSelects();
     if (name === "calendar") renderCalendar();
     if (name === "home") renderFolders();
     if (name === "folder") renderFolder();
     if (name === "worktable" && typeof wtOnShow === "function") wtOnShow();
     if (name === "book" && typeof renderBook === "function") renderBook();
-    if (name === "record" && typeof renderRecord === "function") renderRecord();
   }
 
   /* ---------- 描画: フィルタチップ ---------- */

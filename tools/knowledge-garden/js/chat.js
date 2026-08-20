@@ -40,7 +40,7 @@
 
   function buildContext(cardsArr) {
     return cardsArr.map((c, i) => {
-      return `【カード${i + 1}】${c.title}\n種類: ${TYPE_LABEL[c.type] || c.type}\nカテゴリ: ${(c.categories || []).join(", ")}\nタグ: ${(c.tags || []).join(", ")}\n特性: ${c.traits || ""}\n本文:\n${c.body || ""}`;
+      return `【カード${i + 1}】${c.title}\nカテゴリ: ${(c.categories || []).join(", ")}\nタグ: ${(c.tags || []).join(", ")}\n特性: ${c.traits || ""}\n本文:\n${c.body || ""}`;
     }).join("\n\n");
   }
 
@@ -142,7 +142,7 @@
     if (!a || !b || a.id === b.id) { alert("異なるカードを2枚選択してください"); return; }
     const log = $("#chat-log");
     const sys = "あなたはユーザーのナレッジAIです。提供された2つのカードを比較し、共通点・相違点・関係性を日本語で簡潔に説明してください。";
-    const user = `カード1:\nタイトル: ${a.title}\n種類: ${TYPE_LABEL[a.type] || a.type}\nカテゴリ: ${(a.categories || []).join(", ")}\nタグ: ${(a.tags || []).join(", ")}\n本文:\n${a.body || ""}\n\nカード2:\nタイトル: ${b.title}\n種類: ${TYPE_LABEL[b.type] || b.type}\nカテゴリ: ${(b.categories || []).join(", ")}\nタグ: ${(b.tags || []).join(", ")}\n本文:\n${b.body || ""}\n\nこの2つを比較してください。`;
+    const user = `カード1:\nタイトル: ${a.title}\nカテゴリ: ${(a.categories || []).join(", ")}\nタグ: ${(a.tags || []).join(", ")}\n本文:\n${a.body || ""}\n\nカード2:\nタイトル: ${b.title}\nカテゴリ: ${(b.categories || []).join(", ")}\nタグ: ${(b.tags || []).join(", ")}\n本文:\n${b.body || ""}\n\nこの2つを比較してください。`;
     const thinking = divMsg("ai", ki("thinking") + " 比較中…");
     log.appendChild(thinking); log.scrollTop = log.scrollHeight;
     try {

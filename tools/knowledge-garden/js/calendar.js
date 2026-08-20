@@ -64,13 +64,12 @@
       html += `<div class="cg-ada-head"><span class="cg-ada-date">${dt.getMonth() + 1}/${dt.getDate()}</span><span class="cg-ada-dow">（${dows[dt.getDay()]}）</span><span class="cg-ada-count">${doneN}/${list.length}</span></div>`;
       html += `<div class="cg-ada-row">`;
       if (!list.length) html += `<div class="cg-ada-empty">予定なし</div>`;
-      else list.forEach((c) => {
-        const badge = (c.type && c.type !== "knowledge") ? `<span class="type-badge type-${c.type}">${TYPE_LABEL[c.type]}</span>` : "";
+      else       list.forEach((c) => {
         html += `<div class="cg-ata${c.done ? " done" : ""}" data-id="${c.id}">
           <label class="cg-ata-check"><input type="checkbox" ${c.done ? "checked" : ""} data-id="${c.id}" /><span class="cg-task-box">${c.done ? CHECK_ON_SVG : CHECK_OFF_SVG}</span></label>
           <div class="cg-ata-body">
             <div class="cg-ata-title">${escapeHtml(c.title)}</div>
-            <div class="cg-ata-meta"><span class="stars">${stars(c.importance)}</span>${badge}</div>
+            <div class="cg-ata-meta"><span class="stars">${stars(c.importance)}</span></div>
           </div>
         </div>`;
       });
@@ -102,7 +101,6 @@
     list.forEach((c) => {
       const item = document.createElement("div");
       item.className = "cg-task" + (c.done ? " done" : "");
-      const badge = c.type && c.type !== "knowledge" ? `<span class="type-badge type-${c.type}">${TYPE_LABEL[c.type]}</span>` : "";
       item.innerHTML = `
         <label class="cg-task-check">
           <input type="checkbox" ${c.done ? "checked" : ""} data-id="${c.id}" />
@@ -112,7 +110,6 @@
           <div class="cg-task-title">${escapeHtml(c.title)}</div>
           <div class="cg-task-meta">
             <span class="stars">${stars(c.importance)}</span>
-            ${badge}
             ${c.done ? '<span class="done-tag">完了済み</span>' : ""}
           </div>
         </div>`;

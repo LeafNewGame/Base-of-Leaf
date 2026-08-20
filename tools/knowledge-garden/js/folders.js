@@ -70,6 +70,28 @@
     if (t === "box") return { type: "box", label: "テンプレート枠（大きい）" };
     return { type: "line", label: "一行（タイトルサイズ）" };
   }
+  // フォルダごとに表示/非表示を切り替えられる入力欄（五標準項目＝タイトル・本文・記録日時・カテゴリ・タグは常時表示）
+  const OPT_FIELDS = [
+    { key: "rating", label: "重要度・理解度" },
+    { key: "favorite", label: "お気に入り" },
+    { key: "duedate", label: "予定日（カレンダー）" },
+    { key: "custom", label: "このフォルダの入力項目（枠）" },
+    { key: "references", label: "参考資料" },
+    { key: "memo", label: "メモ" },
+    { key: "traits", label: "特性分析" },
+    { key: "links", label: "関連カード" },
+  ];
+  function defaultOpt() {
+    const o = {};
+    OPT_FIELDS.forEach((f) => (o[f.key] = true));
+    return o;
+  }
+  function getFolderOpt(cat) {
+    const s = Settings.get();
+    const tpl = (s.folderTemplates || {})[cat];
+    const stored = (tpl && typeof tpl === "object" && tpl.opt) ? tpl.opt : {};
+    return Object.assign(defaultOpt(), stored);
+  }
   function getFolderFormat(cat) {
     const s = Settings.get();
     const tpl = (s.folderTemplates || {})[cat];
@@ -91,6 +113,17 @@
     $("#folder-fmt-body").value = fmt.body || "";
     const box = $("#folder-fields"); box.innerHTML = "";
     (fmt.fields || []).forEach((f) => box.appendChild(makeFieldRow(f)));
+    const opt = getFolderOpt(cat);
+    const optBox = $("#folder-fields-opt"); optBox.innerHTML = "";
+    OPT_FIELDS.forEach((f) => {
+      const lab = document.createElement("label");
+      lab.className = "ff-opt-item";
+      const cb = document.createElement("input");
+      cb.type = "checkbox"; cb.checked = opt[f.key] !== false; cb.dataset.opt = f.key;
+      lab.appendChild(cb);
+      lab.appendChild(document.createTextNode(" " + f.label));
+      optBox.appendChild(lab);
+    });
     $("#folder-fmt-box").hidden = false;
   }
   function makeFieldRow(f) {
@@ -121,7 +154,9 @@
       fields.push({ name, type: row.dataset.type || "line", def: row.querySelector(".ff-def").value });
     });
     const s = Settings.get(); s.folderTemplates = s.folderTemplates || {};
-    s.folderTemplates[cat] = { body: $("#folder-fmt-body").value, fields };
+    const opt = {};
+    $$("#folder-fields-opt .ff-opt-item input").forEach((cb) => { opt[cb.dataset.opt] = cb.checked; });
+    s.folderTemplates[cat] = { body: $("#folder-fmt-body").value, fields, opt };
     Settings.save(s);
     const btn = $("#folder-fmt-save");
     const old = btn.textContent; btn.innerHTML = ki("check") + " 保存済み";

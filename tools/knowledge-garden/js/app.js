@@ -20,9 +20,7 @@
   function bindEvents() {
     $$(".nav-item").forEach((b) => (b.onclick = () => { setView(b.dataset.view); $("#app").classList.remove("sidebar-open"); }));
     $("#btn-new").onclick = () => openEditor(null);
-    $("#btn-new-thought").onclick = () => { openEditor(null); $("#f-type").value = "thought"; };
     $("#search-input").oninput = (e) => { searchQuery = e.target.value; renderCards(); };
-    $("#type-filter").onchange = (e) => { filters.type = e.target.value; renderCards(); };
     $("#f-importance").oninput = (e) => ($("#f-importance-val").innerHTML = stars(+e.target.value));
     $("#f-understanding").oninput = (e) => ($("#f-understanding-val").innerHTML = stars(+e.target.value));
     $("#editor-save").onclick = saveEditor;
@@ -58,7 +56,12 @@
     };
     $("#folder-back").onclick = () => setView("home");
     $("#folder-add").onclick = () => openFolderEditor(currentFolderCat);
-    $("#folder-fmt").onclick = () => openFolderFormat();
+    $("#folder-fmt").onclick = () => {
+      const box = $("#folder-fmt-box");
+      if (!box.hidden) { box.hidden = true; return; }
+      openFolderFormat();
+    };
+    $("#folder-fmt-close").onclick = () => { $("#folder-fmt-box").hidden = true; };
     $("#folder-fmt-open-modal").onclick = () => openFolderModal(currentFolderCat);
     $("#btn-add-field").onclick = () => $("#folder-fields").appendChild(makeFieldRow({ name: "", type: "line" }));
     $("#folder-fmt-save").onclick = saveFolderTemplate;
@@ -66,10 +69,20 @@
     $("#btn-add-calendar").onclick = () => { const d = $("#f-duedate"); d.hidden = false; d.value = d.value || new Date().toISOString().slice(0, 10); $("#btn-add-calendar").hidden = true; $("#btn-clear-due").hidden = false; $("#due-hint").textContent = "予定日: " + d.value; };
     $("#btn-clear-due").onclick = () => { const d = $("#f-duedate"); d.value = ""; d.hidden = true; $("#btn-add-calendar").hidden = false; $("#btn-clear-due").hidden = true; $("#due-hint").textContent = ""; };
     $("#f-duedate").onchange = () => { const v = $("#f-duedate").value; $("#due-hint").textContent = v ? ("予定日: " + v) : ""; };
+    $("#btn-created-now").onclick = () => { $("#f-created").value = isoToLocalInput(nowISO()); };
     $("#editor-delete").onclick = deleteCard;
     $("#editor-history").onclick = () => { if (editingId) openHistory(editingId); };
     $("#history-close").onclick = () => ($("#history-backdrop").hidden = true);
     $("#btn-map-relayout").onclick = renderMap;
+    $("#btn-map-zoom-in").onclick = () => { const r = $("#graph-wrap").getBoundingClientRect(); mapZoomAt(r.width / 2, r.height / 2, 1.3); };
+    $("#btn-map-zoom-out").onclick = () => { const r = $("#graph-wrap").getBoundingClientRect(); mapZoomAt(r.width / 2, r.height / 2, 1 / 1.3); };
+    $("#btn-map-zoom-reset").onclick = () => mapResetView();
+    $("#btn-map-labels").onclick = () => {
+      mapShowLabels = !mapShowLabels;
+      $("#btn-map-labels").textContent = "見出し: " + (mapShowLabels ? "入" : "出");
+      renderMap();
+    };
+    initMapPanZoom();
     $("#btn-map-2d").onclick = () => { mapMode = "2d"; updateMapModeButtons(); renderMap(); };
     $("#btn-map-3d").onclick = () => { mapMode = "3d"; updateMapModeButtons(); renderMap(); };
     $("#btn-map-rotate").onclick = () => {
@@ -102,7 +115,6 @@
     $("#bulk-exit").onclick = () => setSelectMode(false);
     $("#btn-chat-send").onclick = sendChat;
     $("#chat-input").onkeydown = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); } };
-    $("#thought-type").onchange = renderThoughts;
     $("#btn-ai-review").onclick = aiReview;
     $("#btn-compare").onclick = () => { populateCompareSelects(); $("#ai-tools").hidden = false; };
     $("#btn-compare-cancel").onclick = () => { $("#ai-tools").hidden = true; };
@@ -129,6 +141,19 @@
     $("#btn-import").onclick = () => $("#import-file").click();
     $("#import-file").onchange = (e) => { if (e.target.files[0]) importJSON(e.target.files[0]); };
     $("#btn-save-settings").onclick = saveSettings;
+    // 知識マップの連結（ローカル自動リンク ＋ AI 手動ブリッジ）
+    const runBackfill = () => {
+      const n = backfillAllLinks();
+      const st = $("#link-status");
+      if (st) { st.textContent = n ? n + " 件のリンクを追加しました" : "追加できるリンクはありませんでした"; setTimeout(() => (st.textContent = ""), 5000); }
+      if ($("#view-map").classList.contains("active") && typeof renderMap === "function") renderMap();
+    };
+    $("#set-autolink").onchange = () => { const s = Settings.get(); s.autoLink = $("#set-autolink").checked; Settings.save(s); };
+    $("#btn-backfill-links").onclick = runBackfill;
+    $("#btn-map-autolink").onclick = runBackfill;
+    $("#btn-export-links").onclick = exportLinkFile;
+    $("#btn-import-links").onclick = () => $("#import-links-file").click();
+    $("#import-links-file").onchange = (e) => { if (e.target.files[0]) importLinkFile(e.target.files[0]); e.target.value = ""; };
     // クラウド（Supabase）
     $("#btn-cloud-google").onclick = () => { applyCloudConfigFromInputs(); Cloud.googleLogin(); };
     $("#btn-cloud-signin").onclick = async () => {

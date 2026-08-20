@@ -7,7 +7,6 @@
     const catCount = {}; cards.forEach((c) => (c.categories || []).forEach((x) => (catCount[x] = (catCount[x] || 0) + 1)));
     const totalViews = cards.reduce((s, c) => s + (c.viewCount || 0), 0);
     const years = {}; cards.forEach((c) => { if (c.createdAt) { const y = new Date(c.createdAt).getFullYear(); years[y] = (years[y] || 0) + 1; } });
-    const typeCount = {}; cards.forEach((c) => { const t = c.type || "knowledge"; typeCount[t] = (typeCount[t] || 0) + 1; });
 
     const topCats = Object.entries(catCount).sort((a, b) => b[1] - a[1]).slice(0, 6);
     const maxCat = Math.max(1, ...topCats.map((x) => x[1]));
@@ -25,10 +24,6 @@
       <div class="stat-card" style="grid-column: span 2;">
         <h3>年度別の成長（カード作成数）</h3>
         ${yrEntries.map(([y, v]) => `<div class="bar-row"><span class="name">${y}年</span><span class="bar"><i style="width:${v / maxYr * 100}%"></i></span><span class="val">${v}</span></div>`).join("") || '<div class="empty">なし</div>'}
-      </div>
-      <div class="stat-card" style="grid-column: span 2;">
-        <h3>思考の傾向（種類別）</h3>
-        ${Object.entries(typeCount).map(([t, v]) => `<div class="bar-row"><span class="name">${TYPE_LABEL[t] || t}</span><span class="bar"><i style="width:${v / Math.max(1, total) * 100}%"></i></span><span class="val">${v}</span></div>`).join("")}
       </div>
       ${calendarHTML()}`;
   }

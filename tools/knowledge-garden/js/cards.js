@@ -23,7 +23,6 @@
     }
     if (filters.category) data = data.filter((c) => (c.categories || []).includes(filters.category));
     if (filters.tag) data = data.filter((c) => (c.tags || []).includes(filters.tag));
-    if (filters.type) data = data.filter((c) => c.type === filters.type);
     if (favOnly) data = data.filter((c) => c.favorite);
     data = sortCards(data);
 
@@ -45,12 +44,11 @@
     const el = document.createElement("div");
     const selected = selectMode && selectedIds.has(c.id);
     el.className = "kcard" + (selectMode ? " selectable" : "") + (selected ? " selected" : "");
-    const badge = c.type && c.type !== "knowledge" ? `<span class="type-badge type-${c.type}">${TYPE_LABEL[c.type]}</span>` : "";
     const relCount = (c.relatedCardIds || []).length;
     const check = selectMode ? `<span class="kc-check" aria-hidden="true">${selected ? CHECK_ON_SVG : CHECK_OFF_SVG}</span>` : "";
     el.innerHTML = `
       <div class="kc-head">
-        ${check}${badge}
+        ${check}
         <button class="fav-btn${c.favorite ? " on" : ""}" data-fav="${c.id}" title="お気に入り切替" aria-label="お気に入り">${STAR_SVG}</button>
       </div>
       <h3>${escapeHtml(c.title)}</h3>
@@ -80,9 +78,9 @@
     editingId = id || null;
     const c = id ? cards.find((x) => x.id === id) : null;
     editingCard = c;
+    if (id) editorFolderCat = null; // 既存カード編集時は、フォルダごとの表示設定をカード自身のカテゴリから判定
     $("#editor-title").textContent = id ? "カードを編集" : "新規カード";
     $("#f-title").value = c?.title || "";
-    $("#f-type").value = c?.type || "knowledge";
     $("#f-importance").value = c?.importance || 3;
     $("#f-understanding").value = c?.understanding || 3;
     $("#f-importance-val").innerHTML = stars(c?.importance || 3);
@@ -97,6 +95,7 @@
     $("#traits-wrap").hidden = !hasTraits;
     $("#btn-add-traits").hidden = hasTraits;
     $("#f-favorite").checked = !!c?.favorite;
+    $("#f-created").value = isoToLocalInput(c?.createdAt || nowISO());
     const due = c?.dueDate || "";
     $("#f-duedate").value = due;
     $("#f-duedate").hidden = !due;
@@ -110,6 +109,7 @@
     $("#editor-delete").hidden = !id;
     $("#editor-history").hidden = !id;
     if (id) { c.viewCount = (c.viewCount || 0) + 1; c.lastViewed = nowISO(); Store.put(c); }
+    applyFolderOpt(c);
     $("#editor-backdrop").hidden = false;
   }
 
@@ -151,6 +151,24 @@
       }
       row.appendChild(nm); row.appendChild(inp);
       box.appendChild(row);
+    });
+  }
+  // フォルダごとの入力欄表示/非表示を編集画面に反映（五標準項目は常時表示）
+  let currentFolderOpt = null;
+  function applyFolderOpt(c) {
+    const cat = editorFolderCat || (c && (c.categories || [])[0]) || null;
+    const opt = cat ? getFolderOpt(cat) : null;
+    currentFolderOpt = opt;
+    if (!opt) return; // フォルダ設定なしは標準表示（既存の表示ロジックを尊重）
+    $$("[data-opt]").forEach((el) => {
+      const k = el.dataset.opt;
+      const on = opt[k] !== false; // 既定は表示
+      if (k === "traits" || k === "duedate") {
+        // 既存の表示/非表示ロジックを尊重し、opt で明示的に off のときのみ強制非表示
+        if (opt[k] === false) el.hidden = true;
+      } else {
+        el.hidden = !on;
+      }
     });
   }
   function collectCustomFields() {
@@ -234,6 +252,40 @@
     });
   }
 
+  /* ---------- 自動リンク（ローカル・無料。API 不使用） ---------- */
+  // 1カードにつき、似た内容の上位 k 件（スコア minScore 以上）へ双方向リンクを追加
+  function autoLinkCard(c, k = 3, minScore = 7) {
+    const q = [(c.title || ""), (c.tags || []).join(" "), (c.categories || []).join(" ")].join(" ");
+    const qTokens = tokenize(q);
+    if (!qTokens.length) return 0;
+    const scored = cards
+      .filter((x) => x.id !== c.id)
+      .map((x) => ({ card: x, s: localScore(x, qTokens) }))
+      .filter((x) => x.s >= minScore)
+      .sort((a, b) => b.s - a.s)
+      .slice(0, k);
+    let n = 0;
+    scored.forEach(({ card: other }) => {
+      if ((c.relatedCardIds || []).includes(other.id)) return;
+      c.relatedCardIds = c.relatedCardIds || [];
+      c.relatedCardIds.push(other.id);
+      if (!(other.relatedCardIds || []).includes(c.id)) {
+        other.relatedCardIds = other.relatedCardIds || [];
+        other.relatedCardIds.push(c.id);
+        Store.put(other);
+      }
+      n++;
+    });
+    if (n) Store.put(c);
+    return n;
+  }
+  // 全カードを1回スキャンして既存カード同士を連結（追加できたリンクの総数を返す）
+  function backfillAllLinks() {
+    let n = 0;
+    cards.forEach((c) => { n += autoLinkCard(c); });
+    return n;
+  }
+
   async function saveEditor() {
     const title = $("#f-title").value.trim();
     if (!title) { alert("タイトルは必須です"); return; }
@@ -251,7 +303,6 @@
       if (c.versions.length > 30) c.versions.shift();
     }
     c.title = title;
-    c.type = $("#f-type").value;
     c.importance = +$("#f-importance").value;
     c.understanding = +$("#f-understanding").value;
     c.favorite = $("#f-favorite").checked;
@@ -263,7 +314,12 @@
     c.traits = $("#f-traits").value.trim();
     c.dueDate = $("#f-duedate").value || null;
     c.relatedCardIds = $$("#f-links input:checked").map((cb) => cb.dataset.id);
-    c.fields = collectCustomFields();
+    // フォルダで「このフォルダの入力項目」を非表示にしている場合は、既存データを消さず保持
+    c.fields = (currentFolderOpt && currentFolderOpt.custom === false) ? (c.fields || []) : collectCustomFields();
+    // 記録日時（手入力で変更可。本棚のページ順に影響する）
+    const createdISO = localInputToISO($("#f-created").value);
+    if (createdISO) c.createdAt = createdISO;
+    else if (!c.createdAt) c.createdAt = nowISO();
     c.updatedAt = nowISO();
     c.relatedCardIds.forEach((rid) => {
       const other = cards.find((x) => x.id === rid);
@@ -274,6 +330,8 @@
       }
     });
     Store.put(c);
+    // 自動リンク（設定でオンなら、保存のたびに似たカードを関連づける）
+    if (Settings.get().autoLink !== false) autoLinkCard(c);
     $("#editor-backdrop").hidden = true;
     await refresh();
   }
@@ -378,18 +436,6 @@
     });
     await refresh();
     alert(n + " 枚にタグを付与しました");
-  }
-
-  /* ---------- 思考・判断・アイデア ---------- */
-  async function renderThoughts() {
-    const list = $("#thought-list");
-    const type = $("#thought-type").value;
-    let data = cards.filter((c) => c.type && c.type !== "knowledge");
-    if (type) data = data.filter((c) => c.type === type);
-    if (!data.length) { list.innerHTML = '<div class="empty">まだありません。</div>'; return; }
-    list.innerHTML = "";
-    data.sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""));
-    data.forEach((c) => list.appendChild(cardEl(c)));
   }
 
   /* ---------- 復習提案（ローカル） ---------- */
