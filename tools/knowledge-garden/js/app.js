@@ -74,15 +74,17 @@
     $("#editor-history").onclick = () => { if (editingId) openHistory(editingId); };
     $("#history-close").onclick = () => ($("#history-backdrop").hidden = true);
     $("#btn-map-relayout").onclick = renderMap;
-    $("#btn-map-zoom-in").onclick = () => { const r = $("#graph-wrap").getBoundingClientRect(); mapZoomAt(r.width / 2, r.height / 2, 1.3); };
-    $("#btn-map-zoom-out").onclick = () => { const r = $("#graph-wrap").getBoundingClientRect(); mapZoomAt(r.width / 2, r.height / 2, 1 / 1.3); };
-    $("#btn-map-zoom-reset").onclick = () => mapResetView();
-    $("#btn-map-labels").onclick = () => {
+    const mapZoomBtn = (sel, f) => { const el = $(sel); if (el) el.onclick = f; };
+    mapZoomBtn("#btn-map-zoom-in", () => { const r = $("#graph-wrap").getBoundingClientRect(); mapZoomAt(r.width / 2, r.height / 2, 1.3); });
+    mapZoomBtn("#btn-map-zoom-out", () => { const r = $("#graph-wrap").getBoundingClientRect(); mapZoomAt(r.width / 2, r.height / 2, 1 / 1.3); });
+    mapZoomBtn("#btn-map-zoom-reset", () => mapResetView());
+    mapZoomBtn("#btn-map-labels", () => {
       mapShowLabels = !mapShowLabels;
-      $("#btn-map-labels").textContent = "見出し: " + (mapShowLabels ? "入" : "出");
+      const b = $("#btn-map-labels");
+      if (b) b.textContent = "見出し: " + (mapShowLabels ? "入" : "出");
       renderMap();
-    };
-    initMapPanZoom();
+    });
+    if (typeof initMapPanZoom === "function") initMapPanZoom();
     $("#btn-map-2d").onclick = () => { mapMode = "2d"; updateMapModeButtons(); renderMap(); };
     $("#btn-map-3d").onclick = () => { mapMode = "3d"; updateMapModeButtons(); renderMap(); };
     $("#btn-map-rotate").onclick = () => {
@@ -142,18 +144,21 @@
     $("#import-file").onchange = (e) => { if (e.target.files[0]) importJSON(e.target.files[0]); };
     $("#btn-save-settings").onclick = saveSettings;
     // 知識マップの連結（ローカル自動リンク ＋ AI 手動ブリッジ）
+    // ※要素が無い（古いHTMLと新しいJSが混ざった状態）でも初期化が止まらないよう null 安全にバインドする
+    const bindOn = (sel, fn) => { const el = $(sel); if (el) el.onclick = fn; };
+    const bindChange = (sel, fn) => { const el = $(sel); if (el) el.onchange = fn; };
     const runBackfill = () => {
       const n = backfillAllLinks();
       const st = $("#link-status");
       if (st) { st.textContent = n ? n + " 件のリンクを追加しました" : "追加できるリンクはありませんでした"; setTimeout(() => (st.textContent = ""), 5000); }
       if ($("#view-map").classList.contains("active") && typeof renderMap === "function") renderMap();
     };
-    $("#set-autolink").onchange = () => { const s = Settings.get(); s.autoLink = $("#set-autolink").checked; Settings.save(s); };
-    $("#btn-backfill-links").onclick = runBackfill;
-    $("#btn-map-autolink").onclick = runBackfill;
-    $("#btn-export-links").onclick = exportLinkFile;
-    $("#btn-import-links").onclick = () => $("#import-links-file").click();
-    $("#import-links-file").onchange = (e) => { if (e.target.files[0]) importLinkFile(e.target.files[0]); e.target.value = ""; };
+    bindChange("#set-autolink", () => { const s = Settings.get(); const el = $("#set-autolink"); if (el) s.autoLink = el.checked; Settings.save(s); });
+    bindOn("#btn-backfill-links", runBackfill);
+    bindOn("#btn-map-autolink", runBackfill);
+    bindOn("#btn-export-links", exportLinkFile);
+    bindOn("#btn-import-links", () => { const f = $("#import-links-file"); if (f) f.click(); });
+    bindChange("#import-links-file", (e) => { if (e.target.files[0]) importLinkFile(e.target.files[0]); e.target.value = ""; });
     // クラウド（Supabase）
     $("#btn-cloud-google").onclick = () => { applyCloudConfigFromInputs(); Cloud.googleLogin(); };
     $("#btn-cloud-signin").onclick = async () => {

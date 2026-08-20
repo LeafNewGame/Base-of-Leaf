@@ -1,0 +1,10 @@
+# 改行コードを統一（LF で保存・チェックアウト）して、
+# 「LF will be replaced by CRLF」警告とそれに伴う差分ノイズを防ぐ
+* text=auto
+*.html text eol=lf
+*.css  text eol=lf
+*.js   text eol=lf
+*.json text eol=lf
+*.md   text eol=lf
+*.svg  text eol=lf
+*.txt  text eol=lf

@@ -88,7 +88,7 @@
     document.querySelectorAll('input[name="theme"]').forEach((r) => (r.checked = r.value === mode));
     $("#set-custom-base").value = s.customBase || "dark";
     $("#set-ccent").value = s.customAccent || "#5fcf8e";
-    $("#set-autolink").checked = s.autoLink !== false;
+    const al = $("#set-autolink"); if (al) al.checked = s.autoLink !== false;
     $("#custom-theme").hidden = mode !== "custom";
   }
   function saveSettings() {
@@ -99,7 +99,7 @@
     s.embed = $("#set-embed").value.trim();
     s.supabaseUrl = $("#set-supabase-url").value.trim();
     s.supabaseKey = $("#set-supabase-key").value.trim();
-    s.autoLink = $("#set-autolink").checked;
+    const al = $("#set-autolink"); if (al) s.autoLink = al.checked;
     Cloud.setConfig(s.supabaseUrl, s.supabaseKey);
     Settings.save(s);
     applyTheme();
