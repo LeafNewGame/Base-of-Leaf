@@ -5,11 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HabitTool</title>
-    <link rel="stylesheet" href="../style.css?v=20260817">
+    <link rel="stylesheet" href="../style.css?v=20260821c">
+    <link rel="stylesheet" href="knowledge-garden/css/theme-effects.css">
 
 </head>
 
 <body>
+
+<div id="fx-layer"></div>
 
  <header>
     <a href="../index.html">
@@ -42,9 +45,14 @@
     <h2>連続継続日数・合計継続日数を表示し、達成時に上にフォームが出て回数を入力できます。</h2>
 </div>
 
-<button id="addHabit">
-   新しい習慣を追加
-</button>
+<div class="top-actions">
+    <button id="addHabit">
+       新しい習慣を追加
+    </button>
+    <button id="btn-open-backup" class="btn-backup">🛟 バックアップ・復元</button>
+    <button id="btn-open-theme" class="btn-backup">🎨 着せ替えテーマ</button>
+    <button id="btn-decor" class="btn-backup">✨ 装飾: 入</button>
+</div>
 
 <div id="habitModal">
 
@@ -98,13 +106,100 @@
     </div>
 </div>
 
+<!-- バックアップ・復元・非常時入力モーダル -->
+<div id="backupModal">
+    <div class="modal-content backup-content">
+        <h2>データのバックアップ・復元</h2>
+        <p class="backup-hint">このアプリのデータは<b>お使いの端末のブラウザ内</b>に保存されています。端末やブラウザを変えるとデータは引き継がれません。定期的に書き出して保管しておくと安心です（スマホでもコピー＆メモに貼り付けで対応できます）。<br>非常時編集の累計: <b id="emg-total">0</b> 回</p>
+
+        <div class="bk-tabs">
+            <button id="bk-tab-export" class="bk-tab active">書き出し</button>
+            <button id="bk-tab-restore" class="bk-tab">復元</button>
+            <button id="bk-tab-manual" class="bk-tab">非常時・手動入力</button>
+        </div>
+
+        <!-- 書き出し -->
+        <div id="bk-export" class="bk-pane">
+            <p class="backup-hint">「ファイルとして保存」か「コピー」のどちらかで保管します。コピーしたテキストはメモアプリやメールに貼り付けて保存できます。</p>
+            <button id="btn-export-file">📥 ファイルとして保存</button>
+            <button id="btn-export-copy">📋 テキストをコピー（スマホ向け）</button>
+            <textarea id="bk-export-text" readonly></textarea>
+        </div>
+
+        <!-- 復元 -->
+        <div id="bk-restore" class="bk-pane" hidden>
+            <p class="backup-hint">保存しておいたファイルを読み込むか、コピーしておいたテキストを貼り付けて復元します。<b>現在のデータは置き換えられます</b>。置き換える前に書き出しをしておくと安全です。</p>
+            <input type="file" id="bk-file" accept=".json,.txt,application/json,text/plain">
+            <button id="btn-import-file">📂 ファイルから読み込む</button>
+            <textarea id="bk-restore-text" placeholder="ここにバックアップのテキストを貼り付け…"></textarea>
+            <button id="btn-import-paste">🔄 貼り付けた内容で復元</button>
+        </div>
+
+        <!-- 非常時・手動入力 -->
+        <div id="bk-manual" class="bk-pane" hidden>
+            <p class="backup-hint">データが消えてしまった場合の応急処置です。習慣・日付・値を選んで記録を<b>1件ずつ手で書き戻せます</b>（例：3日前に達成した分を手入力で追加）。</p>
+            <label>習慣</label>
+            <select id="bk-manual-habit"></select>
+            <label>日付</label>
+            <input type="date" id="bk-manual-date">
+            <label>値（達成・未達成は 1）</label>
+            <input type="number" id="bk-manual-value" min="0" step="any" value="1">
+            <button id="btn-manual-add">＋ この記録を追加</button>
+            <p id="bk-manual-msg" class="backup-msg"></p>
+
+            <hr class="bk-hr">
+            <p class="detail-sub">全データ編集（非常時）</p>
+            <p class="backup-hint">上の「習慣」で選んだ習慣の、すべてのデータ（連続日数・合計日数・記録一覧など）を編集できます。保存すると非常時編集として回数が記録されます。</p>
+            <button id="btn-open-edit">✏️ 選んだ習慣を編集（全データ）</button>
+        </div>
+
+        <button id="closeBackup">閉じる</button>
+    </div>
+</div>
+
+<!-- 非常時編集モーダル（すべてのデータを編集可能） -->
+<div id="editModal">
+    <div class="modal-content edit-content">
+        <h2>データを編集（非常時）</h2>
+        <p class="backup-hint">⚠️ この機能は<b>データが消えた時などの非常用</b>です。通常の記録は各カードの「記録する」ボタンを使ってください。保存すると<b>非常時編集として回数が記録されます</b>（元に戻せません）。</p>
+        <div id="editBody"></div>
+        <div class="edit-actions">
+            <button id="btn-edit-save" class="btn-record">保存する</button>
+            <button id="closeEdit" class="btn-delete">キャンセル</button>
+        </div>
+    </div>
+</div>
+
+<!-- 着せ替えテーマモーダル（知識の箱庭と共有） -->
+<div id="themeModal">
+    <div class="modal-content theme-content">
+        <h2>着せ替えテーマ</h2>
+        <p class="backup-hint">知識の箱庭と同じテーマを共有します。ここで選ぶと知識の箱庭にも反映され、知識の箱庭で選んだテーマもこのツールに反映されます。</p>
+        <div class="theme-grid" id="ht-theme-grid"></div>
+        <div id="ht-custom" class="ht-custom" hidden>
+            <label>カスタムの明暗</label>
+            <select id="ht-cbase">
+                <option value="dark">ダーク</option>
+                <option value="light">ライト</option>
+            </select>
+            <label>アクセントカラー</label>
+            <input type="color" id="ht-ccent" value="#5fcf8e">
+        </div>
+        <div class="ht-decor-row">
+            <label class="ht-decor-label"><input type="checkbox" id="ht-decor" checked> ✨ 装飾を表示（夕焼けの斜陽・波・落ち葉・星・ネオンなどの演出）</label>
+        </div>
+        <button id="closeTheme">閉じる</button>
+    </div>
+</div>
+
 <div id="habitList">
 
 </div>
 
     <footer>
-      <p>最終更新日 2026/8/17</p>
+      <p>最終更新日 2026/8/21</p>
     </footer>
- <script src="habit_tool.js?v=20260817"></script>
- <script src="../script.js?v=20260817"></script>
+ <script src="knowledge-garden/js/theme-effects.js"></script>
+ <script src="habit_tool.js?v=20260821c"></script>
+ <script src="../script.js?v=20260821c"></script>
 </body>

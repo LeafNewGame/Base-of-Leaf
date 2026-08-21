@@ -544,3 +544,269 @@ body{
     width:100%; padding:9px 10px; margin-top:4px;
     border:1px solid #ccc; border-radius:8px; font-size:14px; box-sizing:border-box;
 }
+
+/* ===== 習慣化ツール バックアップ・称号（2026/8/21 追加） ===== */
+.top-actions{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+.btn-backup{
+    background:#fff; color:#228b22; border:2px solid #228b22;
+    padding:11px 22px; border-radius:10px; font-size:15px; cursor:pointer;
+    box-shadow:0 4px 10px rgba(34,139,34,.15);
+}
+.btn-backup:hover{ background:#e6f4ea; }
+
+/* 称号チップ（連続日数に応じた称号と次の称号までの残り日数） */
+.hk-title{
+    display:flex; justify-content:space-between; align-items:center; gap:8px;
+    background:#fff8e1; border:1px solid #f0d98a; border-radius:10px;
+    padding:7px 10px; margin-bottom:12px; font-size:13px;
+}
+.hk-title-cur{ font-weight:700; color:#a0882a; }
+.hk-title-cur.earned{ color:#b8860b; }
+.hk-title-next{ color:#a0882a; font-size:12px; }
+
+/* バックアップモーダル */
+#backupModal{
+    display:none; position:fixed; top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.5);
+    justify-content:center; align-items:center;
+    z-index:2100;
+}
+.backup-content{ max-width:520px; max-height:92vh; overflow:auto; }
+.backup-hint{ font-size:12.5px; color:#666; line-height:1.6; margin:6px 0 10px; }
+.backup-hint b{ color:#c0392b; }
+.bk-tabs{ display:flex; gap:6px; margin:12px 0; }
+.bk-tab{
+    flex:1; padding:9px 4px; border:1px solid #ccc; background:#fff;
+    border-radius:8px; cursor:pointer; font-size:13px; color:#333;
+}
+.bk-tab.active{ background:#228b22; color:#fff; border-color:#228b22; }
+.bk-pane{
+    border:1px solid #e2f0e2; background:#f7fcf7;
+    border-radius:10px; padding:12px; margin-bottom:12px;
+}
+.bk-pane[hidden]{ display:none; }
+.bk-pane textarea{
+    width:100%; min-height:110px; margin:10px 0; padding:8px;
+    border:1px solid #ccc; border-radius:8px; font-size:12px;
+    box-sizing:border-box; font-family:monospace;
+}
+.bk-pane input[type="file"]{ width:auto; padding:8px; background:#fff; }
+.bk-pane button{
+    background:#228b22; color:#fff; border:none; padding:10px 14px;
+    border-radius:8px; cursor:pointer; font-size:14px; margin:4px 8px 0 0;
+}
+.bk-pane button:hover{ filter:brightness(1.07); }
+.backup-msg{ color:#228b22; font-size:13px; font-weight:700; margin:6px 0 0; }
+
+/* ===== 習慣化ツール: フリーズ・非常時編集・着せ替えテーマ（2026/8/21 追加） ===== */
+.hk-title{ flex-wrap:wrap; }
+.hk-freeze{ margin-left:auto; font-weight:700; color:#4a7dff; font-size:12.5px; }
+.btn-edit{ background:#fff; color:#b8860b; border:1px solid #f0d98a; }
+
+/* 非常時編集モーダル */
+#editModal{
+    display:none; position:fixed; top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.5);
+    justify-content:center; align-items:center;
+    z-index:2150;
+}
+.edit-content{ max-width:520px; max-height:92vh; overflow:auto; }
+.ee-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:4px 14px; margin-top:4px; }
+.ee-grid input[type="checkbox"]{ width:auto; margin-top:10px; }
+.ee-rec{
+    display:flex; justify-content:space-between; align-items:center; gap:8px;
+    padding:6px 8px; border-bottom:1px solid #eef3ee; font-size:13px;
+}
+.ee-rec .mini-btn{ flex:0 0 auto; padding:6px 10px; }
+.ee-addrow{ display:flex; gap:8px; margin-top:8px; align-items:center; }
+.ee-addrow input{ flex:1; }
+.ee-addrow .mini-btn{ flex:0 0 auto; }
+.edit-actions{ display:flex; gap:10px; margin-top:16px; }
+.edit-actions button{ flex:1; padding:11px; border:none; border-radius:10px; cursor:pointer; font-size:15px; }
+
+/* 着せ替えテーマモーダル */
+#themeModal{
+    display:none; position:fixed; top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.5);
+    justify-content:center; align-items:center;
+    z-index:2200;
+}
+.theme-content{ max-width:440px; }
+.theme-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:12px 0; }
+.theme-swatch{
+    padding:10px 6px; border:1px solid #ccc; background:#fff;
+    border-radius:10px; cursor:pointer; font-size:13px; color:#333;
+}
+.theme-swatch:hover{ border-color:#228b22; }
+.theme-swatch.active{ background:#228b22; color:#fff; border-color:#228b22; font-weight:700; }
+.ht-custom{ border:1px dashed #ccc; border-radius:10px; padding:10px; margin-bottom:12px; }
+
+/* 非常時タブの区切り・全データ編集ボタン・装飾チェック */
+.bk-hr{ border:none; border-top:1px dashed #cfe3cf; margin:14px 0 4px; }
+#btn-open-edit{ background:#fff; color:#b8860b; border:2px solid #f0d98a; }
+[data-theme] #btn-open-edit{ background:var(--ht-panel); color:var(--ht-warn-text); border-color:var(--ht-warn-border); }
+.ht-decor-row{ border:1px dashed #ccc; border-radius:10px; padding:10px 12px; margin-bottom:12px; }
+.ht-decor-label{ display:flex; align-items:center; gap:8px; font-size:13.5px; color:#333; cursor:pointer; }
+.ht-decor-label input{ width:auto; margin:0; }
+[data-theme] .ht-decor-row{ border-color:var(--ht-border); }
+[data-theme] .ht-decor-label{ color:var(--ht-text); }
+
+/* ===== 習慣化ツール 着せ替えテーマ変数（既定＝従来のデザイン） ===== */
+:root{
+    --ht-bg:#ffffff; --ht-panel:#ffffff; --ht-panel-2:#f3fbf3;
+    --ht-border:#e2f0e2; --ht-text:#1f1f1f; --ht-dim:#5a7a5e;
+    --ht-accent:#228b22; --ht-accent-2:#1b5e20; --ht-accent-soft:#f3fbf3;
+    --ht-danger:#c0392b; --ht-danger-soft:#fdecea;
+    --ht-header:#228b22;
+    --ht-head-grad:linear-gradient(135deg,#2e7d32,#228b22);
+    --ht-warn-bg:#fff8e1; --ht-warn-border:#f0d98a; --ht-warn-text:#b8860b;
+    --ht-freeze:#4a7dff;
+}
+
+/* ---- テーマプリセット（知識の箱庭と共通の配色） ---- */
+[data-theme="dark"]{
+    --ht-bg:#0f1512; --ht-panel:#1b2620; --ht-panel-2:#223029;
+    --ht-border:#2e3d34; --ht-text:#e6efe9; --ht-dim:#9fb3a6;
+    --ht-accent:#5fcf8e; --ht-accent-2:#8fd0ff; --ht-accent-soft:rgba(95,207,142,.12);
+    --ht-danger:#ff6b6b; --ht-danger-soft:rgba(255,107,107,.12);
+    --ht-header:#16201b; --ht-head-grad:linear-gradient(135deg,#16201b,#223029);
+    --ht-warn-bg:rgba(255,209,102,.12); --ht-warn-border:rgba(255,209,102,.35); --ht-warn-text:#ffd166;
+    --ht-freeze:#7aa8ff;
+}
+[data-theme="light"]{
+    --ht-bg:#f2f5f3; --ht-panel:#ffffff; --ht-panel-2:#eef2ef;
+    --ht-border:#bfc9c3; --ht-text:#16201b; --ht-dim:#445049;
+    --ht-accent:#2f9e63; --ht-accent-2:#2b7fc4; --ht-accent-soft:#e8f4ee;
+    --ht-danger:#d64545; --ht-danger-soft:#fdecea;
+    --ht-header:#2f9e63; --ht-head-grad:linear-gradient(135deg,#237a4b,#2f9e63);
+    --ht-warn-bg:#fff8e1; --ht-warn-border:#f0d98a; --ht-warn-text:#b8860b;
+}
+[data-theme="sunset"]{
+    --ht-bg:#2a1622; --ht-panel:#3e2230; --ht-panel-2:#4a2838;
+    --ht-border:#5e3346; --ht-text:#fce9ee; --ht-dim:#cf9fb0;
+    --ht-accent:#ff8c5a; --ht-accent-2:#ffc15e; --ht-accent-soft:rgba(255,140,90,.14);
+    --ht-danger:#ff6f91; --ht-danger-soft:rgba(255,111,145,.14);
+    --ht-header:#341c2c; --ht-head-grad:linear-gradient(135deg,#341c2c,#4a2838);
+    --ht-warn-bg:rgba(255,209,102,.12); --ht-warn-border:rgba(255,209,102,.35); --ht-warn-text:#ffd166;
+    --ht-freeze:#ffc15e;
+}
+[data-theme="ocean"]{
+    --ht-bg:#0a1c26; --ht-panel:#123140; --ht-panel-2:#173f4f;
+    --ht-border:#235563; --ht-text:#e6f4f8; --ht-dim:#9cc2cf;
+    --ht-accent:#2bb7c4; --ht-accent-2:#56c5f2; --ht-accent-soft:rgba(43,183,196,.14);
+    --ht-danger:#ff7d8f; --ht-danger-soft:rgba(255,125,143,.14);
+    --ht-header:#0f2733; --ht-head-grad:linear-gradient(135deg,#0f2733,#173f4f);
+    --ht-warn-bg:rgba(255,209,102,.12); --ht-warn-border:rgba(255,209,102,.35); --ht-warn-text:#ffd166;
+    --ht-freeze:#56c5f2;
+}
+[data-theme="forest"]{
+    --ht-bg:#15241a; --ht-panel:#213528; --ht-panel-2:#294034;
+    --ht-border:#33512f; --ht-text:#e9f3e8; --ht-dim:#a8c3a9;
+    --ht-accent:#6fcf6f; --ht-accent-2:#a7d96a; --ht-accent-soft:rgba(111,207,111,.14);
+    --ht-danger:#ff8585; --ht-danger-soft:rgba(255,133,133,.14);
+    --ht-header:#1c2e22; --ht-head-grad:linear-gradient(135deg,#1c2e22,#294034);
+    --ht-warn-bg:rgba(255,209,102,.12); --ht-warn-border:rgba(255,209,102,.35); --ht-warn-text:#ffd166;
+    --ht-freeze:#a7d96a;
+}
+[data-theme="mono"]{
+    --ht-bg:#15171a; --ht-panel:#262a2d; --ht-panel-2:#303438;
+    --ht-border:#3c4044; --ht-text:#f2f3f4; --ht-dim:#9aa0a4;
+    --ht-accent:#cfd4d9; --ht-accent-2:#aeb4b8; --ht-accent-soft:rgba(207,212,217,.14);
+    --ht-danger:#e06666; --ht-danger-soft:rgba(224,102,102,.14);
+    --ht-header:#1d2023; --ht-head-grad:linear-gradient(135deg,#1d2023,#303438);
+    --ht-warn-bg:rgba(232,195,74,.12); --ht-warn-border:rgba(232,195,74,.35); --ht-warn-text:#e8c34a;
+    --ht-freeze:#cfd4d9;
+}
+[data-theme="mono-light"]{
+    --ht-bg:#e7ebee; --ht-panel:#ffffff; --ht-panel-2:#e4e9ed;
+    --ht-border:#c7ced3; --ht-text:#22272b; --ht-dim:#5b636a;
+    --ht-accent:#8b949c; --ht-accent-2:#5b636a; --ht-accent-soft:#eef1f3;
+    --ht-danger:#c0564e; --ht-danger-soft:#f6e8e6;
+    --ht-header:#7d868e; --ht-head-grad:linear-gradient(135deg,#7d868e,#8b949c);
+    --ht-warn-bg:#faf3e0; --ht-warn-border:#e3d5a8; --ht-warn-text:#8a6d00;
+}
+[data-theme="space"]{
+    --ht-bg:#0a0a1c; --ht-panel:#171738; --ht-panel-2:#221f4a;
+    --ht-border:#2e2c5c; --ht-text:#eaeaff; --ht-dim:#a9a6d8;
+    --ht-accent:#9d7bff; --ht-accent-2:#5fd0ff; --ht-accent-soft:rgba(157,123,255,.16);
+    --ht-danger:#ff7aa8; --ht-danger-soft:rgba(255,122,168,.14);
+    --ht-header:#111129; --ht-head-grad:linear-gradient(135deg,#111129,#221f4a);
+    --ht-warn-bg:rgba(255,209,102,.12); --ht-warn-border:rgba(255,209,102,.35); --ht-warn-text:#ffd166;
+    --ht-freeze:#5fd0ff;
+}
+[data-theme="notebook"]{
+    --ht-bg:#efe9dd; --ht-panel:#fffdf7; --ht-panel-2:#ece5d6;
+    --ht-border:#c8bca2; --ht-text:#3a3327; --ht-dim:#635842;
+    --ht-accent:#c2703d; --ht-accent-2:#5b8c6e; --ht-accent-soft:#f7f0e2;
+    --ht-danger:#c0492f; --ht-danger-soft:#f8e9e3;
+    --ht-header:#8a6a3f; --ht-head-grad:linear-gradient(135deg,#a67c4a,#c2703d);
+    --ht-warn-bg:#fdf6e3; --ht-warn-border:#e8d5a4; --ht-warn-text:#8a6d00;
+    --ht-freeze:#5b8c6e;
+}
+[data-theme="morning"]{
+    --ht-bg:#eef3f8; --ht-panel:#ffffff; --ht-panel-2:#e8eef5;
+    --ht-border:#bccbe0; --ht-text:#3f4a55; --ht-dim:#54627a;
+    --ht-accent:#f6a96b; --ht-accent-2:#6fb3da; --ht-accent-soft:#fdf1e4;
+    --ht-danger:#d97a6c; --ht-danger-soft:#f9e9e5;
+    --ht-header:#e89a55; --ht-head-grad:linear-gradient(135deg,#e89a55,#f6a96b);
+    --ht-warn-bg:#fdf6e3; --ht-warn-border:#e8d5a4; --ht-warn-text:#8a6d00;
+}
+[data-theme="cyber"]{
+    --ht-bg:#0a0a12; --ht-panel:#161626; --ht-panel-2:#1e1e33;
+    --ht-border:#2a2a47; --ht-text:#e6f7ff; --ht-dim:#9aa7d6;
+    --ht-accent:#ff3df0; --ht-accent-2:#19f0ff; --ht-accent-soft:rgba(255,61,240,.14);
+    --ht-danger:#ff4d6d; --ht-danger-soft:rgba(255,77,109,.14);
+    --ht-header:#11111d; --ht-head-grad:linear-gradient(135deg,#11111d,#1e1e33);
+    --ht-warn-bg:rgba(255,224,77,.12); --ht-warn-border:rgba(255,224,77,.35); --ht-warn-text:#ffe04d;
+    --ht-freeze:#19f0ff;
+}
+
+/* ---- data-theme 適用時の上書き（習慣化ツール限定。他ツールは影響なし） ---- */
+[data-theme] body{ background:var(--ht-bg); color:var(--ht-text); }
+[data-theme] header{ background-color:var(--ht-header); }
+[data-theme] #menu{ background:var(--ht-panel); }
+[data-theme] #menu a{ color:var(--ht-text); }
+[data-theme] footer{ color:var(--ht-dim); }
+[data-theme] .page-head{ background:var(--ht-head-grad); }
+[data-theme] .habit-card{ background:var(--ht-panel); color:var(--ht-text); }
+[data-theme] .modal-content{ background:var(--ht-panel); color:var(--ht-text); }
+[data-theme] #addHabit{ background:var(--ht-accent); color:#fff; }
+[data-theme] .btn-backup{ background:var(--ht-panel); color:var(--ht-accent); border-color:var(--ht-accent); }
+[data-theme] .btn-backup:hover{ background:var(--ht-accent-soft); }
+[data-theme] .hk-head h2{ color:var(--ht-accent-2); }
+[data-theme] .hk-badge.done{ background:var(--ht-accent-soft); color:var(--ht-accent); }
+[data-theme] .hk-badge.todo{ background:var(--ht-danger-soft); color:var(--ht-danger); }
+[data-theme] .hk-stat{ background:var(--ht-accent-soft); border-color:var(--ht-border); }
+[data-theme] .hk-num{ color:var(--ht-accent); }
+[data-theme] .hk-cap{ color:var(--ht-dim); }
+[data-theme] .record-form{ border-color:var(--ht-accent); background:var(--ht-accent-soft); }
+[data-theme] .record-form label{ color:var(--ht-accent); }
+[data-theme] .record-form input{ background:var(--ht-panel); border-color:var(--ht-border); color:var(--ht-text); }
+[data-theme] .rf-cancel{ background:var(--ht-panel-2); color:var(--ht-text); }
+[data-theme] .btn-record{ background:var(--ht-accent); color:#fff; }
+[data-theme] .btn-detail{ background:var(--ht-panel); color:var(--ht-accent); border-color:var(--ht-accent); }
+[data-theme] .btn-edit{ background:var(--ht-panel); color:var(--ht-warn-text); border-color:var(--ht-warn-border); }
+[data-theme] .btn-delete{ background:var(--ht-danger-soft); color:var(--ht-danger); }
+[data-theme] .hk-title{ background:var(--ht-warn-bg); border-color:var(--ht-warn-border); }
+[data-theme] .hk-title-cur{ color:var(--ht-warn-text); }
+[data-theme] .hk-title-next{ color:var(--ht-dim); }
+[data-theme] .hk-freeze{ color:var(--ht-freeze); }
+[data-theme] .detail-row .k{ color:var(--ht-accent); }
+[data-theme] .detail-sub{ color:var(--ht-accent); }
+[data-theme] .modal-content label{ color:var(--ht-text); }
+[data-theme] .modal-content input, [data-theme] .modal-content select{
+    background:var(--ht-panel); border-color:var(--ht-border); color:var(--ht-text);
+}
+[data-theme] .bk-pane{ background:var(--ht-accent-soft); border-color:var(--ht-border); }
+[data-theme] .bk-pane textarea{ background:var(--ht-panel); border-color:var(--ht-border); color:var(--ht-text); }
+[data-theme] .bk-tab{ background:var(--ht-panel); border-color:var(--ht-border); color:var(--ht-text); }
+[data-theme] .bk-tab.active{ background:var(--ht-accent); border-color:var(--ht-accent); color:#fff; }
+[data-theme] .backup-hint{ color:var(--ht-dim); }
+[data-theme] .backup-msg{ color:var(--ht-accent); }
+[data-theme] .ee-rec{ border-color:var(--ht-border); }
+[data-theme] .theme-swatch{ background:var(--ht-panel); border-color:var(--ht-border); color:var(--ht-text); }
+[data-theme] .theme-swatch:hover{ border-color:var(--ht-accent); }
+[data-theme] .theme-swatch.active{ background:var(--ht-accent); color:#fff; border-color:var(--ht-accent); }
