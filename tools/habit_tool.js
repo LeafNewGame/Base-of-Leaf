@@ -749,8 +749,8 @@ closeEdit.addEventListener("click", function(){
 });
 
 
-/* ===== 着せ替えテーマ（知識の箱庭と共有: kg_settings） ===== */
-const KG_SETTINGS_KEY = "kg_settings";
+/* ===== 着せ替えテーマ・装飾（このツール専用の設定: habit_settings） ===== */
+const HT_SETTINGS_KEY = "habit_settings";
 const themeModal = document.getElementById("themeModal");
 const HT_THEMES = [
     { id: "dark",       name: "ダーク" },
@@ -766,11 +766,11 @@ const HT_THEMES = [
     { id: "cyber",      name: "サイバー" },
     { id: "custom",     name: "カスタム" }
 ];
-function htGetKG(){
-    try{ return JSON.parse(localStorage.getItem(KG_SETTINGS_KEY)) || {}; }
+function htGet(){
+    try{ return JSON.parse(localStorage.getItem(HT_SETTINGS_KEY)) || {}; }
     catch(e){ return {}; }
 }
-function htSaveKG(s){ localStorage.setItem(KG_SETTINGS_KEY, JSON.stringify(s)); }
+function htSave(s){ localStorage.setItem(HT_SETTINGS_KEY, JSON.stringify(s)); }
 function htApply(mode, base, accent){
     const root = document.documentElement;
     root.setAttribute("data-theme", (mode === "custom") ? (base || "dark") : mode);
@@ -786,16 +786,16 @@ function htApply(mode, base, accent){
     }
 }
 function htCurrentMode(){
-    const s = htGetKG();
+    const s = htGet();
     return s.theme || null;
 }
 function htDecorOn(){
-    const s = htGetKG();
+    const s = htGet();
     return s.decor !== false; // 既定は ON（知識の箱庭と同じ）
 }
-// 装飾（夕焼けの斜陽・波・落ち葉・星・ネオンなどの演出）の適用/解除。kg_settings.decor を共有
+// 装飾（夕焼けの斜陽・波・落ち葉・星・ネオンなどの演出）の適用/解除（このツール専用設定）
 function htApplyDecor(){
-    const s = htGetKG();
+    const s = htGet();
     const decorOn = s.decor !== false;
     const base = (s.theme === "custom") ? (s.customBase || "dark") : (s.theme || "dark");
     document.body.classList.toggle("no-decor", !decorOn);
@@ -837,7 +837,7 @@ function htBuildGrid(){
     });
 }
 function htPick(id){
-    const s = htGetKG();
+    const s = htGet();
     if(id === "custom"){
         s.theme = "custom";
         s.customBase = document.getElementById("ht-cbase").value;
@@ -847,7 +847,7 @@ function htPick(id){
         s.theme = id;
         if(s.customBase === undefined) s.customBase = "dark";
     }
-    htSaveKG(s);
+    htSave(s);
     htApply(s.theme, s.customBase, s.customAccent);
     htApplyDecor();
     document.getElementById("ht-custom").hidden = (id !== "custom");
@@ -856,7 +856,7 @@ function htPick(id){
     });
 }
 document.getElementById("btn-open-theme").addEventListener("click", function(){
-    const s = htGetKG();
+    const s = htGet();
     const cur = s.theme || null;
     if(cur === "custom"){
         document.getElementById("ht-cbase").value = s.customBase || "dark";
@@ -876,24 +876,24 @@ document.getElementById("ht-ccent").addEventListener("input", function(){
 document.getElementById("closeTheme").addEventListener("click", function(){
     themeModal.style.display = "none";
 });
-// 装飾のオン/オフボタン（すぐに反映・kg_settings に保存）
+// 装飾のオン/オフボタン（すぐに反映・habit_settings に保存）
 document.getElementById("btn-decor").addEventListener("click", function(){
-    const s = htGetKG();
+    const s = htGet();
     s.decor = !htDecorOn();
-    htSaveKG(s);
+    htSave(s);
     htApplyDecor();
     updateDecorUI();
 });
 document.getElementById("ht-decor").addEventListener("change", function(){
-    const s = htGetKG();
+    const s = htGet();
     s.decor = this.checked;
-    htSaveKG(s);
+    htSave(s);
     htApplyDecor();
     updateDecorUI();
 });
-// 起動時に知識の箱庭と同じテーマを適用（連動）
+// 起動時に保存済みのテーマを適用（このツール専用）
 function htLoadTheme(){
-    const s = htGetKG();
+    const s = htGet();
     if(s.theme) htApply(s.theme, s.customBase, s.customAccent);
 }
 htLoadTheme();
