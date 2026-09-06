@@ -1057,7 +1057,8 @@ function displayHabits(){
             }
         );
 
-        // 配置順：ヘッダー → フォーム(上) → 統計 → ボタン        card.appendChild(head);
+        // 配置順：ヘッダー → フォーム(上) → 統計 → ボタン
+        card.appendChild(head);
         card.appendChild(form);
         card.appendChild(stats);
         card.appendChild(titleChip);
