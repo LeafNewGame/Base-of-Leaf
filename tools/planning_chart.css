@@ -1,0 +1,219 @@
+/* ===== 計画チャート（試作）専用スタイル ===== */
+
+.pc-lead{
+    max-width: 920px;
+    margin: 4px auto 14px;
+    padding: 0 16px;
+    line-height: 1.7;
+    color:#444;
+}
+
+.pc-chip{
+    display:inline-block;
+    padding:1px 10px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:bold;
+    vertical-align:middle;
+}
+.pc-chip-card{
+    background:#e6f4e6;
+    color:#1c6b1c;
+    border:1px solid #228b22;
+}
+.pc-chip-branch{
+    background:#fff3e0;
+    color:#a35a00;
+    border:1px solid #e08e0b;
+}
+
+/* ツールバー */
+.pc-toolbar{
+    max-width:1100px;
+    margin:0 auto 12px;
+    padding:0 16px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:center;
+}
+.pc-spacer{ flex:1 1 auto; }
+
+.pc-btn{
+    border:1px solid #228b22;
+    background:#fff;
+    color:#1c6b1c;
+    padding:8px 14px;
+    border-radius:8px;
+    font-size:14px;
+    cursor:pointer;
+    transition:.15s;
+}
+.pc-btn:hover{ background:#f0f8f0; }
+.pc-btn-primary{
+    background:#228b22;
+    color:#fff;
+    font-weight:bold;
+}
+.pc-btn-primary:hover{ background:#1c6b1c; }
+.pc-btn-ghost{
+    border-color:#bbb;
+    color:#555;
+}
+.pc-btn-ghost:hover{ background:#f3f3f3; }
+
+/* ボード（キャンバス） */
+.pc-board{
+    position:relative;
+    width:calc(100% - 24px);
+    max-width:1100px;
+    margin:0 auto 10px;
+    min-height:72vh;
+    height:72vh;
+    overflow:auto;
+    border:2px dashed #c7e3c7;
+    border-radius:14px;
+    background-color:#fcfefc;
+    background-image:
+        linear-gradient(#eef6ee 1px, transparent 1px),
+        linear-gradient(90deg, #eef6ee 1px, transparent 1px);
+    background-size:28px 28px;
+    box-sizing:border-box;
+}
+.pc-svg{
+    position:absolute;
+    top:0; left:0;
+    width:3000px;
+    height:3000px;
+    pointer-events:none;
+    overflow:visible;
+}
+.pc-edge{
+    fill:none;
+    stroke:#e08e0b;
+    stroke-width:2.5;
+}
+.pc-edge-arrow{ fill:#e08e0b; }
+
+/* 分岐（条件）ラベル */
+.pc-branch-label{
+    position:absolute;
+    transform:translate(-50%,-50%);
+    background:#fff3e0;
+    color:#a35a00;
+    border:1px solid #e08e0b;
+    border-radius:999px;
+    padding:2px 10px;
+    font-size:12px;
+    min-width:60px;
+    text-align:center;
+    cursor:text;
+    pointer-events:auto;
+    white-space:nowrap;
+}
+.pc-branch-label:empty::before{
+    content:"条件を入力";
+    color:#caa06a;
+}
+.pc-branch-x{
+    position:absolute;
+    transform:translate(60%,-130%);
+    background:#fff;
+    color:#c0392b;
+    border:1px solid #c0392b;
+    border-radius:50%;
+    width:18px;height:18px;
+    line-height:16px;
+    font-size:12px;
+    text-align:center;
+    cursor:pointer;
+    pointer-events:auto;
+}
+
+/* 計画カード */
+.pc-card{
+    position:absolute;
+    width:220px;
+    background:#fff;
+    border:2px solid #228b22;
+    border-radius:12px;
+    box-shadow:0 4px 12px rgba(34,139,34,.15);
+    box-sizing:border-box;
+    user-select:none;
+}
+.pc-card-head{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:8px 10px 4px;
+    cursor:grab;
+}
+.pc-card-badge{
+    background:#228b22;
+    color:#fff;
+    font-size:11px;
+    font-weight:bold;
+    padding:1px 8px;
+    border-radius:999px;
+    flex:0 0 auto;
+}
+.pc-card-title{
+    flex:1 1 auto;
+    font-weight:bold;
+    font-size:14px;
+    color:#1c4d1c;
+    outline:none;
+    min-height:18px;
+}
+.pc-card-title:empty::before{
+    content:"計画のタイトル";
+    color:#9bbf9b;
+}
+.pc-card-del{
+    flex:0 0 auto;
+    border:none;
+    background:none;
+    color:#c0392b;
+    font-size:16px;
+    cursor:pointer;
+    line-height:1;
+}
+.pc-card-body{
+    width:calc(100% - 16px);
+    margin:2px 8px 8px;
+    border:1px solid #d8e8d8;
+    border-radius:8px;
+    padding:6px 8px;
+    font-size:13px;
+    resize:vertical;
+    min-height:46px;
+    box-sizing:border-box;
+    font-family:inherit;
+    outline:none;
+}
+.pc-card-actions{
+    display:flex;
+    gap:6px;
+    padding:0 8px 10px;
+}
+.pc-card-branch{
+    flex:1 1 auto;
+    border:1px solid #e08e0b;
+    background:#fff3e0;
+    color:#a35a00;
+    border-radius:8px;
+    font-size:13px;
+    padding:6px 0;
+    cursor:pointer;
+    font-weight:bold;
+}
+.pc-card-branch:hover{ background:#ffe9c2; }
+
+.pc-hint{
+    max-width:920px;
+    margin:6px auto 18px;
+    padding:0 16px;
+    color:#777;
+    font-size:12px;
+    line-height:1.6;
+}

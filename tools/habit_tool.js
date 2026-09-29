@@ -901,11 +901,44 @@ htApplyDecor();
 updateDecorUI();
 
 
+/* ---------- 並べ替え（追加順 / 継続日数順） ---------- */
+// 設定はこのツール専用の habit_settings に保存（知識の箱庭とは共有しない）
+function htSortMode(){
+    return htGet().sort || "added";
+}
+
+// 表示順に並べた「配列の位置（実体インデックス）」のリストを返す。
+// 削除ボタンは habits.splice(index, 1) で実体を消すため、
+// 表示順ではなく必ず実体インデックスを渡す必要がある。
+function sortedIndices(){
+    const mode = htSortMode();
+    const idx = habits.map(function(_, i){ return i; });
+
+    if(mode === "newest"){
+        // 新しく追加した順（配列の末尾が最新）
+        return idx.reverse();
+    }
+    if(mode === "streak-desc" || mode === "streak-asc"){
+        const desc = (mode === "streak-desc");
+        return idx.sort(function(a, b){
+            const sa = habitStreak(habits[a]) || 0;
+            const sb = habitStreak(habits[b]) || 0;
+            if(sb !== sa) return desc ? (sb - sa) : (sa - sb);
+            return a - b; // 同値のときは追加順を維持
+        });
+    }
+    return idx; // "added"（追加順・古い順＝既定）
+}
+
+
 /* ---------- カード描画（UI を少しデザイン） ---------- */
 function displayHabits(){
     habitList.innerHTML = "";
 
-    habits.forEach(function(habit, index){
+    const order = sortedIndices();
+
+    order.forEach(function(index){
+        const habit = habits[index];
         const card = document.createElement("div");
         card.classList.add("habit-card");
 
@@ -1065,6 +1098,18 @@ function displayHabits(){
         card.appendChild(act);
 
         habitList.appendChild(card);
+    });
+}
+
+/* ---------- 並べ替えセレクトの初期化 ---------- */
+const sortSelect = document.getElementById("habit-sort");
+if(sortSelect){
+    sortSelect.value = htSortMode();
+    sortSelect.addEventListener("change", function(){
+        const s = htGet();
+        s.sort = sortSelect.value;
+        htSave(s);
+        displayHabits();
     });
 }
 

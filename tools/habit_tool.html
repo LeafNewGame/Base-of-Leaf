@@ -52,6 +52,16 @@
     <button id="btn-open-backup" class="btn-backup">🛟 バックアップ・復元</button>
     <button id="btn-open-theme" class="btn-backup">🎨 着せ替えテーマ</button>
     <button id="btn-decor" class="btn-backup">✨ 装飾: 入</button>
+
+    <label class="ht-sort">
+        並べ替え
+        <select id="habit-sort">
+            <option value="added">追加順（古い順）</option>
+            <option value="newest">追加順（新しい順）</option>
+            <option value="streak-desc">継続日数が多い順</option>
+            <option value="streak-asc">継続日数が少ない順</option>
+        </select>
+    </label>
 </div>
 
 <div id="habitModal">
@@ -197,9 +207,9 @@
 </div>
 
     <footer>
-      <p>最終更新日 2026/9/7</p>
+      <p>最終更新日 2026/9/30</p>
     </footer>
  <script src="knowledge-garden/js/theme-effects.js"></script>
- <script src="habit_tool.js?v=20260907"></script>
+ <script src="habit_tool.js?v=20260930"></script>
  <script src="../script.js?v=20260821c"></script>
 </body>
