@@ -158,15 +158,34 @@
     $$("#folder-fields-opt .ff-opt-item input").forEach((cb) => { opt[cb.dataset.opt] = cb.checked; });
     s.folderTemplates[cat] = { body: $("#folder-fmt-body").value, fields, opt };
     Settings.save(s);
+    applyFolderFormatToCards(cat);
     const btn = $("#folder-fmt-save");
     const old = btn.textContent; btn.innerHTML = ki("check") + " 保存済み";
     setTimeout(() => (btn.textContent = old), 1200);
+  }
+  // フォーマット設定を変更したフォルダの「既存カード全て」に、新しいフィールド構成を適用する。
+  // 同名フィールドの入力値は保持し、新しく増えたフィールドはデフォルト値（def）で埋める。
+  function applyFolderFormatToCards(cat) {
+    if (!cat) return;
+    const fmt = getFolderFormat(cat);
+    const tpl = (fmt.fields || []).map((f) => ({ name: f.name, type: f.type, def: (f.def != null ? f.def : "") }));
+    let n = 0;
+    cards.forEach((c) => {
+      if (!(c.categories || []).includes(cat)) return;
+      const prev = {};
+      (c.fields || []).forEach((f) => { if (f.name) prev[f.name] = f.value; });
+      c.fields = tpl.map((f) => ({ name: f.name, type: f.type, value: (prev[f.name] != null ? prev[f.name] : f.def) }));
+      if (typeof Store !== "undefined" && Store.put) Store.put(c); else { /* Store なしはスキップ */ }
+      n++;
+    });
+    if (n) { try { if (typeof refresh === "function") refresh(); } catch (e) {} }
   }
   function clearFolderFormat() {
     const cat = currentFolderCat; if (!cat) return;
     const s = Settings.get(); s.folderTemplates = s.folderTemplates || {};
     delete s.folderTemplates[cat];
     Settings.save(s);
+    applyFolderFormatToCards(cat);
     $("#folder-fmt-body").value = "";
     $("#folder-fields").innerHTML = "";
   }

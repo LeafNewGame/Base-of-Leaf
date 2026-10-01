@@ -128,6 +128,9 @@
     function cloudMsg(t) { const m = $("#cloud-msg"); if (m) m.textContent = t; }
     async function googleLogin() {
       if (!configured()) { cloudMsg("先に設定画面の「Supabase URL / anon key」を入力してください（入力後はそのまま「Google でログイン」を押すか「保存設定」を押します）"); return; }
+      // 実際に Google に送るリダイレクト先をログに出す（Supabase の Redirect URLs と
+      // 完全一致していないと redirect_uri_mismatch でログイン失敗するため、登録漏れの確認用）。
+      console.log("[KG] Google OAuth redirectTo =", KG_OAUTH_REDIRECT);
       let client;
       try { client = await ensureClient(); }
       catch (e) { cloudMsg(e.message); return; }

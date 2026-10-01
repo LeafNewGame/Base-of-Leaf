@@ -554,6 +554,18 @@ body{
 }
 .btn-backup:hover{ background:#e6f4ea; }
 
+/* 並べ替えセレクト（2026/9/30 追加） */
+.ht-sort{
+    display:flex; align-items:center; gap:8px;
+    background:#fff; color:#228b22; border:2px solid #228b22;
+    padding:8px 14px; border-radius:10px; font-size:14px; font-weight:bold;
+    box-shadow:0 4px 10px rgba(34,139,34,.15); cursor:pointer;
+}
+.ht-sort select{
+    border:1px solid #ccc; border-radius:8px; font-size:14px;
+    padding:6px 8px; background:#fff; color:#333; cursor:pointer;
+}
+
 /* 称号チップ（連続日数に応じた称号と次の称号までの残り日数） */
 .hk-title{
     display:flex; justify-content:space-between; align-items:center; gap:8px;

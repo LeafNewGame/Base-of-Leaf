@@ -777,4 +777,24 @@ html[data-theme="cyber"] body.no-decor .modal::after{ display:none; }
   border-radius:999px; padding:6px 12px; font-size:12px; cursor:pointer;
 }
 
+/* ============================================================
+   知識の箱庭: カード本文 全画面エディタ ＋ 関連カード最小化
+   ============================================================ */
+/* ghost-btn 小サイズ（全画面ボタン / 最小化ボタン用） */
+.ghost-btn.small{ font-size:12px; padding:5px 10px; line-height:1.4; }
+.ghost-btn.small .ki{ width:14px; height:14px; margin-right:3px; }
+
+/* 本文 全画面エディタ（メモ帳のように広く使える） */
+#body-full-backdrop .modal.editor{ width:min(960px, calc(100vw - 32px)); max-width:none; max-height:88vh; }
+#body-full-backdrop .modal-head h2{ font-size:16px; }
+#body-full-backdrop .modal-body{ padding:0; display:flex; }
+.full-ta{ width:100%; min-height:58vh; max-height:74vh; border:none; border-radius:0; background:var(--bg-soft); color:var(--text); resize:vertical; font-size:15px; line-height:1.8; padding:16px 18px; }
+.full-ta:focus{ outline:none; box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent); }
+#body-full-backdrop .modal-foot{ padding:10px 16px; }
+
+/* 関連カード欄 の最小化（使わないときは折りたたむ） */
+.field-head-actions{ display:inline-flex; align-items:center; gap:8px; }
+#links-field.collapsed .link-picker{ display:none; }
+#links-field.collapsed .field-head{ margin-bottom:0; }
+
 

@@ -286,6 +286,57 @@
     return n;
   }
 
+  /* ---------- タグ → フォルダの自動配置（重複生成を防ぎつつ同期） ---------- */
+  // カードのタグのうち「既存フォルダのテーマ（自動タグ）」に一致する数を数え、
+  // 2つ以上あれば、そのタグをテーマに持つフォルダ全てにカードを配置する。
+  // カードは常に「1 つのオブジェクト」で、フォルダは categories 配列で表すため
+  // 複製は発生せず、categories を揃えるだけでフォルダ間が自動同期される。
+  function foldersForTags(tags) {
+    const defs = (Settings.get().folders || []) || [];
+    const set = new Set();
+    (tags || []).forEach((t) => {
+      defs.forEach((f) => { if ((f.tags || []).includes(t)) set.add(f.name); });
+    });
+    return [...set];
+  }
+  function syncCardFolders(c) {
+    if (!c) return;
+    const matchCount = (c.tags || []).filter((t) =>
+      (Settings.get().folders || []).some((f) => (f.tags || []).includes(t))
+    ).length;
+    // 条件：カードが「2つ以上の既存フォルダのタグ」を持つ場合のみ自動配置
+    if (matchCount >= 2) {
+      const targets = foldersForTags(c.tags);
+      c.categories = c.categories || [];
+      targets.forEach((name) => { if (!c.categories.includes(name)) c.categories.push(name); });
+    }
+  }
+
+  /* ---------- 本文の全画面エディタ（メモ帳のように広く使える） ---------- */
+  function openBodyFull() {
+    const ta = $("#body-full-ta");
+    if (ta) ta.value = $("#f-body") ? $("#f-body").value : "";
+    $("#body-full-backdrop").hidden = false;
+    if (ta) ta.focus();
+  }
+  function applyBodyFull() {
+    const ta = $("#body-full-ta");
+    if (ta && $("#f-body")) $("#f-body").value = ta.value;
+    $("#body-full-backdrop").hidden = true;
+  }
+
+  /* ---------- 関連カード欄の最小化 ---------- */
+  function toggleLinksCollapse() {
+    const f = $("#links-field");
+    if (!f) return;
+    const on = f.classList.toggle("collapsed");
+    const btn = $("#links-collapse");
+    if (btn) {
+      btn.textContent = on ? "▸ 展開" : "▾ 最小化";
+      btn.setAttribute("aria-expanded", String(!on));
+    }
+  }
+
   async function saveEditor() {
     const title = $("#f-title").value.trim();
     if (!title) { alert("タイトルは必須です"); return; }
@@ -309,6 +360,10 @@
     c.body = newBody;
     c.categories = parseCategories($("#f-categories").value);
     c.tags = parseTags($("#f-tags").value);
+    // 複数のフォルダのテーマタグを持つカードは、該当フォルダへ自動配置する。
+    // カードは常に「1 つのオブジェクト」で、フォルダは categories 配列で表すため
+    // 二重生成は起きず、categories を揃えるだけでフォルダ間が自動同期される。
+    syncCardFolders(c);
     c.references = parseList($("#f-refs").value);
     c.memo = $("#f-memo").value;
     c.traits = $("#f-traits").value.trim();
@@ -451,3 +506,12 @@
   function aiReview() {
     alert("AI 呼び出しは Stage 2 で有効化します。Stage 1 では上記のローカル復習候補をご利用ください。");
   }
+
+  /* ---------- エディタ補助 UI のバインド（全画面本文 / 関連カード最小化） ---------- */
+  (function bindEditorHelpers() {
+    const bf = $("#btn-body-full"); if (bf) bf.onclick = openBodyFull;
+    const ba = $("#body-full-apply"); if (ba) ba.onclick = applyBodyFull;
+    const bc = $("#body-full-cancel"); if (bc) bc.onclick = () => { $("#body-full-backdrop").hidden = true; };
+    const bx = $("#body-full-close"); if (bx) bx.onclick = () => { $("#body-full-backdrop").hidden = true; };
+    const lc = $("#links-collapse"); if (lc) lc.onclick = toggleLinksCollapse;
+  })();

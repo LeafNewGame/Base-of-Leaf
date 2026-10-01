@@ -496,7 +496,7 @@ alter table kb_cards enable row level security;
 create policy "own row" on kb_cards
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);</pre>
           <p class="hint">※Auth 設定で「Email confirmations」をオフにすると、登録後すぐにログインできます（オンのままなら確認メールのリンクを踏んでからログイン）。</p>
-          <p class="hint"><strong>Google ログインを使う場合：</strong> Supabase の Authentication → Providers で <strong>Google</strong> を有効化し、Google Cloud で作成した OAuth クライアント ID / シークレットを貼ります。さらに Authentication → URL Configuration の <strong>Redirect URLs</strong> に、以下の URL を<strong>そのまま（末尾スラッシュなし）</strong>追加してください：<br><code>https://7bf76b18915b4f2983eee9f43e3eb3a0.gz1.agentos-app.net</code><br>※Google ログインは必ずこのデプロイ版で完了し、クラウド同期もこの URL でご利用ください（planter から押してもここに移動します）。</p>
+          <p class="hint"><strong>Google ログインを使う場合：</strong> Supabase の Authentication → Providers で <strong>Google</strong> を有効化し、Google Cloud で作成した OAuth クライアント ID / シークレットを貼ります。さらに Authentication → URL Configuration の <strong>Redirect URLs</strong> に、以下の <strong>2 つ（どちらも完全一致）</strong> を追加してください（片方だけだと <code>redirect_uri_mismatch</code> でログインが失敗します）：<br><code>https://7bf76b18915b4f2983eee9f43e3eb3a0.gz1.agentos-app.net</code><br><code>https://7bf76b18915b4f2983eee9f43e3eb3a0.gz1.agentos-app.net/tools/knowledge-garden/index.html</code><br>※アプリは実際にこのページの URL（末尾の index.html まで）をリダイレクト先に送るため、ページパス付きも必ず登録してください。Google ログインは必ずこのデプロイ版で完了し、クラウド同期もこの URL でご利用ください（planter から押してもここに移動します）。</p>
         </details>
         <label>Supabase Project URL
           <input id="set-supabase-url" type="text" placeholder="https://xxxx.supabase.co" />
@@ -589,6 +589,7 @@ create policy "own row" on kb_cards
         <span id="due-hint" class="due-hint"></span>
       </div>
       <label>本文
+        <button type="button" id="btn-body-full" class="ghost-btn small" title="全画面で編集">⤢ 全画面で編集</button>
         <textarea id="f-body" rows="6" placeholder="例：任意の波形を複数の正弦波へ分解する数学的手法。"></textarea>
       </label>
       <div id="f-custom-fields" class="cf-wrap" hidden data-opt="custom"></div>
@@ -606,12 +607,15 @@ create policy "own row" on kb_cards
       <label data-opt="memo">メモ
         <textarea id="f-memo" rows="2" placeholder="自由メモ"></textarea>
       </label>
-      <div class="field" data-opt="links">
+      <div class="field" data-opt="links" id="links-field">
         <div class="field-head">
           <span>関連カード（リンク）</span>
-          <select id="f-links-folder" class="link-folder" title="フォルダで絞り込み">
-            <option value="">すべてのフォルダ</option>
-          </select>
+          <span class="field-head-actions">
+            <select id="f-links-folder" class="link-folder" title="フォルダで絞り込み">
+              <option value="">すべてのフォルダ</option>
+            </select>
+            <button type="button" id="links-collapse" class="ghost-btn small" aria-expanded="true" title="最小化 / 展開">▾ 最小化</button>
+          </span>
         </div>
         <div id="f-links" class="link-picker"></div>
       </div>
@@ -629,6 +633,23 @@ create policy "own row" on kb_cards
       <span class="spacer"></span>
       <button id="editor-cancel" class="ghost-btn">キャンセル</button>
       <button id="editor-save" class="primary-btn">保存</button>
+    </footer>
+  </div>
+</div>
+
+<div id="body-full-backdrop" class="backdrop" hidden>
+  <div class="modal editor">
+    <header class="modal-head">
+      <h2>本文（全画面）</h2>
+      <button id="body-full-close" class="icon-btn"><span class="ki"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg></span></button>
+    </header>
+    <div class="modal-body">
+      <textarea id="body-full-ta" class="full-ta" placeholder="本文を広い画面で書けます。適用でカードに戻ります。"></textarea>
+    </div>
+    <footer class="modal-foot">
+      <span class="spacer"></span>
+      <button id="body-full-cancel" class="ghost-btn">キャンセル</button>
+      <button id="body-full-apply" class="primary-btn">適用</button>
     </footer>
   </div>
 </div>
