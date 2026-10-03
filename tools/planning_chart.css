@@ -1,101 +1,156 @@
-/* ===== 計画チャート（試作）専用スタイル ===== */
+/* ===== 計画チャート：全画面キャンバス UI ===== */
 
-.pc-lead{
-    max-width: 920px;
-    margin: 4px auto 14px;
-    padding: 0 16px;
-    line-height: 1.7;
-    color:#444;
+/* ---------- 画面いっぱいを使うためのレイアウト ---------- */
+html, body{ height:100%; }
+
+body.pc-body{
+    margin:0;
+    overflow:hidden;                 /* ページ全体はスクロールさせない */
+    height:100vh;
+    box-sizing:border-box;
+    display:flex;
+    flex-direction:column;
 }
+
+.pc-app{
+    flex:1 1 auto;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+    box-sizing:border-box;
+}
+
+/* ---------- 上部ツールバー ---------- */
+.pc-appbar{
+    flex:0 0 auto;
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:8px;
+    padding:6px 10px;
+    background:#ffffff;
+    border-bottom:2px solid #d9ecd9;
+    box-shadow:0 2px 8px rgba(0,0,0,.06);
+    z-index:20;
+}
+.pc-appbar-group{
+    display:flex;
+    align-items:center;
+    gap:6px;
+}
+.pc-appbar-title{
+    font-weight:bold;
+    font-size:15px;
+    color:#1c4d1c;
+    margin-right:4px;
+}
+.pc-spacer{ flex:1 1 auto; }
 
 .pc-chip{
     display:inline-block;
     padding:1px 10px;
     border-radius:999px;
-    font-size:13px;
+    font-size:12px;
     font-weight:bold;
-    vertical-align:middle;
+    white-space:nowrap;
 }
-.pc-chip-card{
-    background:#e6f4e6;
-    color:#1c6b1c;
-    border:1px solid #228b22;
-}
-.pc-chip-branch{
-    background:#fff3e0;
-    color:#a35a00;
-    border:1px solid #e08e0b;
-}
+.pc-chip-card{ background:#e6f4e6; color:#1c6b1c; border:1px solid #228b22; }
+.pc-chip-branch{ background:#fff3e0; color:#a35a00; border:1px solid #e08e0b; }
+.pc-chip-link{ background:#e8f1fd; color:#1a5fa8; border:1px solid #5893d4; }
 
-/* ツールバー */
-.pc-toolbar{
-    max-width:1100px;
-    margin:0 auto 12px;
-    padding:0 16px;
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-    align-items:center;
-}
-.pc-spacer{ flex:1 1 auto; }
-
+/* ---------- ボタン ---------- */
 .pc-btn{
     border:1px solid #228b22;
     background:#fff;
     color:#1c6b1c;
-    padding:8px 14px;
+    padding:6px 12px;
     border-radius:8px;
-    font-size:14px;
+    font-size:13px;
+    font-family:inherit;
     cursor:pointer;
     transition:.15s;
+    white-space:nowrap;
 }
 .pc-btn:hover{ background:#f0f8f0; }
-.pc-btn-primary{
-    background:#228b22;
-    color:#fff;
+.pc-btn-primary{ background:#228b22; color:#fff; font-weight:bold; }
+.pc-btn-primary:hover{ background:#1c6b1c; }
+.pc-btn-ghost{ border-color:#bbb; color:#555; }
+.pc-btn-ghost:hover{ background:#f3f3f3; }
+.pc-btn-sm{ padding:5px 9px; font-size:12px; }
+.pc-btn-icon{
+    width:28px; padding:5px 0; text-align:center; font-weight:bold;
+}
+.pc-btn-link{
+    border-color:#5893d4;
+    background:#e8f1fd;
+    color:#1a5fa8;
     font-weight:bold;
 }
-.pc-btn-primary:hover{ background:#1c6b1c; }
-.pc-btn-ghost{
-    border-color:#bbb;
-    color:#555;
+.pc-btn-link:hover{ background:#d6e7fa; }
+.pc-btn-link.pc-on{
+    background:#1a5fa8;
+    color:#fff;
+    border-color:#1a5fa8;
 }
-.pc-btn-ghost:hover{ background:#f3f3f3; }
+.pc-zoom-group{ gap:4px; }
+.pc-zoom-label{
+    min-width:46px;
+    text-align:center;
+    font-size:12px;
+    color:#555;
+    font-variant-numeric:tabular-nums;
+}
 
-/* ボード（キャンバス） */
-.pc-board{
+/* ---------- キャンバス（画面いっぱい） ---------- */
+.pc-viewport{
+    flex:1 1 auto;
+    min-height:0;
     position:relative;
-    width:calc(100% - 24px);
-    max-width:1100px;
-    margin:0 auto 10px;
-    min-height:72vh;
-    height:72vh;
-    overflow:auto;
-    border:2px dashed #c7e3c7;
-    border-radius:14px;
+    overflow:hidden;
     background-color:#fcfefc;
     background-image:
-        linear-gradient(#eef6ee 1px, transparent 1px),
-        linear-gradient(90deg, #eef6ee 1px, transparent 1px);
-    background-size:28px 28px;
-    box-sizing:border-box;
+        linear-gradient(#e6f2e6 1px, transparent 1px),
+        linear-gradient(90deg, #e6f2e6 1px, transparent 1px);
+    background-size:28px 28px;      /* JS が倍率に合わせて更新 */
+    cursor:grab;
+    touch-action:none;
 }
+.pc-viewport.pc-panning{ cursor:grabbing; }
+.pc-viewport.pc-linking{ cursor:crosshair; }
+
+.pc-board{
+    position:absolute;
+    top:0; left:0;
+    width:100%;
+    height:100%;
+    transform-origin:0 0;           /* 拡大・移動は JS が transform で制御 */
+}
+
 .pc-svg{
     position:absolute;
     top:0; left:0;
-    width:3000px;
-    height:3000px;
+    width:6000px;
+    height:4000px;
     pointer-events:none;
     overflow:visible;
 }
-.pc-edge{
-    fill:none;
-    stroke:#e08e0b;
-    stroke-width:2.5;
-}
+
+/* ---------- 線（分岐 / 連結） ---------- */
+.pc-edge{ fill:none; stroke:#e08e0b; stroke-width:2.5; }
 .pc-edge-arrow{ fill:#e08e0b; }
 
-/* 分岐（条件）ラベル */
+.pc-edge.pc-link{ stroke:#2b7fd4; stroke-width:2.5; }
+.pc-edge-arrow.pc-link{ fill:#2b7fd4; }
+
+.pc-link-temp{
+    fill:none;
+    stroke:#2b7fd4;
+    stroke-width:2.5;
+    stroke-dasharray:6 5;
+    opacity:.9;
+}
+
+/* ---------- 条件ラベル ---------- */
 .pc-branch-label{
     position:absolute;
     transform:translate(-50%,-50%);
@@ -105,32 +160,53 @@
     border-radius:999px;
     padding:2px 10px;
     font-size:12px;
-    min-width:60px;
+    max-width:190px;
     text-align:center;
     cursor:text;
     pointer-events:auto;
     white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    z-index:6;
+}
+.pc-branch-label:focus{
+    outline:none;
+    white-space:normal;
+    overflow:visible;
+    box-shadow:0 0 0 2px rgba(224,142,11,.35);
 }
 .pc-branch-label:empty::before{
     content:"条件を入力";
     color:#caa06a;
 }
+.pc-branch-label.pc-link-label{
+    background:#e8f1fd;
+    color:#1a5fa8;
+    border-color:#5893d4;
+}
+.pc-branch-label.pc-link-label:empty::before{
+    content:"つながり";
+    color:#8fb2d8;
+}
+
 .pc-branch-x{
     position:absolute;
-    transform:translate(60%,-130%);
+    transform:translate(-50%,-50%);
     background:#fff;
     color:#c0392b;
     border:1px solid #c0392b;
     border-radius:50%;
-    width:18px;height:18px;
-    line-height:16px;
+    width:18px; height:18px;
+    line-height:15px;
     font-size:12px;
     text-align:center;
     cursor:pointer;
     pointer-events:auto;
+    z-index:7;
 }
+.pc-branch-x:hover{ background:#c0392b; color:#fff; }
 
-/* 計画カード */
+/* ---------- 計画カード ---------- */
 .pc-card{
     position:absolute;
     width:220px;
@@ -140,7 +216,41 @@
     box-shadow:0 4px 12px rgba(34,139,34,.15);
     box-sizing:border-box;
     user-select:none;
+    z-index:5;
 }
+.pc-card:hover{ box-shadow:0 6px 18px rgba(34,139,34,.25); }
+.pc-card.pc-pick-src{
+    border-color:#1a5fa8;
+    box-shadow:0 0 0 4px rgba(43,127,212,.18), 0 6px 18px rgba(26,95,168,.25);
+}
+.pc-linking .pc-card{ cursor:crosshair; }
+.pc-card.pc-drop-target{
+    border-color:#1a5fa8;
+    box-shadow:0 0 0 4px rgba(43,127,212,.30);
+}
+
+/* 連結ポイント（右端の丸） */
+.pc-port{
+    position:absolute;
+    right:-10px;
+    top:50%;
+    transform:translateY(-50%);
+    width:18px; height:18px;
+    border-radius:50%;
+    background:#fff;
+    border:2px solid #2b7fd4;
+    color:#2b7fd4;
+    font-size:11px;
+    line-height:14px;
+    text-align:center;
+    cursor:crosshair;
+    opacity:0;
+    transition:.15s;
+    z-index:8;
+}
+.pc-card:hover .pc-port{ opacity:1; }
+.pc-port:hover{ background:#2b7fd4; color:#fff; transform:translateY(-50%) scale(1.15); }
+
 .pc-card-head{
     display:flex;
     align-items:center;
@@ -148,6 +258,7 @@
     padding:8px 10px 4px;
     cursor:grab;
 }
+.pc-card-head:active{ cursor:grabbing; }
 .pc-card-badge{
     background:#228b22;
     color:#fff;
@@ -164,6 +275,7 @@
     color:#1c4d1c;
     outline:none;
     min-height:18px;
+    overflow-wrap:anywhere;
 }
 .pc-card-title:empty::before{
     content:"計画のタイトル";
@@ -177,7 +289,10 @@
     font-size:16px;
     cursor:pointer;
     line-height:1;
+    padding:0 2px;
 }
+.pc-card-del:hover{ color:#7d2118; }
+
 .pc-card-body{
     width:calc(100% - 16px);
     margin:2px 8px 8px;
@@ -190,7 +305,10 @@
     box-sizing:border-box;
     font-family:inherit;
     outline:none;
+    user-select:text;
 }
+.pc-card-body:focus{ border-color:#228b22; }
+
 .pc-card-actions{
     display:flex;
     gap:6px;
@@ -206,14 +324,62 @@
     padding:6px 0;
     cursor:pointer;
     font-weight:bold;
+    font-family:inherit;
 }
 .pc-card-branch:hover{ background:#ffe9c2; }
 
-.pc-hint{
-    max-width:920px;
-    margin:6px auto 18px;
-    padding:0 16px;
-    color:#777;
+/* ---------- 使い方パネル ---------- */
+.pc-help{
+    position:absolute;
+    top:10px; right:10px;
+    width:330px;
+    max-width:calc(100% - 20px);
+    background:#fff;
+    border:2px solid #d9ecd9;
+    border-radius:12px;
+    box-shadow:0 8px 24px rgba(0,0,0,.18);
+    padding:10px 14px 12px;
+    z-index:30;
+    max-height:calc(100% - 40px);
+    overflow:auto;
+}
+.pc-help-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:6px;
+    color:#1c4d1c;
+}
+.pc-help-close{
+    border:none; background:none; cursor:pointer;
+    font-size:18px; line-height:1; color:#777;
+}
+.pc-help ul{ margin:0; padding-left:18px; line-height:1.7; font-size:12.5px; color:#444; }
+.pc-help li{ margin-bottom:3px; }
+
+/* ---------- 状態ヒント ---------- */
+.pc-status{
+    position:absolute;
+    left:10px; bottom:10px;
+    background:rgba(255,255,255,.92);
+    border:1px solid #d9ecd9;
+    border-radius:999px;
+    padding:4px 14px;
     font-size:12px;
-    line-height:1.6;
+    color:#555;
+    z-index:25;
+    pointer-events:none;
+    max-width:calc(100% - 20px);
+}
+.pc-status.pc-on{
+    background:#1a5fa8;
+    border-color:#1a5fa8;
+    color:#fff;
+    font-weight:bold;
+}
+
+/* ---------- 狭い画面ではツールバーを畳む ---------- */
+@media (max-width: 720px){
+    .pc-appbar-title, .pc-chip{ display:none; }
+    .pc-btn{ padding:5px 9px; font-size:12px; }
 }

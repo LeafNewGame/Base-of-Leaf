@@ -1,22 +1,20 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PlanningTool</title>
+    <title>計画整理ツール - PLANTER</title>
     <link rel="stylesheet" href="../style.css">
-
+    <link rel="stylesheet" href="planning_chart.css?v=20261003">
+    <link rel="stylesheet" href="planning_tool.css?v=20261003">
 </head>
 
-<body>
+<body class="pc-body">
 
  <header>
     <a href="../index.html">
-      <img src="../images/hub-icon.png"
-      alt="PLANTERのロゴ" class="icon">
+      <img src="../images/hub-icon.png" alt="PLANTERのロゴ" class="icon">
     </a>
-
 
     <button id="menu-btn" class="menu-btn">
         <span></span>
@@ -28,27 +26,119 @@
         <ul>
             <li><a href="../index.html">ホーム</a></li>
             <li><a href="../tools/planning_tool.html">計画整理ツール</a></li>
-            <li><a href="../tools/planning_chart.html">計画チャート（試作）</a></li>
             <li><a href="../tools/memo_tool.html">メモツール</a></li>
             <li><a href="../tools/habit_tool.html">習慣化ツール</a></li>
+            <li><a href="../tools/knowledge_garden.html">知識の箱庭</a></li>
             <li><a href="../tools/patchnote.html">パッチノート</a></li>
             <li><a href="../tools/blog.html">開発者より</a></li>
         </ul>
     </nav>
  </header>
-    <li><a href="../index.html">ホームに戻る</a></li>
-    <h1>計画整理ツール</h1>
 
-    <input id="taskInput">
-    <button id="addTask">
-        追加
-    </button>
-    <div id="taskList"></div>
-    <script src="planning.js"></script>
-    <footer>
-      <p>実装日 2026/6/10</p>
-    </footer>
+ <div class="pc-app">
 
+    <!-- ===== 上部ツールバー ===== -->
+    <div class="pc-appbar">
+        <div class="pc-appbar-group">
+            <span class="pc-appbar-title">計画整理ツール</span>
+
+            <!-- チャートの構成要素の見本 -->
+            <span class="pc-chip pc-chip-card">計画カード</span>
+            <span class="pc-chip pc-chip-branch">分岐（条件）</span>
+            <span class="pc-chip pc-chip-link">連結</span>
+        </div>
+
+        <!-- モード切り替え -->
+        <div class="pc-appbar-group pc-mode-group">
+            <button id="pt-tab-chart" class="pc-btn pc-btn-mode pc-on">📊 チャート</button>
+            <button id="pt-tab-list"  class="pc-btn pc-btn-mode">📝 リスト</button>
+        </div>
+
+        <span class="pc-spacer"></span>
+
+        <div class="pc-appbar-group pc-zoom-group">
+            <button id="pc-zoom-out" class="pc-btn pc-btn-icon" title="縮小">－</button>
+            <span id="pc-zoom-label" class="pc-zoom-label">100%</span>
+            <button id="pc-zoom-in" class="pc-btn pc-btn-icon" title="拡大">＋</button>
+            <button id="pc-zoom-reset" class="pc-btn pc-btn-ghost pc-btn-sm" title="倍率をリセット">リセット</button>
+            <button id="pc-fit" class="pc-btn pc-btn-ghost pc-btn-sm" title="全体が画面に収まるように表示">全体表示</button>
+            <button id="pc-help-toggle" class="pc-btn pc-btn-icon" title="使い方">?</button>
+        </div>
+    </div>
+
+    <!-- ===== モード1：チャート ===== -->
+    <section id="pt-view-chart" class="pt-view">
+        <div class="pc-subbar">
+            <div class="pc-appbar-group">
+                <button id="pc-add" class="pc-btn pc-btn-primary">＋ カード</button>
+                <button id="pc-link" class="pc-btn pc-btn-link" title="カード同士を連結します（もう一度押すと解除）">🔗 連結モード</button>
+            </div>
+            <div class="pc-appbar-group">
+                <button id="pc-sample" class="pc-btn pc-btn-ghost">サンプル</button>
+                <button id="pc-clear" class="pc-btn pc-btn-ghost">クリア</button>
+            </div>
+            <div class="pc-appbar-group">
+                <button id="pc-export" class="pc-btn pc-btn-ghost">JSON出力</button>
+                <button id="pc-import" class="pc-btn pc-btn-ghost">JSON読込</button>
+                <input id="pc-file" type="file" accept="application/json" hidden>
+            </div>
+        </div>
+
+        <div id="pc-viewport" class="pc-viewport">
+            <div id="pc-board" class="pc-board">
+                <svg id="pc-svg" class="pc-svg"></svg>
+                <!-- カード・ラベルは JS で追加 -->
+            </div>
+
+            <!-- 使い方パネル -->
+            <div id="pc-help" class="pc-help" hidden>
+                <div class="pc-help-head">
+                    <strong>使い方</strong>
+                    <button id="pc-help-close" class="pc-help-close">×</button>
+                </div>
+                <ul>
+                    <li><b>計画カード</b>に「やるべきこと」を書きます。ヘッダーをドラッグで移動。</li>
+                    <li><b>＋ 分岐</b>を押すと、条件付きの矢印と<b>新しい計画カード</b>が生まれます。</li>
+                    <li><b>🔗 連結モード</b>でカードを2つ選ぶと、既存のカード同士を直接つなげます。</li>
+                    <li>カード右端の<b>●</b>を別のカードへドラッグしても連結できます。</li>
+                    <li>条件ラベルはクリックして直接編集できます。ラベルの<b>×</b>で削除。</li>
+                    <li>何もない所をドラッグで<b>画面移動</b>、ホイール（または Ctrl＋ホイール）で<b>拡大縮小</b>。</li>
+                    <li><b>空所をダブルクリック</b>するとその場に新しいカードを作れます。</li>
+                    <li>データはこのブラウザに自動保存されます。</li>
+                </ul>
+            </div>
+
+            <!-- 状態ヒント -->
+            <div id="pc-status" class="pc-status">カードをドラッグで動かせます</div>
+        </div>
+    </section>
+
+    <!-- ===== モード2：リスト ===== -->
+    <section id="pt-view-list" class="pt-view" hidden>
+        <div class="pt-list-wrap">
+            <h2 class="pt-list-title">長期計画のメモ</h2>
+            <p class="pt-list-lead">チャートの横で使う、かんたんな計画リストです。気になったことを並べておけます。</p>
+
+            <div class="pt-list-add">
+                <input id="pt-task-input" type="text" placeholder="計画を書き込む…" autocomplete="off">
+                <button id="pt-task-add" class="pt-btn pt-btn-primary">追加</button>
+            </div>
+
+            <ul id="pt-task-list" class="pt-task-list"></ul>
+
+            <div class="pt-list-foot">
+                <span id="pt-task-count" class="pt-count">0 件</span>
+                <button id="pt-task-clear-done" class="pt-btn pt-btn-ghost">完了した項目を削除</button>
+            </div>
+        </div>
+    </section>
+
+ </div>
+
+ <script src="planning_chart.js?v=20261003"></script>
+ <script src="planning.js?v=20261003"></script>
+ <script src="planning_mode.js?v=20261003"></script>
  <script src="../script.js"></script>
 </body>
 
+</html>

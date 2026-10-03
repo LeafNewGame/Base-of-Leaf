@@ -1,6 +1,7 @@
 /* =========================================================
-   計画チャート（試作） - planning_chart.js
-   カード（計画）＋ 分岐（条件付き矢印）のフローチャート
+   計画チャート - planning_chart.js
+   カード（計画）＋ 分岐（条件つき矢印）＋ カード同士の連結
+   全画面キャンバス（パン / ズーム）
    ========================================================= */
 
 (function () {
@@ -8,20 +9,34 @@
 
   var KEY = "planner_chart_v1";
   var SVG_NS = "http://www.w3.org/2000/svg";
+  var GRID = 28;          // 方眼の基本サイズ
+  var ZMIN = 0.3, ZMAX = 2.5;
 
-  var board = document.getElementById("pc-board");
-  var svg = document.getElementById("pc-svg");
+  var board   = document.getElementById("pc-board");
+  var svg     = document.getElementById("pc-svg");
+  var viewport= document.getElementById("pc-viewport");
+  var statusEl= document.getElementById("pc-status");
+  var zoomLabel = document.getElementById("pc-zoom-label");
+
+  // キャンバスやツールバーが無いページでは何もしない（他ツールとの読み込み共用時用）
+  if (!board || !svg || !viewport || !statusEl || !zoomLabel) return;
+  if (!document.getElementById("pc-add") || !document.getElementById("pc-help")) return;
 
   /* 状態 */
-  var state = {
-    nodes: [], // {id, title, text, x, y}
-    edges: []  // {id, from, to, condition}
-  };
+  var state = { nodes: [], edges: [], view: { x: 0, y: 0, z: 1 } };
+
+  /* 連結モード用 */
+  var linkMode = false;
+  var linkSrc = null;      // 接続元として選択中のカード id
+  var tempPath = null;     // ドラッグ中の仮の線
+  var tempFrom = null;     // 仮の線の接続元カード要素
 
   /* ---------- ユーティリティ ---------- */
   function uid() {
     return "n" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   }
+
+  function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
 
   function save() {
     try {
@@ -38,6 +53,7 @@
         var d = JSON.parse(raw);
         if (d && Array.isArray(d.nodes) && Array.isArray(d.edges)) {
           state = d;
+          ensureView();
           return true;
         }
       }
@@ -45,6 +61,88 @@
       console.warn("読込失敗", e);
     }
     return false;
+  }
+
+  function ensureView() {
+    if (!state.view || typeof state.view !== "object") state.view = { x: 0, y: 0, z: 1 };
+    if (typeof state.view.x !== "number" || isNaN(state.view.x)) state.view.x = 0;
+    if (typeof state.view.y !== "number" || isNaN(state.view.y)) state.view.y = 0;
+    if (typeof state.view.z !== "number" || isNaN(state.view.z) || state.view.z <= 0) state.view.z = 1;
+    state.view.z = clamp(state.view.z, ZMIN, ZMAX);
+    return state.view;
+  }
+
+  function V() { return ensureView(); }
+
+  function setStatus(msg, on) {
+    statusEl.textContent = msg;
+    statusEl.classList.toggle("pc-on", !!on);
+  }
+
+  /* ---------- 表示（パン / ズーム） ---------- */
+  function applyView() {
+    var v = V();
+    board.style.transform = "translate(" + v.x + "px," + v.y + "px) scale(" + v.z + ")";
+    viewport.style.backgroundSize = (GRID * v.z) + "px " + (GRID * v.z) + "px";
+    viewport.style.backgroundPosition = v.x + "px " + v.y + "px";
+    zoomLabel.textContent = Math.round(v.z * 100) + "%";
+  }
+
+  function updateZoomLabel() {
+    zoomLabel.textContent = Math.round(V().z * 100) + "%";
+  }
+
+  // 画面座標 → ボード座標
+  function screenToBoard(cx, cy) {
+    var r = viewport.getBoundingClientRect();
+    var v = V();
+    return { x: (cx - r.left - v.x) / v.z, y: (cy - r.top - v.y) / v.z };
+  }
+
+  // カーソル位置を中心に保ったまま拡大・縮小
+  function zoomAt(cx, cy, factor) {
+    var v = V();
+    var r = viewport.getBoundingClientRect();
+    var sx = cx - r.left, sy = cy - r.top;
+    var b = { x: (sx - v.x) / v.z, y: (sy - v.y) / v.z };
+    var nz = clamp(v.z * factor, ZMIN, ZMAX);
+    if (Math.abs(nz - v.z) < 0.0001) return;
+    v.z = nz;
+    v.x = sx - b.x * v.z;
+    v.y = sy - b.y * v.z;
+    applyView();
+    save();
+  }
+
+  function zoomBy(factor) {
+    var r = viewport.getBoundingClientRect();
+    zoomAt(r.left + r.width / 2, r.top + r.height / 2, factor);
+  }
+
+  // カード全体が画面に収まるように表示
+  function fitView() {
+    var v = V();
+    if (!state.nodes.length) { v.x = 0; v.y = 0; v.z = 1; applyView(); save(); return; }
+    var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    state.nodes.forEach(function (n) {
+      var el = nodeEl(n.id);
+      if (!el) return;
+      minX = Math.min(minX, el.offsetLeft);
+      minY = Math.min(minY, el.offsetTop);
+      maxX = Math.max(maxX, el.offsetLeft + el.offsetWidth);
+      maxY = Math.max(maxY, el.offsetTop + el.offsetHeight);
+    });
+    if (!isFinite(minX)) return;
+    var pad = 40;
+    var contentW = (maxX - minX) + pad * 2;
+    var contentH = (maxY - minY) + pad * 2;
+    var r = viewport.getBoundingClientRect();
+    if (r.width < 10 || r.height < 10) return;
+    v.z = clamp(Math.min(r.width / contentW, r.height / contentH, 1.2), ZMIN, ZMAX);
+    v.x = (r.width - contentW * v.z) / 2 - (minX - pad) * v.z;
+    v.y = (r.height - contentH * v.z) / 2 - (minY - pad) * v.z;
+    applyView();
+    save();
   }
 
   /* ---------- ノード / エッジ 操作 ---------- */
@@ -61,28 +159,55 @@
     return n;
   }
 
-  // 分岐を作り、その先に新しい計画カードを生む
+  // これまでの動作：分岐を作り、その先に新しい計画カードを生む
   function addBranch(fromId, condition) {
-    var from = state.nodes.filter(function (n) { return n.id === fromId; })[0];
+    var from = nodeById(fromId);
     if (!from) return null;
     var nx = from.x + 270;
     var ny = from.y + 40;
-    // 重なりを避ける：同じ列に近いカードがあれば少し下へ
-    while (state.nodes.some(function (n) {
+    var guard = 0;
+    while (guard++ < 60 && state.nodes.some(function (n) {
       return Math.abs(n.x - nx) < 30 && Math.abs(n.y - ny) < 30;
     })) {
       ny += 40;
     }
     var to = addCard(nx, ny, "", "");
+    var e = addEdge(fromId, to.id, condition || "", "branch");
+    return e;
+  }
+
+  // 新しい動作：既存のカード同士を連結する
+  function linkCards(fromId, toId) {
+    if (!fromId || !toId || fromId === toId) return null;
+    if (!nodeById(fromId) || !nodeById(toId)) return null;
+    if (hasEdge(fromId, toId)) return null;
+    return addEdge(fromId, toId, "", "link");
+  }
+
+  function addEdge(fromId, toId, condition, type) {
     var e = {
       id: uid(),
       from: fromId,
-      to: to.id,
-      condition: condition || ""
+      to: toId,
+      condition: condition || "",
+      type: type || "branch"
     };
     state.edges.push(e);
     save();
     return e;
+  }
+
+  function hasEdge(a, b) {
+    return state.edges.some(function (e) { return e.from === a && e.to === b; });
+  }
+
+  function nodeById(id) {
+    var list = state.nodes.filter(function (n) { return n.id === id; });
+    return list[0] || null;
+  }
+
+  function nodeEl(id) {
+    return board.querySelector('.pc-card[data-id="' + id + '"]');
   }
 
   function deleteNode(id) {
@@ -98,32 +223,71 @@
     save();
   }
 
-  /* ---------- 描画 ---------- */
-  function nodeEl(id) {
-    return board.querySelector('.pc-card[data-id="' + id + '"]');
+  /* ---------- 線の幾何計算 ---------- */
+  // 2枚のカードの位置関係から、つなぎやすい辺を選んでベジェ曲線を作る
+  function edgeGeom(fromEl, toEl) {
+    var fw = fromEl.offsetWidth, fh = fromEl.offsetHeight;
+    var tw = toEl.offsetWidth, th = toEl.offsetHeight;
+    var fx = fromEl.offsetLeft, fy = fromEl.offsetTop;
+    var tx = toEl.offsetLeft, ty = toEl.offsetTop;
+    var fcx = fx + fw / 2, fcy = fy + fh / 2;
+    var tcx = tx + tw / 2, tcy = ty + th / 2;
+    var dx = tcx - fcx, dy = tcy - fcy;
+    var horizontal = Math.abs(dx) >= Math.abs(dy);
+    var p1, p2, c1, c2;
+
+    if (horizontal) {
+      var sign = dx >= 0 ? 1 : -1;
+      p1 = { x: dx >= 0 ? fx + fw : fx, y: fcy };
+      p2 = { x: dx >= 0 ? tx : tx + tw, y: tcy };
+      var bend1 = Math.max(40, Math.abs(p2.x - p1.x) / 2);
+      c1 = { x: p1.x + bend1 * sign, y: p1.y };
+      c2 = { x: p2.x - bend1 * sign, y: p2.y };
+    } else {
+      var vsign = dy >= 0 ? 1 : -1;
+      p1 = { x: fcx, y: dy >= 0 ? fy + fh : fy };
+      p2 = { x: tcx, y: dy >= 0 ? ty : ty + th };
+      var bend2 = Math.max(40, Math.abs(p2.y - p1.y) / 2);
+      c1 = { x: p1.x, y: p1.y + bend2 * vsign };
+      c2 = { x: p2.x, y: p2.y - bend2 * vsign };
+    }
+    return { p1: p1, p2: p2, c1: c1, c2: c2, horizontal: horizontal };
   }
 
-  function centerOf(el) {
+  function pathD(g) {
+    return "M " + g.p1.x + " " + g.p1.y +
+           " C " + g.c1.x + " " + g.c1.y + ", " +
+                   g.c2.x + " " + g.c2.y + ", " +
+                   g.p2.x + " " + g.p2.y;
+  }
+
+  // 曲線の中間点（ベジェの t=0.5）
+  function midPoint(g) {
     return {
-      x: el.offsetLeft + el.offsetWidth / 2,
-      y: el.offsetTop + el.offsetHeight / 2
+      x: (g.p1.x + 3 * g.c1.x + 3 * g.c2.x + g.p2.x) / 8,
+      y: (g.p1.y + 3 * g.c1.y + 3 * g.c2.y + g.p2.y) / 8
     };
   }
 
-  // 接続点：from の右側 → to の左側
-  function endpoints(fromEl, toEl) {
-    return {
-      x1: fromEl.offsetLeft + fromEl.offsetWidth,
-      y1: fromEl.offsetTop + fromEl.offsetHeight / 2,
-      x2: toEl.offsetLeft,
-      y2: toEl.offsetTop + toEl.offsetHeight / 2
-    };
+  // 終端で線の向きに合わせた矢じり
+  function arrowD(g) {
+    var p2 = g.p2, c2 = g.c2;
+    var vx = p2.x - c2.x, vy = p2.y - c2.y;
+    var len = Math.sqrt(vx * vx + vy * vy);
+    if (!len) return "";
+    var ux = vx / len, uy = vy / len;
+    var L = 10, W = 5.5;
+    var bx = p2.x - L * ux, by = p2.y - L * uy;
+    var nx = -uy, ny = ux;
+    return "M " + p2.x + " " + p2.y +
+           " L " + (bx + W * nx) + " " + (by + W * ny) +
+           " L " + (bx - W * nx) + " " + (by - W * ny) + " Z";
   }
 
+  /* ---------- 線の描画 ---------- */
   function drawEdges() {
-    // 既存の描画をクリア（カード要素は残す）
-    var old = svg.querySelectorAll(".pc-edge, .pc-edge-arrow, .pc-edge-group");
-    old.forEach(function (n) { n.remove(); });
+    var olds = svg.querySelectorAll(".pc-edge, .pc-edge-arrow");
+    olds.forEach(function (n) { n.remove(); });
     var labels = board.querySelectorAll(".pc-branch-label, .pc-branch-x");
     labels.forEach(function (n) { n.remove(); });
 
@@ -132,36 +296,32 @@
       var toEl = nodeEl(e.to);
       if (!fromEl || !toEl) return;
 
-      var p = endpoints(fromEl, toEl);
-      // カード間をつなぐ曲線
-      var dx = Math.max(40, (p.x2 - p.x1) / 2);
-      var d = "M " + p.x1 + " " + p.y1 +
-              " C " + (p.x1 + dx) + " " + p.y1 + ", " +
-              (p.x2 - dx) + " " + p.y2 + ", " +
-              p.x2 + " " + p.y2;
+      var g = edgeGeom(fromEl, toEl);
+      var isLink = e.type === "link";
 
       var path = document.createElementNS(SVG_NS, "path");
-      path.setAttribute("class", "pc-edge");
-      path.setAttribute("d", d);
+      path.setAttribute("class", "pc-edge" + (isLink ? " pc-link" : ""));
+      path.setAttribute("d", pathD(g));
       svg.appendChild(path);
 
-      // 矢印
-      var arrow = document.createElementNS(SVG_NS, "path");
-      arrow.setAttribute("class", "pc-edge-arrow");
-      arrow.setAttribute("d", "M " + (p.x2 - 9) + " " + (p.y2 - 5) +
-                              " L " + p.x2 + " " + p.y2 +
-                              " L " + (p.x2 - 9) + " " + (p.y2 + 5) + " Z");
-      svg.appendChild(arrow);
+      var ad = arrowD(g);
+      if (ad) {
+        var arrow = document.createElementNS(SVG_NS, "path");
+        arrow.setAttribute("class", "pc-edge-arrow" + (isLink ? " pc-link" : ""));
+        arrow.setAttribute("d", ad);
+        svg.appendChild(arrow);
+      }
 
-      // 条件ラベル（中点）
-      var mx = (p.x1 + p.x2) / 2;
-      var my = (p.y1 + p.y2) / 2;
+      var m = midPoint(g);
+
+      // 条件ラベル（直接編集可）
       var label = document.createElement("div");
-      label.className = "pc-branch-label";
+      label.className = "pc-branch-label" + (isLink ? " pc-link-label" : "");
       label.contentEditable = "true";
       label.textContent = e.condition || "";
-      label.style.left = mx + "px";
-      label.style.top = my + "px";
+      label.style.left = m.x + "px";
+      label.style.top = m.y + "px";
+      label.setAttribute("data-edge", e.id);
       label.addEventListener("blur", function () {
         e.condition = label.textContent.trim();
         save();
@@ -171,34 +331,39 @@
       });
       board.appendChild(label);
 
-      // 分岐削除ボタン
+      // 線の削除ボタン（ラベルの右横に置く）
       var xb = document.createElement("div");
       xb.className = "pc-branch-x";
       xb.textContent = "×";
-      xb.style.left = mx + "px";
-      xb.style.top = my + "px";
-      xb.title = "この分岐を削除";
-      xb.addEventListener("click", function () {
+      xb.title = isLink ? "この連結を削除" : "この分岐を削除";
+      xb.addEventListener("click", function (ev) {
+        ev.stopPropagation();
         deleteEdge(e.id);
         render();
       });
       board.appendChild(xb);
+
+      // ラベルの実測幅に合わせて削除ボタンを配置
+      var lw = label.offsetWidth || 0;
+      xb.style.left = (m.x + Math.min(lw / 2, 95) + 12) + "px";
+      xb.style.top = m.y + "px";
     });
   }
 
+  /* ---------- カードの描画 ---------- */
   function renderCards() {
-    // カード要素を再構築
     var olds = board.querySelectorAll(".pc-card");
     olds.forEach(function (n) { n.remove(); });
 
     state.nodes.forEach(function (n) {
       var card = document.createElement("div");
       card.className = "pc-card";
+      if (linkSrc === n.id) card.classList.add("pc-pick-src");
       card.setAttribute("data-id", n.id);
       card.style.left = n.x + "px";
       card.style.top = n.y + "px";
 
-      // ヘッド（ドラッグ + タイトル + 削除）
+      /* ヘッダー（ドラッグ + タイトル + 削除） */
       var head = document.createElement("div");
       head.className = "pc-card-head";
 
@@ -234,7 +399,7 @@
       head.appendChild(title);
       head.appendChild(del);
 
-      // 本文（やるべき計画）
+      /* 本文（やるべき計画） */
       var body = document.createElement("textarea");
       body.className = "pc-card-body";
       body.placeholder = "やるべき計画を書く…";
@@ -243,31 +408,51 @@
         n.text = body.value;
         save();
       });
-      // ドラッグ中に textarea を操作できるよう止めない
 
-      // アクション
+      /* アクション */
       var actions = document.createElement("div");
       actions.className = "pc-card-actions";
       var branchBtn = document.createElement("button");
       branchBtn.className = "pc-card-branch";
       branchBtn.textContent = "＋ 分岐";
+      branchBtn.title = "条件つきの矢印と、その先の新しいカードを作ります";
       branchBtn.addEventListener("click", function (ev) {
         ev.stopPropagation();
         addBranch(n.id, "");
         render();
-        // 作ったばかりの条件ラベルを編集モードに
-        var last = board.querySelector(".pc-branch-label");
-        if (last) { last.focus(); }
+        var last = board.querySelectorAll(".pc-branch-label");
+        if (last.length) last[last.length - 1].focus();
       });
       actions.appendChild(branchBtn);
+
+      /* 連結ポイント（ここから別のカードへドラッグ） */
+      var port = document.createElement("div");
+      port.className = "pc-port";
+      port.textContent = "●";
+      port.title = "ドラッグして別のカードへ連結";
+      port.addEventListener("pointerdown", function (ev) {
+        ev.stopPropagation();
+        ev.preventDefault();
+        startTempLink(card, ev);
+      });
 
       card.appendChild(head);
       card.appendChild(body);
       card.appendChild(actions);
+      card.appendChild(port);
 
-      // ドラッグ
+      /* 連結モード：カードをクリックして接続元 → 接続先 */
+      card.addEventListener("click", function (ev) {
+        if (!linkMode) return;
+        if (ev.target.closest(".pc-card-del")) return;
+        if (ev.target.closest(".pc-card-branch")) return;
+        if (ev.target.closest(".pc-port")) return;
+        if (ev.target.tagName === "TEXTAREA") return;
+        ev.stopPropagation();
+        pickCardForLink(n.id);
+      });
+
       enableDrag(card, n);
-
       board.appendChild(card);
     });
   }
@@ -277,27 +462,128 @@
     drawEdges();
   }
 
-  /* ---------- ドラッグ ---------- */
+  /* ---------- 連結モード（クリックでカード同士をつなぐ） ---------- */
+  function pickCardForLink(id) {
+    if (linkSrc === null) {
+      linkSrc = id;
+      setStatus("接続先のカードをクリックしてください（Esc で解除）", true);
+      render();
+      return;
+    }
+    if (linkSrc === id) {
+      linkSrc = null;
+      setStatus("同じカードは選べません。接続元を選び直してください", true);
+      render();
+      return;
+    }
+    if (hasEdge(linkSrc, id)) {
+      linkSrc = null;
+      setStatus("その2枚はすでに連結されています", true);
+      render();
+      return;
+    }
+    var e = linkCards(linkSrc, id);
+    linkSrc = null;
+    if (e) {
+      setStatus("カードを連結しました。ラベルをクリックすると説明を書けます", true);
+    } else {
+      setStatus("連結できませんでした", true);
+    }
+    render();
+  }
+
+  function exitLinkMode() {
+    linkMode = false;
+    linkSrc = null;
+    viewport.classList.remove("pc-linking");
+    var btn = document.getElementById("pc-link");
+    if (btn) btn.classList.remove("pc-on");
+    setStatus("カードをドラッグで動かせます（追加したいときはツールバーの＋カード）", false);
+    render();
+  }
+
+  /* ---------- 連結ポイントからのドラッグ ---------- */
+  function tempFromPoint(fromEl) {
+    return {
+      x: fromEl.offsetLeft + fromEl.offsetWidth,
+      y: fromEl.offsetTop + fromEl.offsetHeight / 2
+    };
+  }
+
+  function startTempLink(fromEl, ev) {
+    tempFrom = fromEl;
+    tempPath = document.createElementNS(SVG_NS, "path");
+    tempPath.setAttribute("class", "pc-link-temp");
+    svg.appendChild(tempPath);
+
+    var move = function (e) { updateTempLink(e); };
+    var up = function (e) { finishTempLink(e, move, up); };
+
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
+    updateTempLink(ev);
+  }
+
+  function updateTempLink(ev) {
+    if (!tempPath || !tempFrom) return;
+    var p = tempFromPoint(tempFrom);
+    var b = screenToBoard(ev.clientX, ev.clientY);
+    var g = {
+      p1: p,
+      p2: b,
+      c1: { x: p.x + Math.max(40, (b.x - p.x) / 2), y: p.y },
+      c2: { x: b.x - Math.max(40, (b.x - p.x) / 2), y: b.y }
+    };
+    tempPath.setAttribute("d", pathD(g));
+  }
+
+  function finishTempLink(ev, move, up) {
+    window.removeEventListener("pointermove", move);
+    window.removeEventListener("pointerup", up);
+    window.removeEventListener("pointercancel", up);
+    if (tempPath) { tempPath.remove(); tempPath = null; }
+
+    var target = document.elementFromPoint(ev.clientX, ev.clientY);
+    var cardEl = target && target.closest ? target.closest(".pc-card") : null;
+    var fromEl = tempFrom;
+    tempFrom = null;
+    if (!cardEl || !fromEl) return;
+
+    var fromId = fromEl.getAttribute("data-id");
+    var toId = cardEl.getAttribute("data-id");
+    if (!fromId || !toId || fromId === toId) return;
+    if (hasEdge(fromId, toId)) {
+      setStatus("その2枚はすでに連結されています", false);
+      return;
+    }
+    linkCards(fromId, toId);
+    setStatus("カードを連結しました", false);
+    render();
+  }
+
+  /* ---------- ドラッグ（カード移動） ---------- */
   function enableDrag(card, n) {
     var head = card.querySelector(".pc-card-head");
     var dragging = false;
     var sx, sy, ox, oy;
 
     head.addEventListener("pointerdown", function (ev) {
-      // テキスト編集中はドラッグしない
       if (ev.target.isContentEditable) return;
+      if (ev.target.closest(".pc-card-del")) return;
       dragging = true;
       sx = ev.clientX;
       sy = ev.clientY;
       ox = n.x;
       oy = n.y;
-      head.setPointerCapture(ev.pointerId);
       card.style.zIndex = 50;
+      try { head.setPointerCapture(ev.pointerId); } catch (e) {}
     });
     head.addEventListener("pointermove", function (ev) {
       if (!dragging) return;
-      n.x = ox + (ev.clientX - sx);
-      n.y = oy + (ev.clientY - sy);
+      var z = V().z;
+      n.x = ox + (ev.clientX - sx) / z;
+      n.y = oy + (ev.clientY - sy) / z;
       card.style.left = n.x + "px";
       card.style.top = n.y + "px";
       drawEdges();
@@ -305,32 +591,111 @@
     head.addEventListener("pointerup", function (ev) {
       if (!dragging) return;
       dragging = false;
+      n.x = Math.round(n.x);
+      n.y = Math.round(n.y);
+      card.style.left = n.x + "px";
+      card.style.top = n.y + "px";
       card.style.zIndex = "";
+      drawEdges();
       save();
     });
     head.addEventListener("pointercancel", function () {
       dragging = false;
+      card.style.zIndex = "";
     });
   }
 
+  /* ---------- キャンバスのパン / ズーム操作 ---------- */
+  var panning = false, psx = 0, psy = 0, pox = 0, poy = 0;
+
+  viewport.addEventListener("pointerdown", function (ev) {
+    if (ev.button !== 0) return;
+    var t = ev.target;
+    if (t.closest && (t.closest(".pc-card") || t.closest(".pc-branch-label") ||
+                      t.closest(".pc-branch-x") || t.closest(".pc-help"))) return;
+    panning = true;
+    psx = ev.clientX; psy = ev.clientY;
+    var v = V();
+    pox = v.x; poy = v.y;
+    viewport.classList.add("pc-panning");
+    try { viewport.setPointerCapture(ev.pointerId); } catch (e) {}
+  });
+
+  viewport.addEventListener("pointermove", function (ev) {
+    if (!panning) return;
+    var v = V();
+    v.x = pox + (ev.clientX - psx);
+    v.y = poy + (ev.clientY - psy);
+    viewport.style.backgroundPosition = v.x + "px " + v.y + "px";
+    board.style.transform = "translate(" + v.x + "px," + v.y + "px) scale(" + v.z + ")";
+  });
+
+  function endPan() {
+    if (!panning) return;
+    panning = false;
+    viewport.classList.remove("pc-panning");
+    save();
+  }
+  viewport.addEventListener("pointerup", endPan);
+  viewport.addEventListener("pointercancel", endPan);
+
+  viewport.addEventListener("wheel", function (ev) {
+    ev.preventDefault();
+    var factor = ev.deltaY < 0 ? 1.12 : 1 / 1.12;
+    zoomAt(ev.clientX, ev.clientY, factor);
+  }, { passive: false });
+
+  // 何もない所をダブルクリック → そこに新しいカード
+  viewport.addEventListener("dblclick", function (ev) {
+    var t = ev.target;
+    if (t.closest && (t.closest(".pc-card") || t.closest(".pc-help") ||
+                      t.closest(".pc-branch-label") || t.closest(".pc-branch-x"))) return;
+    var b = screenToBoard(ev.clientX, ev.clientY);
+    var n = addCard(b.x - 110, b.y - 60, "", "");
+    render();
+    var el = nodeEl(n.id);
+    if (el) {
+      var t2 = el.querySelector(".pc-card-title");
+      if (t2) t2.focus();
+    }
+  });
+
   /* ---------- ツールバー ---------- */
-  document.getElementById("pc-add").addEventListener("click", function () {
-    var x = board.scrollLeft + 60 + Math.random() * 40;
-    var y = board.scrollTop + 60 + Math.random() * 40;
-    var n = addCard(x, y, "", "");
+  function addCardAtCenter() {
+    var r = viewport.getBoundingClientRect();
+    var b = screenToBoard(r.left + r.width / 2, r.top + r.height / 2);
+    var n = addCard(b.x - 110 + (Math.random() * 40 - 20),
+                    b.y - 60 + (Math.random() * 40 - 20), "", "");
     render();
     var el = nodeEl(n.id);
     if (el) {
       var t = el.querySelector(".pc-card-title");
       if (t) t.focus();
     }
+  }
+
+  document.getElementById("pc-add").addEventListener("click", addCardAtCenter);
+
+  document.getElementById("pc-link").addEventListener("click", function () {
+    linkMode = !linkMode;
+    linkSrc = null;
+    this.classList.toggle("pc-on", linkMode);
+    viewport.classList.toggle("pc-linking", linkMode);
+    if (linkMode) {
+      setStatus("連結モード：接続元のカードをクリック → 接続先のカードをクリック（Esc で解除）", true);
+    } else {
+      setStatus("カードをドラッグで動かせます", false);
+    }
+    render();
   });
 
   document.getElementById("pc-clear").addEventListener("click", function () {
-    if (confirm("すべてのカードと分岐を削除しますか？")) {
-      state = { nodes: [], edges: [] };
+    if (confirm("すべてのカードと線を削除しますか？")) {
+      state = { nodes: [], edges: [], view: { x: 0, y: 0, z: 1 } };
+      linkSrc = null;
       save();
       render();
+      applyView();
     }
   });
 
@@ -338,18 +703,50 @@
     state = {
       nodes: [
         { id: "s1", title: "目標：副業を始める", text: "毎月3万円の収入を目指す", x: 40, y: 40 },
-        { id: "s2", title: "Webライティングを試す", text: "クラウドソーシングで実績を作る", x: 320, y: 20 },
-        { id: "s3", title: "ハンドメイドを試す", text: "物販サイトで出品する", x: 320, y: 160 },
-        { id: "s4", title: "スキルを伸ばす", text: "週1回は学習時間を確保", x: 620, y: 60 }
+        { id: "s2", title: "Webライティングを試す", text: "クラウドソーシングで実績を作る", x: 340, y: 20 },
+        { id: "s3", title: "ハンドメイドを試す", text: "物販サイトで出品する", x: 340, y: 190 },
+        { id: "s4", title: "スキルを伸ばす", text: "週1回は学習時間を確保", x: 660, y: 90 }
       ],
       edges: [
-        { id: "e1", from: "s1", to: "s2", condition: "文章が好き" },
-        { id: "e2", from: "s1", to: "s3", condition: "物作りが好き" },
-        { id: "e3", from: "s2", to: "s4", condition: "反応があったら" }
-      ]
+        { id: "e1", from: "s1", to: "s2", condition: "文章が好き", type: "branch" },
+        { id: "e2", from: "s1", to: "s3", condition: "物作りが好き", type: "branch" },
+        { id: "e3", from: "s2", to: "s4", condition: "反応があったら", type: "branch" },
+        { id: "e4", from: "s3", to: "s4", condition: "", type: "link" }
+      ],
+      view: { x: 0, y: 0, z: 1 }
     };
+    linkSrc = null;
     save();
     render();
+    fitView();
+  });
+
+  /* ズーム操作 */
+  document.getElementById("pc-zoom-in").addEventListener("click", function () { zoomBy(1.2); });
+  document.getElementById("pc-zoom-out").addEventListener("click", function () { zoomBy(1 / 1.2); });
+  document.getElementById("pc-zoom-reset").addEventListener("click", function () {
+    var v = V();
+    v.z = 1;
+    applyView();
+    save();
+  });
+  document.getElementById("pc-fit").addEventListener("click", fitView);
+
+  /* 使い方パネル */
+  var helpEl = document.getElementById("pc-help");
+  document.getElementById("pc-help-toggle").addEventListener("click", function () {
+    helpEl.hidden = !helpEl.hidden;
+  });
+  document.getElementById("pc-help-close").addEventListener("click", function () {
+    helpEl.hidden = true;
+  });
+
+  /* Esc で連結モード解除 */
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key !== "Escape") return;
+    if (linkMode) exitLinkMode();
+    else if (!helpEl.hidden) helpEl.hidden = true;
+    else if (linkSrc !== null) { linkSrc = null; render(); }
   });
 
   /* ---------- JSON 出力 / 読込 ---------- */
@@ -373,10 +770,13 @@
     r.onload = function () {
       try {
         var d = JSON.parse(r.result);
-        if (d && Array.isArray(d.nodes)) {
+        if (d && Array.isArray(d.nodes) && Array.isArray(d.edges)) {
           state = d;
+          ensureView();
+          linkSrc = null;
           save();
           render();
+          fitView();
         }
       } catch (e) {
         alert("JSONの読込に失敗しました");
@@ -387,11 +787,26 @@
   });
 
   /* ---------- 起動 ---------- */
-  if (!load() || state.nodes.length === 0) {
-    // 初回はサンプルをちら見せ
-    document.getElementById("pc-sample").click();
-  } else {
+  function boot() {
+    var had = load();      // 保存データがあったか
+    ensureView();
     render();
+    applyView();
+    if (!had) {
+      // はじめて使うときだけ、参考のサンプルを自動表示する
+      document.getElementById("pc-sample").click();
+    } else if (state.nodes.length === 0) {
+      // 全部消したあとは空のまま（サンプルを出し直さない）
+      setStatus("「＋ カード」で計画を追加してください", false);
+      return;
+    } else {
+      // 保存済みの表示位置を復元（画面外なら全体表示にフォールバック）
+      var v = V();
+      if (v.x === 0 && v.y === 0 && v.z === 1) fitView();
+    }
+    setStatus("カードをドラッグで動かせます（追加はツールバーの＋カード）", false);
   }
+
+  boot();
 
 })();
