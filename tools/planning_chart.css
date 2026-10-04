@@ -267,6 +267,12 @@ body.pc-body{
     padding:1px 8px;
     border-radius:999px;
     flex:0 0 auto;
+    /* step2-1 / step3-1-2 のような長い番号でも崩れないようにする */
+    max-width:96px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    font-variant-numeric:tabular-nums;
 }
 .pc-card-title{
     flex:1 1 auto;
@@ -382,4 +388,93 @@ body.pc-body{
 @media (max-width: 720px){
     .pc-appbar-title, .pc-chip{ display:none; }
     .pc-btn{ padding:5px 9px; font-size:12px; }
+}
+/* ---------- 編集モード（鉛筆ボタン） ---------- */
+.pc-card-pencil{
+    flex:0 0 auto;
+    width:22px; height:22px;
+    border:1px solid #b9c6b9;
+    background:#f2f7f2;
+    color:#5c7a5c;
+    font-size:13px;
+    line-height:1;
+    border-radius:6px;
+    cursor:pointer;
+    padding:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+.pc-card-pencil:hover{ background:#e2efe2; border-color:#228b22; color:#228b22; }
+.pc-card-pencil.pc-on{
+    background:#228b22;
+    border-color:#1a5fa8;
+    color:#fff;
+    box-shadow:0 0 0 3px rgba(34,139,34,.2);
+}
+
+/* 編集中のカードは枠で示す */
+.pc-card.pc-editing-now{
+    border-color:#1a5fa8;
+    box-shadow:0 0 0 4px rgba(26,95,168,.18), 0 6px 18px rgba(26,95,168,.2);
+}
+/* 編集モードでないときの入力欄は読み取り専用の見た目に */
+.pc-card-body[readonly]{
+    background:#fbfdfb;
+    color:#33415c;
+    cursor:default;
+}
+/* ---------- カードのサイズ（小・中・大） ---------- */
+/* 中＝デフォルト（既定の 220px）。小は1行分、大は標準の約2.5倍にする */
+.pc-card.pc-size-m{ width:220px; }
+.pc-card.pc-size-s{ width:150px; }
+.pc-card.pc-size-l{ width:550px; }
+
+/* 小さいカードは1行で収まるように詰める */
+.pc-card.pc-size-s .pc-card-head{ padding:6px 8px 3px; }
+.pc-card.pc-size-s .pc-card-title{ font-size:12.5px; }
+.pc-card.pc-size-s .pc-card-badge{ padding:1px 6px; }
+.pc-card.pc-size-s .pc-card-body{
+    min-height:22px;
+    font-size:12px;
+    padding:4px 6px;
+}
+.pc-card.pc-size-s .pc-card-actions{ padding:0 6px 8px; }
+.pc-card.pc-size-s .pc-card-branch{ font-size:11.5px; }
+
+/* 大きいカードは余白を広げて読みやすくする */
+.pc-card.pc-size-l .pc-card-title{ font-size:16px; }
+.pc-card.pc-size-l .pc-card-body{ min-height:80px; font-size:14px; padding:8px 10px; }
+
+/* ---------- サイズ切替（鉛筆を押したカードだけ表示） ---------- */
+.pc-card-size{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    padding:0 8px 6px;
+}
+.pc-size-label{
+    font-size:11px;
+    color:#7c8aa5;
+    margin-right:2px;
+    flex:0 0 auto;
+}
+.pc-size-btn{
+    flex:0 0 auto;
+    border:1px solid #cfe0c2;
+    background:#f7fbf7;
+    color:#4a6b4a;
+    font-size:11px;
+    font-family:inherit;
+    line-height:1;
+    padding:3px 7px;
+    border-radius:6px;
+    cursor:pointer;
+}
+.pc-size-btn:hover{ background:#e6f2e6; border-color:#228b22; }
+.pc-size-btn.pc-on{
+    background:#228b22;
+    border-color:#1a6a1a;
+    color:#fff;
+    font-weight:bold;
 }

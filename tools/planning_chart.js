@@ -31,12 +31,36 @@
   var tempPath = null;     // ドラッグ中の仮の線
   var tempFrom = null;     // 仮の線の接続元カード要素
 
+  /* 編集モード用 */
+  var editMode = false;    // 鉛筆ボタンでON/OFF。OFFのときは文字入力させない
+  var editingId = null;    // いま編集中のカード id（編集モード時に1枚だけ入れる）
+
   /* ---------- ユーティリティ ---------- */
   function uid() {
     return "n" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   }
 
   function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+
+  /* ---------- カードのサイズ（小・中・大） ---------- */
+  var SIZES = { s: "小", m: "中", l: "大" };
+  var SIZE_TIP = {
+    s: "小：1行分のコンパクトなカード",
+    m: "中：デフォルトのカード",
+    l: "大：標準のカードの約2.5倍"
+  };
+
+  // 未設定でも壊れた値でも「中」にフォールバックする
+  function nodeSize(n) {
+    return (n && (n.size === "s" || n.size === "l")) ? n.size : "m";
+  }
+
+  function setNodeSize(n, v) {
+    if (v !== "s" && v !== "m" && v !== "l") return;
+    n.size = v;
+    save();
+    render();
+  }
 
   function save() {
     try {
@@ -152,7 +176,8 @@
       title: title || "",
       text: text || "",
       x: Math.round(x),
-      y: Math.round(y)
+      y: Math.round(y),
+      size: "m"          // 小・中・大（既定は「中」）
     };
     state.nodes.push(n);
     save();
@@ -222,6 +247,41 @@
     state.edges = state.edges.filter(function (e) { return e.id !== id; });
     save();
   }
+
+  /* ---------- 編集モード（鉛筆ボタン） ---------- */
+  function setEditMode(on, id) {
+    editMode = !!on;
+    editingId = editMode ? (id || null) : null;
+    board.classList.toggle("pc-editing", editMode);
+    if (!editMode) setStatus("カードをドラッグで動かせます", false);
+  }
+
+  // 鉛筆ボタン：そのカードの編集モードをトグル
+  function toggleEdit(cardId) {
+    if (!editMode) {
+      setEditMode(true, cardId);
+      setStatus("編集モード：文字を直せます。もう一度鉛筆を押すと確定します", true);
+    } else if (editingId === cardId) {
+      setEditMode(false);
+      setStatus("編集を確定しました", false);
+    } else {
+      // 別のカードの鉛筆を押した：編集中のカードを切り替える
+      editingId = cardId;
+      setStatus("編集中のカードを切り替えました", true);
+    }
+    render();
+    if (editMode) {
+      var el = nodeEl(editingId);
+      if (el) {
+        var t = el.querySelector(".pc-card-title");
+        if (t) t.focus();
+      }
+    }
+  }
+
+  // テキストを編集できる状態かどうか。
+  // 鉛筆を押したカードだけ編集可。押していないカードは動かすだけで入力は起きない。
+  function canEditText(id) { return editMode && editingId === id; }
 
   /* ---------- 線の幾何計算 ---------- */
   // 2枚のカードの位置関係から、つなぎやすい辺を選んでベジェ曲線を作る
@@ -350,15 +410,114 @@
     });
   }
 
+  /* ---------- step 番号の計算 ---------- */
+  // 番号の決まり方：
+  //   ・メインの数字は「開始からそのカードまで線をたどった本数」（深さ）。
+  //     3枚一直線なら step1 / step2 / step3。
+  //   ・途中で1枚のカードから2本以上に枝分かれしたときは、
+  //     選んだ枝の順番を「-1」「-2」…として後ろに足す。
+  //     例えば 1枚から2本枝分かれしたなら step2-1 / step2-2。
+  //   ・さらに深い場所で枝分かれした分は、経路打野の枝番号を積み上げる。
+  function computeSteps() {
+    var map = {};
+    if (!state.nodes.length) return map;
+
+    var byId = {};
+    state.nodes.forEach(function (n) { byId[n.id] = n; });
+
+    // 入ってくる線を持たないカード＝開始点
+    var hasIn = {};
+    state.edges.forEach(function (e) { if (byId[e.to]) hasIn[e.to] = true; });
+    var roots = state.nodes.filter(function (n) { return !hasIn[n.id]; });
+    if (!roots.length) roots = [state.nodes[0]];
+
+    // 「開始」と書かれたカードを最優先で根にする
+    var startMarked = roots.filter(function (n) {
+      var t = ((n.title || "") + " " + (n.text || "")).trim();
+      return /^(開始|スタート|start|Start|START)/.test(t);
+    });
+    var ordered = startMarked.concat(roots.filter(function (n) {
+      return startMarked.indexOf(n) === -1;
+    }));
+
+    // 画面上の位置順（左→右、↑→下）で枝の順番を決める
+    function byPos(a, b) {
+      return (a.x - b.x) || (a.y - b.y);
+    }
+
+    function label(depth, forks) {
+      return "step" + depth + (forks.length ? "-" + forks.join("-") : "");
+    }
+
+    // 行き先のカード（枝の順番は画面位置順）
+    function childrenOf(id) {
+      var seen = {};
+      var kids = [];
+      state.edges.forEach(function (e) {
+        if (e.from !== id || !byId[e.to] || seen[e.to]) return;
+        seen[e.to] = true;
+        kids.push(e.to);
+      });
+      return kids.sort(function (a, b) { return byPos(byId[a], byId[b]); });
+    }
+
+    // 2本以上の線が集まるカード（＝合流点）。枝を選んでいないので枝番号は付けない。
+    function inDegree(id) {
+      return state.edges.filter(function (e) { return e.to === id; }).length;
+    }
+
+    // 幅優先で深さと枝番号を届ける。循環は訪問済みで止める。
+    var visited = {};
+    var queue = ordered.map(function (n) {
+      return { id: n.id, depth: 1, forks: [] };
+    });
+    ordered.forEach(function (n) { visited[n.id] = true; });
+    ordered.forEach(function (n) { map[n.id] = label(1, []); });
+
+    var maxDepth = 1;
+    while (queue.length) {
+      var cur = queue.shift();
+      var kids = childrenOf(cur.id).filter(function (id) { return !visited[id]; });
+      if (!kids.length) continue;
+      var nextDepth = cur.depth + 1;
+      kids.forEach(function (id, i) {
+        visited[id] = true;
+        // 2本以上分岐したときだけ枝番号を付ける（1本ならそのまま進む）
+        var branched = kids.length >= 2;
+        var forks = branched ? cur.forks.concat([i + 1]) : cur.forks;
+        // 合流点は枝を選んでいないので、枝番号を引き継がない
+        if (inDegree(id) >= 2) forks = [];
+        map[id] = label(nextDepth, forks);
+        if (nextDepth > maxDepth) maxDepth = nextDepth;
+        queue.push({ id: id, depth: nextDepth, forks: forks });
+      });
+    }
+
+    // どこからも繋がっていないカードは、番号続きで振っておく
+    var extra = maxDepth;
+    state.nodes.forEach(function (n) {
+      if (map[n.id] !== undefined) return;
+      extra++;
+      map[n.id] = label(extra, []);
+    });
+
+    return map;
+  }
+
   /* ---------- カードの描画 ---------- */
   function renderCards() {
     var olds = board.querySelectorAll(".pc-card");
     olds.forEach(function (n) { n.remove(); });
 
+    var steps = computeSteps();
+
     state.nodes.forEach(function (n) {
       var card = document.createElement("div");
       card.className = "pc-card";
       if (linkSrc === n.id) card.classList.add("pc-pick-src");
+      if (editMode && editingId === n.id) card.classList.add("pc-editing-now");
+      // 小・中・大（未設定は「中」）
+      card.classList.add("pc-size-" + nodeSize(n));
       card.setAttribute("data-id", n.id);
       card.style.left = n.x + "px";
       card.style.top = n.y + "px";
@@ -369,11 +528,12 @@
 
       var badge = document.createElement("span");
       badge.className = "pc-card-badge";
-      badge.textContent = "計画";
+      badge.textContent = steps[n.id] || "step1";
 
       var title = document.createElement("div");
       title.className = "pc-card-title";
-      title.contentEditable = "true";
+      // 鉛筆を押したカードだけ入力可能にする
+      title.contentEditable = canEditText(n.id) ? "true" : "false";
       title.textContent = n.title || "";
       title.addEventListener("blur", function () {
         n.title = title.textContent.trim();
@@ -381,6 +541,18 @@
       });
       title.addEventListener("keydown", function (ev) {
         if (ev.key === "Enter") { ev.preventDefault(); title.blur(); }
+      });
+
+      // 鉛筆ボタン（このカードの編集モードをON/OFF）
+      var pencil = document.createElement("button");
+      pencil.className = "pc-card-pencil" + (editMode && editingId === n.id ? " pc-on" : "");
+      pencil.textContent = "✎";
+      pencil.title = (editMode && editingId === n.id)
+        ? "編集を確定する"
+        : "文字を編集する（このカードを編集モードに）";
+      pencil.addEventListener("click", function (ev) {
+        ev.stopPropagation();
+        toggleEdit(n.id);
       });
 
       var del = document.createElement("button");
@@ -391,19 +563,27 @@
         ev.stopPropagation();
         if (confirm("この計画カードを削除しますか？")) {
           deleteNode(n.id);
+          if (editingId === n.id) editingId = null;
           render();
         }
       });
 
       head.appendChild(badge);
       head.appendChild(title);
+      head.appendChild(pencil);
       head.appendChild(del);
 
       /* 本文（やるべき計画） */
+      var editable = canEditText(n.id);
       var body = document.createElement("textarea");
       body.className = "pc-card-body";
-      body.placeholder = "やるべき計画を書く…";
+      body.placeholder = editable ? "やるべき計画を書く…" : "鉛筆を押すと入力できます";
       body.value = n.text || "";
+      // 鉛筆を押していないカードは読み取り専用にして、意図しない文字入力を防ぐ
+      body.readOnly = !editable;
+      if (!editable) {
+        body.addEventListener("focus", function () { body.blur(); });
+      }
       body.addEventListener("input", function () {
         n.text = body.value;
         save();
@@ -419,11 +599,38 @@
       branchBtn.addEventListener("click", function (ev) {
         ev.stopPropagation();
         addBranch(n.id, "");
+        // できた先にすぐ書けるよう、鉛筆モードを開く
+        var made = state.nodes[state.nodes.length - 1];
+        setEditMode(true, made ? made.id : null);
         render();
         var last = board.querySelectorAll(".pc-branch-label");
         if (last.length) last[last.length - 1].focus();
       });
       actions.appendChild(branchBtn);
+
+      /* サイズ切替（鉛筆を押したカードだけ表示） */
+      var sizeRow = null;
+      if (editable) {
+        sizeRow = document.createElement("div");
+        sizeRow.className = "pc-card-size";
+
+        var sizeLabel = document.createElement("span");
+        sizeLabel.className = "pc-size-label";
+        sizeLabel.textContent = "サイズ";
+        sizeRow.appendChild(sizeLabel);
+
+        Object.keys(SIZES).forEach(function (k) {
+          var sb = document.createElement("button");
+          sb.className = "pc-size-btn" + (nodeSize(n) === k ? " pc-on" : "");
+          sb.textContent = SIZES[k];
+          sb.title = SIZE_TIP[k];
+          sb.addEventListener("click", function (ev) {
+            ev.stopPropagation();
+            setNodeSize(n, k);
+          });
+          sizeRow.appendChild(sb);
+        });
+      }
 
       /* 連結ポイント（ここから別のカードへドラッグ） */
       var port = document.createElement("div");
@@ -438,16 +645,18 @@
 
       card.appendChild(head);
       card.appendChild(body);
+      if (sizeRow) card.appendChild(sizeRow);
       card.appendChild(actions);
       card.appendChild(port);
 
       /* 連結モード：カードをクリックして接続元 → 接続先 */
       card.addEventListener("click", function (ev) {
-        if (!linkMode) return;
         if (ev.target.closest(".pc-card-del")) return;
         if (ev.target.closest(".pc-card-branch")) return;
+        if (ev.target.closest(".pc-card-pencil")) return;
         if (ev.target.closest(".pc-port")) return;
         if (ev.target.tagName === "TEXTAREA") return;
+        if (!linkMode) return;
         ev.stopPropagation();
         pickCardForLink(n.id);
       });
@@ -568,18 +777,28 @@
     var dragging = false;
     var sx, sy, ox, oy;
 
-    head.addEventListener("pointerdown", function (ev) {
-      if (ev.target.isContentEditable) return;
+    // どこを押しても動かせるようにする（入力欄とボタンは除く）
+    function onDown(ev) {
+      if (ev.button !== 0 && ev.pointerType === "mouse") return;
       if (ev.target.closest(".pc-card-del")) return;
+      if (ev.target.closest(".pc-card-pencil")) return;
+      if (ev.target.closest(".pc-card-branch")) return;
+      if (ev.target.closest(".pc-card-size")) return;
+      if (ev.target.closest(".pc-port")) return;
+      // 編集モードでないときは入力欄の上でもドラッグを優先（文字入力を起こさない）
+      if (ev.target.tagName === "TEXTAREA" && canEditText(n.id)) return;
+      if (editMode && ev.target.closest(".pc-card-title")) return;
       dragging = true;
       sx = ev.clientX;
       sy = ev.clientY;
       ox = n.x;
       oy = n.y;
       card.style.zIndex = 50;
-      try { head.setPointerCapture(ev.pointerId); } catch (e) {}
-    });
-    head.addEventListener("pointermove", function (ev) {
+      try { card.setPointerCapture(ev.pointerId); } catch (e) {}
+      ev.preventDefault();
+    }
+
+    function onMove(ev) {
       if (!dragging) return;
       var z = V().z;
       n.x = ox + (ev.clientX - sx) / z;
@@ -587,8 +806,9 @@
       card.style.left = n.x + "px";
       card.style.top = n.y + "px";
       drawEdges();
-    });
-    head.addEventListener("pointerup", function (ev) {
+    }
+
+    function onUp() {
       if (!dragging) return;
       dragging = false;
       n.x = Math.round(n.x);
@@ -598,11 +818,12 @@
       card.style.zIndex = "";
       drawEdges();
       save();
-    });
-    head.addEventListener("pointercancel", function () {
-      dragging = false;
-      card.style.zIndex = "";
-    });
+    }
+
+    card.addEventListener("pointerdown", onDown);
+    card.addEventListener("pointermove", onMove);
+    card.addEventListener("pointerup", onUp);
+    card.addEventListener("pointercancel", onUp);
   }
 
   /* ---------- キャンバスのパン / ズーム操作 ---------- */
@@ -651,21 +872,14 @@
     if (t.closest && (t.closest(".pc-card") || t.closest(".pc-help") ||
                       t.closest(".pc-branch-label") || t.closest(".pc-branch-x"))) return;
     var b = screenToBoard(ev.clientX, ev.clientY);
-    var n = addCard(b.x - 110, b.y - 60, "", "");
-    render();
-    var el = nodeEl(n.id);
-    if (el) {
-      var t2 = el.querySelector(".pc-card-title");
-      if (t2) t2.focus();
-    }
+    addCardAndEdit(b.x - 110, b.y - 60);
   });
 
   /* ---------- ツールバー ---------- */
-  function addCardAtCenter() {
-    var r = viewport.getBoundingClientRect();
-    var b = screenToBoard(r.left + r.width / 2, r.top + r.height / 2);
-    var n = addCard(b.x - 110 + (Math.random() * 40 - 20),
-                    b.y - 60 + (Math.random() * 40 - 20), "", "");
+  // 新しいカードを作ったら、そのまま鉛筆モードを開いて書けるようにする
+  function addCardAndEdit(x, y) {
+    var n = addCard(x, y, "", "");
+    setEditMode(true, n.id);
     render();
     var el = nodeEl(n.id);
     if (el) {
@@ -674,17 +888,26 @@
     }
   }
 
+  function addCardAtCenter() {
+    var r = viewport.getBoundingClientRect();
+    var b = screenToBoard(r.left + r.width / 2, r.top + r.height / 2);
+    addCardAndEdit(b.x - 110 + (Math.random() * 40 - 20),
+                   b.y - 60 + (Math.random() * 40 - 20));
+  }
+
   document.getElementById("pc-add").addEventListener("click", addCardAtCenter);
 
   document.getElementById("pc-link").addEventListener("click", function () {
     linkMode = !linkMode;
     linkSrc = null;
+    // 連結モードと編集モードは同時に使わない
+    if (linkMode) setEditMode(false);
     this.classList.toggle("pc-on", linkMode);
     viewport.classList.toggle("pc-linking", linkMode);
     if (linkMode) {
       setStatus("連結モード：接続元のカードをクリック → 接続先のカードをクリック（Esc で解除）", true);
     } else {
-      setStatus("カードをドラッグで動かせます", false);
+      setStatus("カードをドラッグで動かせます（文字を直すには鉛筆を押す）", false);
     }
     render();
   });
@@ -693,13 +916,16 @@
     if (confirm("すべてのカードと線を削除しますか？")) {
       state = { nodes: [], edges: [], view: { x: 0, y: 0, z: 1 } };
       linkSrc = null;
+      setEditMode(false);
       save();
       render();
       applyView();
+      setStatus("「＋ カード」で計画を追加してください", false);
     }
   });
 
   document.getElementById("pc-sample").addEventListener("click", function () {
+    if (!confirm("現在のカードと線をすべて消して、サンプルを表示しますか？")) return;
     state = {
       nodes: [
         { id: "s1", title: "目標：副業を始める", text: "毎月3万円の収入を目指す", x: 40, y: 40 },
@@ -716,9 +942,11 @@
       view: { x: 0, y: 0, z: 1 }
     };
     linkSrc = null;
+    setEditMode(false);
     save();
     render();
     fitView();
+    setStatus("サンプルを表示しました（「✎」で文字を編集できます）", false);
   });
 
   /* ズーム操作 */
@@ -741,10 +969,11 @@
     helpEl.hidden = true;
   });
 
-  /* Esc で連結モード解除 */
+  /* Esc で編集モード / 連結モードを解除 */
   document.addEventListener("keydown", function (ev) {
     if (ev.key !== "Escape") return;
-    if (linkMode) exitLinkMode();
+    if (editMode) { setEditMode(false); render(); }
+    else if (linkMode) exitLinkMode();
     else if (!helpEl.hidden) helpEl.hidden = true;
     else if (linkSrc !== null) { linkSrc = null; render(); }
   });
@@ -774,6 +1003,7 @@
           state = d;
           ensureView();
           linkSrc = null;
+          setEditMode(false);
           save();
           render();
           fitView();
@@ -787,24 +1017,32 @@
   });
 
   /* ---------- 起動 ---------- */
+  // 最初の状態：「開始」と「ゴール」の2枚だけのカード
+  function makeStarter() {
+    return {
+      nodes: [
+        { id: "st_start", title: "開始", text: "今いる場所・現状をまとめる", x: 80, y: 140 },
+        { id: "st_goal", title: "ゴール", text: "到達したい状態を書き出す", x: 420, y: 140 }
+      ],
+      edges: [
+        { id: "st_e1", from: "st_start", to: "st_goal", condition: "", type: "branch" }
+      ],
+      view: { x: 0, y: 0, z: 1 }
+    };
+  }
+
   function boot() {
     var had = load();      // 保存データがあったか
     ensureView();
+    if (!had) {
+      // サンプルは自動では出さず、開始とゴールの2枚だけを出す
+      state = makeStarter();
+      save();
+    }
     render();
     applyView();
-    if (!had) {
-      // はじめて使うときだけ、参考のサンプルを自動表示する
-      document.getElementById("pc-sample").click();
-    } else if (state.nodes.length === 0) {
-      // 全部消したあとは空のまま（サンプルを出し直さない）
-      setStatus("「＋ カード」で計画を追加してください", false);
-      return;
-    } else {
-      // 保存済みの表示位置を復元（画面外なら全体表示にフォールバック）
-      var v = V();
-      if (v.x === 0 && v.y === 0 && v.z === 1) fitView();
-    }
-    setStatus("カードをドラッグで動かせます（追加はツールバーの＋カード）", false);
+    fitView();
+    setStatus("「✎」を押すと文字を編集できます（押していないときは動かすだけ）", false);
   }
 
   boot();
