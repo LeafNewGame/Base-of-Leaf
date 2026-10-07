@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>試験的なツール - PLANTER</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="exp_wordbook.css?v=20261007">
+</head>
+
+<body class="exp-body">
+
+ <header>
+    <a href="../index.html">
+      <img src="../images/hub-icon.png"
+      alt="PLANTERのロゴ" class="icon">
+    </a>
+
+    <button id="menu-btn" class="menu-btn">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <nav id="menu">
+        <ul>
+            <li><a href="../index.html">ホーム</a></li>
+            <li><a href="../tools/planning_tool.html">計画整理ツール</a></li>
+            <li><a href="../tools/memo_tool.html">メモツール</a></li>
+            <li><a href="../tools/habit_tool.html">習慣化ツール</a></li>
+            <li><a href="../tools/knowledge_garden.html">知識の箱庭</a></li>
+            <li><a href="../tools/experimental_tool.html">試験的なツール</a></li>
+            <li><a href="../tools/patchnote.html">パッチノート</a></li>
+            <li><a href="../tools/blog.html">開発者より</a></li>
+        </ul>
+    </nav>
+ </header>
+
+ <div class="exp-app">
+
+    <!-- ===== 上部ツールバー ===== -->
+    <div class="exp-appbar">
+        <div class="exp-appbar-group">
+            <span class="exp-appbar-title">試験的なツール</span>
+            <span class="exp-chip">β版</span>
+            <span class="exp-chip exp-chip-note">験すためのもの。どんどん変わります</span>
+        </div>
+
+        <span class="exp-spacer"></span>
+
+        <div class="exp-mode-group">
+            <button id="wb-tab-list"  class="exp-btn exp-btn-mode exp-on">📖 単語帳</button>
+            <button id="wb-tab-study" class="exp-btn exp-btn-mode">🔁 復習</button>
+            <button id="wb-tab-wip"   class="exp-btn exp-btn-mode">🧪 他の実験（準備中）</button>
+        </div>
+    </div>
+
+    <!-- ===== ビュー1：単語帳（一覧） ===== -->
+    <section id="wb-view-list" class="exp-view">
+
+        <div class="wb-wrap">
+
+            <h2 class="wb-title">単語帳</h2>
+            <p class="wb-lead">「表（問題）」と「裏（答え）」のペアを登録して、復習モードで<b>4択クイズ</b>として出題する実験的な単語帳です。答えたあには<b>登録しておいた解説</b>が詳しく出ます。やった結果は「おしまい」の画面に出ます。</p>
+
+            <!-- 追加フォーム -->
+            <div class="wb-add">
+                <input id="wb-in-front" type="text" placeholder="表（単語・問題）" autocomplete="off">
+                <input id="wb-in-back" type="text" placeholder="裏（意味・答え）" autocomplete="off">
+                <button id="wb-add-btn" class="wb-btn wb-btn-primary">＋ 追加</button>
+            </div>
+            <textarea id="wb-in-detail" class="wb-add-detail" rows="2"
+                      placeholder="解説（任意。答えたあとに詳しく表示されます。例：リンゴのこと。アメリカでは Red Delicious など）"></textarea>
+
+            <p id="wb-add-msg" class="wb-msg" hidden></p>
+
+            <!-- 一覧 -->
+            <ul id="wb-list" class="wb-list"></ul>
+
+            <div class="wb-foot">
+                <span id="wb-count" class="wb-count">0 件</span>
+                <span class="wb-group">
+                    <button id="wb-export" class="wb-btn wb-btn-ghost wb-btn-sm">JSON出力</button>
+                    <button id="wb-import" class="wb-btn wb-btn-ghost wb-btn-sm">JSON読込</button>
+                    <input id="wb-file" type="file" accept="application/json" hidden>
+                    <button id="wb-clear-all" class="wb-btn wb-btn-ghost wb-btn-sm">全て削除</button>
+                </span>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ===== ビュー2：復習（4択クイズ） ===== -->
+    <section id="wb-view-study" class="exp-view" hidden>
+
+        <div class="wb-quiz">
+
+            <!-- 上部：進捗 -->
+            <div class="wb-quiz-head">
+                <div class="wb-progress">
+                    <div id="wb-progress-bar" class="wb-progress-bar"></div>
+                </div>
+                <span id="wb-progress-label" class="wb-progress-label">0 / 0</span>
+            </div>
+
+            <!-- 上部：問題（単語） -->
+            <div id="wb-quiz-top" class="wb-quiz-top">
+                <p id="wb-quiz-empty" class="wb-hint">まだ単語がありません。一覧から単語を追加してください。</p>
+
+                <div id="wb-quiz-body" class="wb-quiz-body" hidden>
+                    <span class="wb-quiz-label">この単語の意味は？</span>
+                    <div id="wb-quiz-word" class="wb-quiz-word"></div>
+
+                    <div id="wb-feedback" class="wb-feedback" hidden>
+                        <span id="wb-feedback-mark" class="wb-feedback-mark"></span>
+                        <span id="wb-feedback-text" class="wb-feedback-text"></span>
+                    </div>
+
+                    <div id="wb-meaning" class="wb-meaning" hidden>
+                        <span class="wb-meaning-label">答え</span>
+                        <span id="wb-meaning-text" class="wb-meaning-text"></span>
+                    </div>
+
+                    <div id="wb-detail" class="wb-detail" hidden>
+                        <span class="wb-detail-label">解説</span>
+                        <span id="wb-detail-text" class="wb-detail-text"></span>
+                        <span id="wb-detail-empty" class="wb-detail-empty" hidden></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 下部：選択肢（4つ） -->
+            <div id="wb-quiz-bottom" class="wb-quiz-bottom">
+                <div id="wb-choices" class="wb-choices"></div>
+                <p id="wb-choices-note" class="wb-choices-note" hidden></p>
+            </div>
+
+            <!-- 操作 -->
+            <div class="wb-study-actions">
+                <button id="wb-prev" class="wb-btn wb-btn-ghost">← 前へ</button>
+                <button id="wb-know" class="wb-btn wb-btn-ghost" disabled>✓ 覚えた</button>
+                <button id="wb-next" class="wb-btn wb-btn-ghost" disabled>次へ →</button>
+                <button id="wb-restart" class="wb-btn wb-btn-ghost wb-btn-sm">最初から</button>
+            </div>
+
+            <div class="wb-study-foot">
+                <label>
+                    復習対象
+                    <select id="wb-study-filter">
+                        <option value="all">全部の単語</option>
+                        <option value="未">覚えていない単語だけ</option>
+                        <option value="済">覚えた単語だけ</option>
+                    </select>
+                </label>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ===== ビュー3：準備中 ===== -->
+    <section id="wb-view-wip" class="exp-view" hidden>
+        <div class="wb-wrap">
+            <h2 class="wb-title">まだ制作中の実験</h2>
+            <p class="wb-lead">ここに置いているのは、これから作る実験ツールの枠です。単語帳の動きを見てから、順に中身を入れていきます。</p>
+            <ul class="wb-wip-list">
+                <li>逆さ単語帳（答えから表を思い出す）</li>
+                <li>タイピング練習（表を打って意味を当てる）</li>
+                <li>温度・天気の記録 Realm</li>
+            </ul>
+            <button id="wb-to-list" class="wb-btn wb-btn-ghost">単語帳に戻る</button>
+        </div>
+    </section>
+
+ </div>
+
+ <script src="exp_wordbook.js?v=20261007"></script>
+ <script src="../script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,581 @@
+/* =========================================================
+   試験的なツール：単語帳（試験的）× 枠組み
+   ========================================================= */
+
+/* ---------- 共通（枠組み） ---------- */
+.exp-app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f4f6fa;
+}
+
+.exp-appbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid rgba(51, 65, 92, .12);
+}
+.exp-appbar-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.exp-appbar-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #22304a;
+}
+.exp-spacer { flex: 1 1 auto; }
+
+.exp-chip {
+  display: inline-block;
+  padding: 3px 9px;
+  font-size: 11px;
+  color: #4a5875;
+  background: #eef1f6;
+  border-radius: 999px;
+}
+.exp-chip-note { color: #8a6a2f; background: #fdf3e0; }
+
+.exp-btn {
+  padding: 10px 14px;
+  font-size: 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.exp-btn-mode {
+  background: rgba(255, 255, 255, .78);
+  color: #33415c;
+  border: 1px solid rgba(51, 65, 92, .18);
+}
+.exp-btn-mode:hover { background: #fff; }
+.exp-btn-mode.exp-on {
+  background: #33415c;
+  color: #fff;
+  border-color: #33415c;
+  box-shadow: 0 2px 8px rgba(51, 65, 92, .28);
+}
+
+.exp-view {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.exp-view[hidden] { display: none; }
+
+/* ---------- 単語帳：一覧 ---------- */
+.wb-wrap {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 28px 24px 60px;
+}
+
+.wb-title {
+  margin: 0 0 6px;
+  font-size: 22px;
+  color: #22304a;
+}
+.wb-lead {
+  margin: 0 0 20px;
+  font-size: 13px;
+  color: #5c6b85;
+}
+
+.wb-add {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.wb-add input {
+  flex: 1 1 180px;
+  min-width: 0;
+  padding: 12px 14px;
+  font-size: 15px;
+  color: #22304a;
+  background: #fff;
+  border: 1px solid rgba(51, 65, 92, .18);
+  border-radius: 10px;
+  outline: none;
+}
+.wb-add input:focus {
+  border-color: #5b8def;
+  box-shadow: 0 0 0 3px rgba(91, 141, 239, .18);
+}
+/* 解説（答えたあとに詳しく出るやつ） */
+.wb-add-detail {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #22304a;
+  background: #fff;
+  border: 1px solid rgba(51, 65, 92, .18);
+  border-radius: 10px;
+  outline: none;
+  resize: vertical;
+}
+.wb-add-detail:focus {
+  border-color: #5b8def;
+  box-shadow: 0 0 0 3px rgba(91, 141, 239, .18);
+}
+.wb-add-detail::placeholder { color: #a6b0c2; }
+
+.wb-msg {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #c0392b;
+}
+
+.wb-btn {
+  padding: 11px 16px;
+  font-size: 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.wb-btn-primary {
+  background: #33415c;
+  color: #fff;
+}
+.wb-btn-primary:hover { background: #22304a; }
+.wb-btn-ghost {
+  background: #fff;
+  color: #4a5875;
+  border-color: rgba(51, 65, 92, .18);
+}
+.wb-btn-ghost:hover { background: #eef1f6; }
+.wb-btn-sm { padding: 8px 12px; font-size: 13px; }
+.wb-btn[disabled] {
+  opacity: .45;
+  cursor: default;
+}
+
+/* 一覧アイテム */
+.wb-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.wb-empty {
+  padding: 28px 16px;
+  text-align: center;
+  font-size: 14px;
+  color: #7b879e;
+  background: #fff;
+  border: 1px dashed rgba(51, 65, 92, .2);
+  border-radius: 12px;
+}
+
+.wb-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid rgba(51, 65, 92, .1);
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(34, 48, 74, .05);
+}
+.wb-item.learned { background: #f3fbf7; }
+.wb-item.learned .wb-item-front { color: #3fbf7f; }
+
+.wb-item-main { flex: 1 1 auto; min-width: 0; }
+.wb-item-front {
+  font-size: 15px;
+  font-weight: 600;
+  color: #22304a;
+  word-break: break-word;
+}
+.wb-item-back {
+  margin-top: 3px;
+  font-size: 14px;
+  color: #5c6b85;
+  word-break: break-word;
+}
+
+/* 一覧に出る解説（2行で切り詰め） */
+.wb-item-detail {
+  margin-top: 6px;
+  padding-left: 9px;
+  border-left: 3px solid rgba(91, 141, 239, .35);
+  font-size: 13px;
+  line-height: 1.6;
+  color: #7b88a1;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.wb-item-edit {
+  display: flex;
+  gap: 8px;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+}
+.wb-edit-row {
+  display: flex;
+  gap: 8px;
+  flex: 1 1 100%;
+  flex-wrap: wrap;
+}
+.wb-item-edit .wb-edit-detail {
+  flex: 1 1 100%;
+  box-sizing: border-box;
+  padding: 9px 11px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #22304a;
+  border: 1px solid rgba(51, 65, 92, .18);
+  border-radius: 9px;
+  outline: none;
+  resize: vertical;
+}
+.wb-item-edit .wb-edit-detail:focus { border-color: #5b8def; }
+.wb-item-edit input {
+  flex: 1 1 140px;
+  min-width: 0;
+  padding: 9px 11px;
+  font-size: 14px;
+  color: #22304a;
+  border: 1px solid rgba(51, 65, 92, .18);
+  border-radius: 9px;
+  outline: none;
+}
+.wb-item-edit input:focus { border-color: #5b8def; }
+
+.wb-item-ops {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+.wb-op {
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  color: #a6b0c2;
+  font-size: 17px;
+  line-height: 1;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.wb-op:hover { background: #eef1f6; color: #4a5875; }
+.wb-op-save:hover { background: #e7f7ef; color: #1f8f5c; }
+.wb-op-del:hover { background: #fdecec; color: #d9534f; }
+
+.wb-learn {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(51, 65, 92, .3);
+  border-radius: 7px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  font-size: 13px;
+  padding: 0;
+}
+.wb-learn:hover { border-color: #3fbf7f; }
+.wb-item.learned .wb-learn {
+  background: #3fbf7f;
+  border-color: #3fbf7f;
+  color: #fff;
+}
+
+.wb-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(51, 65, 92, .12);
+  flex-wrap: wrap;
+}
+.wb-count { font-size: 13px; color: #5c6b85; }
+.wb-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.wb-wip-list {
+  margin: 0 0 20px;
+  padding-left: 20px;
+  font-size: 14px;
+  color: #4a5875;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ---------- 単語帳：復習（4択クイズ） ---------- */
+.wb-quiz {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 20px 40px;
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
+  overflow-y: auto;
+}
+
+/* 上半分：問題（単語） */
+.wb-quiz-top {
+  flex: 1 1 auto;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px 20px;
+  text-align: center;
+  background: #fff;
+  border: 1px solid rgba(51, 65, 92, .1);
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(34, 48, 74, .08);
+}
+
+.wb-quiz-label {
+  font-size: 12px;
+  letter-spacing: .12em;
+  color: #93a0b5;
+}
+.wb-quiz-word {
+  font-size: 34px;
+  font-weight: 700;
+  color: #22304a;
+  word-break: break-word;
+  line-height: 1.25;
+}
+
+/* 正解・不正解の表示 */
+.wb-feedback {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.wb-feedback.wb-ok {
+  color: #1f8f5c;
+  background: #e7f7ef;
+}
+.wb-feedback.wb-ng {
+  color: #c0392b;
+  background: #fdeceb;
+}
+.wb-feedback-mark { font-size: 17px; }
+
+/* あらかじめ登録した意味の表示 */
+.wb-meaning {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 12px 18px;
+  max-width: 100%;
+  text-align: left;
+  background: #f4f6fa;
+  border-radius: 12px;
+}
+.wb-meaning-label {
+  flex: 0 0 auto;
+  font-size: 11px;
+  letter-spacing: .1em;
+  color: #93a0b5;
+}
+.wb-meaning-text {
+  flex: 1 1 auto;
+  font-size: 16px;
+  color: #22304a;
+  word-break: break-word;
+}
+
+/* 答えたあとの詳しい解説 */
+.wb-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  width: 100%;
+  max-width: 620px;
+  padding: 14px 18px;
+  text-align: left;
+  background: #f7f9ff;
+  border-left: 4px solid #5b8def;
+  border-radius: 12px;
+}
+.wb-detail-label {
+  font-size: 11px;
+  letter-spacing: .1em;
+  color: #5b8def;
+}
+.wb-detail-text {
+  font-size: 15px;
+  line-height: 1.75;
+  color: #2c3a52;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 160px;
+  overflow-y: auto;
+}
+.wb-detail-empty {
+  font-size: 13px;
+  color: #a6b0c2;
+}
+
+/* 下半分：選択肢（4つ） */
+.wb-quiz-bottom {
+  flex: 0 0 auto;
+}
+.wb-choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.wb-choice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 18px;
+  text-align: left;
+  font-size: 16px;
+  color: #22304a;
+  background: #fff;
+  border: 1px solid rgba(51, 65, 92, .16);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+}
+.wb-choice:hover:not([disabled]) {
+  background: #eef1f6;
+  border-color: #5b8def;
+}
+.wb-choice[disabled] {
+  cursor: default;
+}
+.wb-choice-mark {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #7b879e;
+  background: #eef1f6;
+  border-radius: 8px;
+}
+.wb-choice-text {
+  flex: 1 1 auto;
+  word-break: break-word;
+}
+.wb-choice.correct {
+  border-color: #3fbf7f;
+  background: #e7f7ef;
+}
+.wb-choice.correct .wb-choice-mark {
+  color: #fff;
+  background: #3fbf7f;
+}
+.wb-choice.wrong {
+  border-color: #e08b86;
+  background: #fdeceb;
+}
+.wb-choice.wrong .wb-choice-mark {
+  color: #fff;
+  background: #d9534f;
+}
+
+.wb-choices-note {
+  margin: 10px 0 0;
+  font-size: 13px;
+  text-align: center;
+  color: #7b879e;
+}
+
+.wb-study-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.wb-progress {
+  flex: 1 1 auto;
+  height: 10px;
+  background: #e5e9f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.wb-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: #5b8def;
+  border-radius: 999px;
+  transition: width .2s ease;
+}
+.wb-progress-label {
+  flex: 0 0 auto;
+  font-size: 13px;
+  color: #5c6b85;
+  font-variant-numeric: tabular-nums;
+}
+
+
+.wb-study-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.wb-study-foot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: #5c6b85;
+}
+.wb-study-foot select {
+  margin-left: 6px;
+  padding: 7px 10px;
+  font-size: 13px;
+  color: #22304a;
+  background: #fff;
+  border: 1px solid rgba(51, 65, 92, .18);
+  border-radius: 9px;
+}
+
+/* 狭い画面 */
+@media (max-width: 860px) {
+  .exp-appbar { gap: 8px; }
+  .wb-wrap { padding: 20px 14px 48px; }
+  .wb-quiz { padding: 20px 14px 36px; }
+  .wb-quiz-top { min-height: 150px; padding: 20px 16px; }
+  .wb-quiz-word { font-size: 27px; }
+  .wb-choices { grid-template-columns: 1fr; }
+}
