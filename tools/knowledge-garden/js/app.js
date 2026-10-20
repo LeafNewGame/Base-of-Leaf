@@ -26,6 +26,8 @@
     $("#editor-save").onclick = saveEditor;
     $("#editor-cancel").onclick = () => ($("#editor-backdrop").hidden = true);
     $("#editor-close").onclick = () => ($("#editor-backdrop").hidden = true);
+    // 編集中、タイトル入力に合わせて上部の見出し（カード名）もリアルタイム更新
+    $("#f-title").oninput = (e) => { if (editingId) $("#editor-title").textContent = e.target.value || "カードを編集"; };
     // 関連カードのフォルダ絞り込み
     $("#f-links-folder").onchange = () => renderLinkPicker(editingCard);
     // カレンダー（タスク）

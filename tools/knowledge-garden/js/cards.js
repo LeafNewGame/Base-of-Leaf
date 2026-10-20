@@ -36,6 +36,13 @@
     if (!c) return;
     c.favorite = !c.favorite;
     Store.put(c);
+    // 押した瞬間にカードの見た目へ即時反映（DOM を直接切り替えてから全体再描画）
+    const cardDom = document.querySelector('.kcard[data-id="' + id + '"]');
+    if (cardDom) {
+      cardDom.classList.toggle("fav", c.favorite);
+      const fb = cardDom.querySelector(".fav-btn");
+      if (fb) fb.classList.toggle("on", c.favorite);
+    }
     renderCards();
     if ($("#view-map").classList.contains("active")) renderMap();
   }
@@ -43,7 +50,8 @@
   function cardEl(c) {
     const el = document.createElement("div");
     const selected = selectMode && selectedIds.has(c.id);
-    el.className = "kcard" + (selectMode ? " selectable" : "") + (selected ? " selected" : "");
+    el.className = "kcard" + (selectMode ? " selectable" : "") + (selected ? " selected" : "") + (c.favorite ? " fav" : "");
+    el.dataset.id = c.id;
     const relCount = (c.relatedCardIds || []).length;
     const check = selectMode ? `<span class="kc-check" aria-hidden="true">${selected ? CHECK_ON_SVG : CHECK_OFF_SVG}</span>` : "";
     el.innerHTML = `
@@ -79,7 +87,7 @@
     const c = id ? cards.find((x) => x.id === id) : null;
     editingCard = c;
     if (id) editorFolderCat = null; // 既存カード編集時は、フォルダごとの表示設定をカード自身のカテゴリから判定
-    $("#editor-title").textContent = id ? "カードを編集" : "新規カード";
+    $("#editor-title").textContent = id ? (c.title || "カードを編集") : "新規カード";
     $("#f-title").value = c?.title || "";
     $("#f-importance").value = c?.importance || 3;
     $("#f-understanding").value = c?.understanding || 3;
@@ -316,6 +324,8 @@
   function openBodyFull() {
     const ta = $("#body-full-ta");
     if (ta) ta.value = $("#f-body") ? $("#f-body").value : "";
+    const nameEl = $("#body-full-cardname");
+    if (nameEl) nameEl.textContent = ($("#f-title") ? $("#f-title").value.trim() : "") || "（無題）";
     $("#body-full-backdrop").hidden = false;
     if (ta) ta.focus();
   }

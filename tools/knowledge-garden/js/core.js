@@ -303,7 +303,7 @@
   };
 
   window.ki = function (name) { return '<span class="ki">' + (window.ICONS[name] || "") + '</span>'; };
-  window.stars = function (n) { n = n | 0; if (n < 0) n = 0; if (n > 5) n = 5; var f = "", e = ""; for (var i = 0; i < n; i++) f += window.ICONS.star; for (var i = 0; i < 5 - n; i++) e += window.ICONS.starO; return f + e; };
+  window.stars = function (n) { n = n | 0; if (n < 0) n = 0; if (n > 5) n = 5; var pct = (n / 5 * 100); return '<span class="star1" data-v="' + n + '" title="' + n + '/5"><span class="star1-bg">\u2605</span><span class="star1-fill" style="width:' + pct + '%">\u2605</span></span>'; };
   window.starsText = function (n) { return "\u2605".repeat(n) + "\u2606".repeat(5 - n); };
 
   const escapeHtml = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

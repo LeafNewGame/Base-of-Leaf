@@ -48,7 +48,7 @@
 
 </section>
 <section class="PLANTER-Font">
-  PLANTER
+  <span class="pf-text">PLANTER</span>
 </section>
 
 <section class="hero-intro">
@@ -93,52 +93,43 @@
       </div>
       <div class="tool-card">
         <p>複雑なメモを管理するツール</p>
-        <a href="tools/memo_tool.html">開く</a>
+        <a href="tools/memo_tool.html" class="card-open">開く</a>
       </div>
       <div class="tool-card">
         <p>習慣を継続するためのツールです</p>
-        <a href="tools/habit_tool.html">開く</a>
+        <a href="tools/habit_tool.html" class="card-open">開く</a>
       </div>
       <div class="tool-card">
         <p>パッチノート</p>
-        <a href="tools/patchnote.html">開く</a>
+        <a href="tools/patchnote.html" class="card-open">開く</a>
       </div>
       <div class="tool-card">
         <p>開発者の話</p>
-        <a href="tools/blog.html">開く</a>
+        <a href="tools/blog.html" class="card-open">開く</a>
       </div>
       <div class="tool-card">
         <p>知識を育てる個人用ナレッジ管理ツール</p>
-        <a href="tools/knowledge_garden.html">開く</a>
+        <a href="tools/knowledge_garden.html" class="card-open">開く</a>
       </div>
       <div class="tool-card">
         <p>試験的なツール（単語帳 β版）</p>
-        <a href="tools/experimental_tool.html">開く</a>
+        <a href="tools/experimental_tool.html" class="card-open">開く</a>
       </div>
      </div>
     </section>
-    <section>
-      <p>PLANTER予定</p>
+    <section class="planter-form">
+      <h2 class="form-title">PLANTER予定</h2>
+      <p class="form-sub">サイトへのご意見・ご要望をお待ちしています。</p>
 
-      <form action="messages.text">
-
+      <form id="planter-form" action="messages.text" class="form-inner">
         <label for="name">名前</label>
-        <input type="text" id="name">
- 
-      </form>
-    
-      <p>
-       <textarea
-        rows="5"
-        cols="30">
-       </textarea>
-      </p>
-      <p>
-       <button type="submit">
-        送信
-       </button>
-      </p>
+        <input type="text" id="name" name="name" placeholder="お名前">
 
+        <label for="msg">メッセージ</label>
+        <textarea id="msg" name="msg" rows="5" placeholder="ご意見・ご要望をどうぞ"></textarea>
+
+        <button type="submit" class="submit-btn">送信</button>
+      </form>
     </section>
   </main>
   <footer>
