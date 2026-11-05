@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>越冬計画 - PLANTER</title>
+    <style>
+        :root{
+            --bg:#eef4f0;
+            --panel:#ffffff;
+            --ink:#1f2d23;
+            --muted:#6b7d70;
+            --line:#e1ece5;
+            --green:#2e7d32;
+            --green-d:#1b5e20;
+            --green-l:#bfe3d0;
+            --frost:#eaf5ef;
+            --shadow:0 6px 22px rgba(20,80,30,.10);
+        }
+        *{box-sizing:border-box;}
+        html,body{height:100%;margin:0;}
+        body{
+            font-family:"Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+            background:var(--bg);
+            color:var(--ink);
+            display:flex;
+            flex-direction:column;
+        }
+        /* ヘッダー */
+        .app-head{
+            display:flex;align-items:center;justify-content:space-between;
+            padding:10px 18px;background:var(--green);color:#fff;
+            box-shadow:0 3px 14px rgba(20,80,20,.28);
+        }
+        .app-head .brand{font-size:17px;font-weight:700;letter-spacing:1px;}
+        .app-head a{color:#fff;font-size:13px;text-decoration:none;opacity:.92;}
+        .app-head a:hover{opacity:1;text-decoration:underline;}
+
+        /* 全体レイアウト：上部3パネル + ボード */
+        .wrap{
+            flex:1;display:flex;flex-direction:column;
+            min-height:0;padding:16px;gap:14px;
+        }
+        .topbar{
+            display:grid;
+            grid-template-columns:minmax(260px,1fr) minmax(320px,1.35fr) minmax(260px,1fr);
+            gap:14px;
+        }
+        .card{
+            background:var(--panel);border:1px solid var(--line);
+            border-radius:16px;box-shadow:var(--shadow);padding:16px;
+            display:flex;flex-direction:column;min-height:0;
+        }
+        .card .cap{
+            font-size:12px;color:var(--muted);letter-spacing:1px;
+            margin-bottom:10px;display:flex;align-items:center;gap:6px;
+        }
+        .card .cap::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--green);}
+
+        /* カレンダー */
+        .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center;}
+        .cal-grid .wd{font-size:11px;color:var(--muted);padding:2px 0;}
+        .cal-cell{
+            font-size:12px;padding:6px 0;border-radius:8px;cursor:pointer;
+            border:1px solid transparent;transition:.15s;
+        }
+        .cal-cell:hover{background:var(--frost);}
+        .cal-cell.today{background:var(--green);color:#fff;font-weight:700;}
+        .cal-cell.has{box-shadow:inset 0 -3px 0 var(--green-l);}
+        .cal-cell.muted{color:#c2cdc6;cursor:default;}
+
+        /* 目標名 */
+        .goal-card{justify-content:center;align-items:center;text-align:center;}
+        .goal-name{
+            font-size:34px;font-weight:800;color:var(--green-d);
+            border:none;background:transparent;text-align:center;width:100%;
+            outline:none;line-height:1.25;
+        }
+        .goal-name:focus{background:var(--frost);border-radius:10px;}
+        .goal-sub{font-size:13px;color:var(--muted);margin-top:8px;}
+
+        /* 達成グラフ */
+        .graph-card{align-items:center;justify-content:center;}
+        .donut{position:relative;width:150px;height:150px;}
+        .donut svg{transform:rotate(-90deg);}
+        .donut .track{fill:none;stroke:#eef3f0;stroke-width:14;}
+        .donut .val{fill:none;stroke:var(--green);stroke-width:14;stroke-linecap:round;
+            transition:stroke-dashoffset .5s ease;}
+        .donut .pct{
+            position:absolute;inset:0;display:flex;flex-direction:column;
+            align-items:center;justify-content:center;
+        }
+        .donut .pct b{font-size:30px;color:var(--green-d);}
+        .donut .pct span{font-size:11px;color:var(--muted);}
+        .graph-stat{display:flex;gap:14px;margin-top:12px;font-size:12px;color:var(--muted);}
+        .graph-stat b{color:var(--ink);font-size:15px;display:block;}
+
+        /* ボード（チェックシート） */
+        .board-card{flex:1;min-height:0;padding:0;overflow:hidden;}
+        .board-head{
+            display:flex;justify-content:space-between;align-items:center;
+            padding:14px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap;gap:10px;
+        }
+        .board-head h2{margin:0;font-size:16px;color:var(--green-d);}
+        .board-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+        .week-label{font-size:13px;color:var(--green-d);font-weight:700;min-width:140px;text-align:center;}
+        .btn{
+            font-size:12px;padding:7px 12px;border-radius:9px;border:1px solid var(--line);
+            background:#fff;color:var(--green-d);cursor:pointer;transition:.15s;
+        }
+        .btn:hover{background:var(--frost);border-color:var(--green-l);}
+        .btn.primary{
+            background:var(--green);color:#fff;border-color:var(--green);font-weight:700;
+        }
+        .btn.primary:hover{background:var(--green-d);}
+        .board-scroll{flex:1;overflow:auto;min-height:0;}
+        table.board{border-collapse:separate;border-spacing:0;width:100%;min-width:640px;}
+        table.board th,table.board td{padding:10px 12px;border-bottom:1px solid var(--line);}
+        table.board thead th{
+            position:sticky;top:0;background:#f6faf7;z-index:2;
+            font-size:12px;color:var(--muted);font-weight:600;text-align:center;
+        }
+        table.board th.col-habit, table.board td.col-habit{
+            position:sticky;left:0;background:#fff;z-index:3;
+            text-align:left;min-width:200px;border-right:1px solid var(--line);
+        }
+        table.board th.col-habit{ background:#f6faf7;z-index:4; }
+        .habit-input{
+            width:100%;border:1px solid var(--line);border-radius:8px;
+            padding:7px 9px;font-size:14px;color:var(--ink);background:#fcfefc;outline:none;transition:.15s;
+        }
+        .habit-input:focus{border-color:var(--green-l);background:#fff;box-shadow:0 0 0 3px var(--frost);}
+        table.board th.date-col, table.board td.col-check{ padding:6px 5px; }
+        table.board th.date-col{ font-size:11px;line-height:1.15;white-space:nowrap; }
+        table.board th.date-col small{ display:block;font-size:9px;color:var(--muted);font-weight:400;margin-top:1px; }
+        table.board th.date-col.today{ background:var(--green);color:#fff; }
+        table.board th.date-col.today small{ color:rgba(255,255,255,.85); }
+        td.col-empty{text-align:center;color:#dfe7e1;}
+        /* 実績列（目標回数 vs 達成回数） */
+        table.board th.col-achieve, table.board td.col-achieve{
+            text-align:center;min-width:120px;border-left:2px solid var(--line);
+            background:#f6faf7;
+        }
+        table.board td.col-achieve{background:#fff;}
+        .ach-num{font-size:13px;font-weight:700;color:var(--green-d);}
+        .ach-num.zero{color:var(--muted);font-weight:600;}
+        .ach-bar{height:7px;border-radius:4px;background:var(--line);margin-top:6px;overflow:hidden;}
+        .ach-bar span{display:block;height:100%;background:var(--green);border-radius:4px;transition:width .4s ease;}
+        .ach-bar span.done{background:var(--green-d);}
+        /* 習慣セル内のサブ情報 */
+        .habit-sub{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.4;}
+        .habit-sub b{color:var(--green-d);}
+        .habit-del{
+            margin-top:6px;font-size:11px;color:#c0584f;border:none;background:transparent;
+            cursor:pointer;padding:0;text-decoration:underline;
+        }
+        .habit-del:hover{color:#a33;}
+        /* 習慣編集（歯車）ボタン */
+        .habit-edit{
+            margin-top:7px;display:inline-flex;align-items:center;gap:5px;
+            font-size:11px;color:var(--green-d);border:1px solid var(--line);
+            background:#fff;border-radius:8px;padding:4px 9px;cursor:pointer;transition:.15s;
+        }
+        .habit-edit:hover{background:var(--frost);border-color:var(--green-l);}
+        .habit-edit svg{width:13px;height:13px;}
+        /* チェックボックス */
+        td.col-check{text-align:center;}
+        .chk{
+            display:inline-flex;width:26px;height:26px;border-radius:7px;
+            border:2px solid var(--line);cursor:pointer;align-items:center;justify-content:center;
+            transition:.15s;background:#fff;
+        }
+        .chk:hover{border-color:var(--green-l);}
+        .chk svg{width:16px;height:16px;opacity:0;transform:scale(.5);transition:.15s;}
+        .chk.on{background:var(--green);border-color:var(--green);}
+        .chk.on svg{opacity:1;transform:scale(1);}
+        .board-empty{padding:40px 16px;text-align:center;color:var(--muted);font-size:14px;}
+
+        /* 追加モーダル */
+        .modal-bg{
+            position:fixed;inset:0;background:rgba(15,30,20,.5);
+            display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;
+        }
+        .modal-bg[hidden]{display:none;}
+        .add-modal{
+            background:#fff;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.3);
+            width:min(780px,100%);max-height:92vh;overflow:auto;
+            animation:popIn .2s ease;
+        }
+        @keyframes popIn{ from{transform:scale(.96);opacity:0;} to{transform:scale(1);opacity:1;} }
+        .add-modal h3{
+            margin:0;padding:16px 20px;border-bottom:1px solid var(--line);
+            color:var(--green-d);font-size:17px;display:flex;justify-content:space-between;align-items:center;
+        }
+        .add-modal h3 .close{cursor:pointer;font-size:20px;color:var(--muted);border:none;background:none;line-height:1;}
+        .add-body{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:18px 20px;}
+        @media(max-width:620px){ .add-body{grid-template-columns:1fr;} }
+        .add-cal .cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+        .add-cal .cal-title{font-size:14px;font-weight:700;color:var(--green-d);}
+        .nav-btn{
+            width:28px;height:28px;border-radius:8px;border:1px solid var(--line);
+            background:#fff;color:var(--green-d);cursor:pointer;font-size:14px;line-height:1;
+        }
+        .nav-btn:hover{background:var(--frost);}
+        .cal-cell.sel{background:var(--green);color:#fff;font-weight:700;}
+        .cal-cell.sel:hover{background:var(--green-d);}
+        .sel-count{font-size:12px;color:var(--muted);margin-top:8px;text-align:center;}
+        .sel-count b{color:var(--green-d);}
+        .add-form{display:flex;flex-direction:column;gap:13px;}
+        .add-form label{font-size:13px;color:var(--ink);font-weight:600;}
+        .add-form input{
+            width:100%;border:1px solid var(--line);border-radius:9px;
+            padding:9px 11px;font-size:14px;color:var(--ink);background:#fcfefc;outline:none;transition:.15s;
+        }
+        .add-form input:focus{border-color:var(--green-l);background:#fff;box-shadow:0 0 0 3px var(--frost);}
+        .add-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:4px;}
+        .add-foot .btn.primary{padding:9px 18px;font-size:14px;}
+    </style>
+</head>
+<body>
+
+<header class="app-head">
+    <span class="brand">越冬計画</span>
+    <a href="../index.html">← PLANTER ホーム</a>
+</header>
+
+<div class="wrap">
+    <!-- 上部3パネル -->
+    <section class="topbar">
+        <!-- 左上：カレンダー -->
+        <div class="card">
+            <div class="cap">カレンダー</div>
+            <div class="cal-grid" id="cal-week"></div>
+            <div class="cal-grid" id="cal-days" style="margin-top:4px;"></div>
+        </div>
+
+        <!-- 中央：目標名 -->
+        <div class="card goal-card">
+            <div class="cap">目標</div>
+            <input class="goal-name" id="goal-name" value="越冬計画">
+            <div class="goal-sub">大きな目標を遂行するための管理ボード</div>
+        </div>
+
+        <!-- 右上：達成状況グラフ -->
+        <div class="card graph-card">
+            <div class="cap">達成状況</div>
+            <div class="donut">
+                <svg viewBox="0 0 120 120" width="150" height="150">
+                    <circle class="track" cx="60" cy="60" r="52"></circle>
+                    <circle class="val" id="donut-val" cx="60" cy="60" r="52"></circle>
+                </svg>
+                <div class="pct"><b id="pct-num">0%</b><span>達成率</span></div>
+            </div>
+            <div class="graph-stat">
+                <div><b id="stat-checked">0/0</b>チェック済</div>
+                <div><b id="stat-days">0</b>登録習慣</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 中央〜下：チェックシート -->
+    <section class="card board-card">
+        <div class="board-head">
+            <h2>チェックシート</h2>
+            <div class="board-tools">
+                <button class="btn" id="btn-prev-week">‹ 前週</button>
+                <span id="week-label" class="week-label"></span>
+                <button class="btn" id="btn-next-week">次週 ›</button>
+                <button class="btn" id="btn-today">今日へ</button>
+                <button class="btn primary" id="btn-add-habit">＋ 習慣を追加</button>
+            </div>
+        </div>
+        <div class="board-scroll">
+            <table class="board" id="board">
+                <thead><tr></tr></thead>
+                <tbody id="board-body"></tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<!-- 習慣追加モーダル -->
+<div class="modal-bg" id="add-modal-bg" hidden>
+    <div class="add-modal">
+        <h3>習慣を追加 <button class="close" id="add-close">×</button></h3>
+        <div class="add-body">
+            <!-- 左：カレンダー -->
+            <div class="add-cal">
+                <div class="cal-head">
+                    <button class="nav-btn" id="cal-prev">‹</button>
+                    <span class="cal-title" id="cal-title">2026年11月</span>
+                    <button class="nav-btn" id="cal-next">›</button>
+                </div>
+                <div class="cal-grid" id="add-cal-week"></div>
+                <div class="cal-grid" id="add-cal-days" style="margin-top:4px;"></div>
+                <div class="sel-count" id="sel-count">選択中: <b>0</b> 日</div>
+            </div>
+            <!-- 右：フォーム -->
+            <div class="add-form">
+                <label for="f-name">習慣名</label>
+                <input id="f-name" placeholder="例：毎朝30分読書">
+                <label for="f-goal">習慣の目標</label>
+                <input id="f-goal" placeholder="例：知識を蓄える">
+                <label for="f-target">達成目標回数</label>
+                <input id="f-target" type="number" min="0" placeholder="例：30">
+                <div class="add-foot">
+                    <button class="btn" id="add-cancel">キャンセル</button>
+                    <button class="btn primary" id="add-submit">追加</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 習慣編集モーダル -->
+<div class="modal-bg" id="edit-modal-bg" hidden>
+    <div class="add-modal">
+        <h3>習慣を編集 <button class="close" id="edit-close">×</button></h3>
+        <div class="add-body">
+            <!-- 左：カレンダー（現在の選択日を復元） -->
+            <div class="add-cal">
+                <div class="cal-head">
+                    <button class="nav-btn" id="edit-cal-prev">‹</button>
+                    <span class="cal-title" id="edit-cal-title">2026年11月</span>
+                    <button class="nav-btn" id="edit-cal-next">›</button>
+                </div>
+                <div class="cal-grid" id="edit-cal-week"></div>
+                <div class="cal-grid" id="edit-cal-days" style="margin-top:4px;"></div>
+                <div class="sel-count" id="edit-sel-count">選択中: <b>0</b> 日</div>
+            </div>
+            <!-- 右：フォーム -->
+            <div class="add-form">
+                <label for="edit-f-name">習慣名</label>
+                <input id="edit-f-name" placeholder="例：毎朝30分読書">
+                <label for="edit-f-goal">習慣の目標</label>
+                <input id="edit-f-goal" placeholder="例：知識を蓄える">
+                <label for="edit-f-target">達成目標回数</label>
+                <input id="edit-f-target" type="number" min="0" placeholder="例：30">
+                <div class="add-foot">
+                    <button class="btn" id="edit-cancel">キャンセル</button>
+                    <button class="btn primary" id="edit-submit">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function(){
+    "use strict";
+    var KEY = "touetsu_keikaku_v3";
+    var WDAY = ["日","月","火","水","木","金","土"];
+    var CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6"/></svg>';
+    var GEAR_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
+
+    var state = load();
+
+    // チェックシートは「1週間分」ずつ表示（月曜始まり）
+    var weekStart = startOfWeek(new Date());
+    function startOfWeek(d){
+        var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        var day = x.getDay();               // 0=日
+        var diff = (day === 0 ? 6 : day - 1);
+        x.setDate(x.getDate() - diff);
+        return x;
+    }
+    function weekDates(){
+        var arr = [];
+        for(var i=0; i<7; i++){
+            var d = new Date(weekStart);
+            d.setDate(d.getDate() + i);
+            arr.push(iso(d));
+        }
+        return arr;
+    }
+    function weekRangeText(){
+        var a = new Date(weekStart);
+        var b = new Date(weekStart); b.setDate(b.getDate() + 6);
+        return (a.getMonth()+1) + "/" + a.getDate() + " 〜 " + (b.getMonth()+1) + "/" + b.getDate();
+    }
+
+    function pad(n){ return (n<10?"0":"")+n; }
+    function iso(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+    function parseDate(k){ return new Date(k+"T00:00:00"); }
+
+    function load(){
+        try{
+            var s = JSON.parse(localStorage.getItem(KEY));
+            if(s && s.habits) return s;
+        }catch(e){}
+        return { goal:"越冬計画", habits:[] };
+    }
+    function save(){
+        try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+    }
+
+    // 全習慣が選択した日付の和集合（横軸＝日付）
+    function allDates(){
+        var set = {};
+        state.habits.forEach(function(h){
+            (h.dates||[]).forEach(function(k){ set[k] = 1; });
+        });
+        return Object.keys(set).sort();
+    }
+
+    // ---------- 描画 ----------
+    function renderGoal(){
+        var el = document.getElementById("goal-name");
+        el.value = state.goal || "越冬計画";
+        el.oninput = function(){ state.goal = el.value; save(); };
+    }
+
+    function renderBoard(){
+        var dates = weekDates();   // 表示は1週間分
+        document.getElementById("week-label").textContent = weekRangeText();
+        var head = document.querySelector("#board thead tr");
+        head.innerHTML = "";
+        var thH = document.createElement("th");
+        thH.className = "col-habit";
+        thH.textContent = "習慣";
+        head.appendChild(thH);
+        var today = new Date();
+        dates.forEach(function(k){
+            var dt = parseDate(k);
+            var th = document.createElement("th");
+            var isToday = dt.toDateString() === today.toDateString();
+            th.className = "date-col" + (isToday ? " today" : "");
+            th.dataset.date = k;
+            th.innerHTML = (dt.getMonth()+1) + "/" + dt.getDate() + "<small>" + WDAY[dt.getDay()] + "</small>";
+            head.appendChild(th);
+        });
+        var thA = document.createElement("th");
+        thA.className = "col-achieve";
+        thA.textContent = "達成 / 目標";
+        head.appendChild(thA);
+
+        var body = document.getElementById("board-body");
+        body.innerHTML = "";
+        if(state.habits.length === 0){
+            var tr = document.createElement("tr");
+            var td = document.createElement("td");
+            td.colSpan = dates.length + 2;
+            td.className = "board-empty";
+            td.textContent = "右上の「＋ 習慣を追加」から習慣を登録してください。";
+            tr.appendChild(td);
+            body.appendChild(tr);
+            return;
+        }
+
+        state.habits.forEach(function(h){
+            var tr = document.createElement("tr");
+            tr.id = "habit-" + h.id;
+            var tdH = document.createElement("td");
+            tdH.className = "col-habit";
+            var inp = document.createElement("input");
+            inp.className = "habit-input";
+            inp.value = h.name || "";
+            inp.placeholder = "習慣を入力…";
+            inp.oninput = function(){ h.name = this.value; save(); updateGraph(); };
+            tdH.appendChild(inp);
+            var editBtn = document.createElement("button");
+            editBtn.className = "habit-edit";
+            editBtn.innerHTML = GEAR_SVG + "<span>設定</span>";
+            editBtn.title = "習慣を編集";
+            editBtn.onclick = (function(hr){ return function(){ openEditModal(hr); }; })(h);
+            tdH.appendChild(editBtn);
+            var sub = document.createElement("div");
+            sub.className = "habit-sub";
+            var goalTxt = (h.goal||"") ? "目標: " + h.goal : "";
+            var tgtTxt = (h.target>0) ? "　目標回数: " + h.target + "回" : "";
+            sub.innerHTML = goalTxt + tgtTxt;
+            tdH.appendChild(sub);
+            var del = document.createElement("button");
+            del.className = "habit-del";
+            del.textContent = "この習慣を削除";
+            del.onclick = function(){
+                if(confirm("「" + (h.name||"この習慣") + "」を削除しますか？")){
+                    state.habits = state.habits.filter(function(x){ return x.id !== h.id; });
+                    save(); renderBoard(); updateGraph(); renderCalendar();
+                }
+            };
+            tdH.appendChild(del);
+            tr.appendChild(tdH);
+
+            // 横軸：その習慣が選択した日付のみチェックボタンを表示
+            dates.forEach(function(k){
+                var td = document.createElement("td");
+                if((h.dates||[]).indexOf(k) === -1){
+                    td.className = "col-empty";
+                    td.textContent = "·";
+                } else {
+                    td.className = "col-check";
+                    var box = document.createElement("span");
+                    box.className = "chk" + (h.checks[k] ? " on" : "");
+                    box.innerHTML = CHECK_SVG;
+                    box.onclick = (function(hk){
+                        return function(){
+                            var v = !h.checks[hk];
+                            h.checks[hk] = v;
+                            this.classList.toggle("on", v);
+                            save(); updateGraph(); renderCalendar();
+                        };
+                    })(k);
+                    td.appendChild(box);
+                }
+                tr.appendChild(td);
+            });
+
+            // 一番右：目標回数 vs 実際に達成した回数
+            var achTd = document.createElement("td");
+            achTd.className = "col-achieve";
+            var achieved = (h.dates||[]).reduce(function(a,k){ return a + (h.checks[k] ? 1 : 0); }, 0);
+            var tgt = h.target || 0;
+            var pctA = tgt > 0 ? Math.min(100, Math.round(achieved/tgt*100)) : 0;
+            var numEl = document.createElement("div");
+            numEl.className = "ach-num" + (achieved === 0 ? " zero" : "");
+            numEl.textContent = achieved + " / " + tgt + "回";
+            var bar = document.createElement("div");
+            bar.className = "ach-bar";
+            var fill = document.createElement("span");
+            if(tgt > 0 && achieved >= tgt) fill.className = "done";
+            fill.style.width = pctA + "%";
+            bar.appendChild(fill);
+            achTd.appendChild(numEl);
+            achTd.appendChild(bar);
+            tr.appendChild(achTd);
+
+            body.appendChild(tr);
+        });
+    }
+
+    function updateGraph(){
+        var total = 0, checked = 0;
+        state.habits.forEach(function(h){
+            total += (h.dates||[]).length;
+            (h.dates||[]).forEach(function(k){ if(h.checks[k]) checked++; });
+        });
+        var pct = total ? Math.round(checked/total*100) : 0;
+        document.getElementById("pct-num").textContent = pct + "%";
+        document.getElementById("stat-checked").textContent = checked + "/" + total;
+        document.getElementById("stat-days").textContent = state.habits.length;
+        var circ = 2 * Math.PI * 52;
+        var val = document.getElementById("donut-val");
+        val.style.strokeDasharray = circ;
+        val.style.strokeDashoffset = circ * (1 - pct/100);
+    }
+
+    function renderCalendar(){
+        if(!state.habits.length) return;
+        var keys = allDates();
+        var first = parseDate(keys[0]);
+        var y = first.getFullYear(), m = first.getMonth();
+        var dim = new Date(y, m+1, 0).getDate();
+        var firstDow = new Date(y, m, 1).getDay();
+        var today = new Date();
+
+        var week = document.getElementById("cal-week");
+        week.innerHTML = "";
+        WDAY.forEach(function(w){ var d=document.createElement("div"); d.className="wd"; d.textContent=w; week.appendChild(d); });
+
+        var days = document.getElementById("cal-days");
+        days.innerHTML = "";
+        for(var i=0; i<firstDow; i++){ var blank=document.createElement("div"); blank.className="cal-cell muted"; days.appendChild(blank); }
+        for(var dd=1; dd<=dim; dd++){
+            var dt = new Date(y, m, dd);
+            var key = iso(dt);
+            var cell = document.createElement("div");
+            cell.className = "cal-cell";
+            cell.textContent = dd;
+            if(dt.toDateString() === today.toDateString()) cell.classList.add("today");
+            if(state.habits.some(function(h){ return (h.dates||[]).indexOf(key)!==-1 && h.checks[key]; })) cell.classList.add("has");
+            cell.onclick = (function(k){
+                return function(){
+                    weekStart = startOfWeek(parseDate(k));
+                    renderBoard();
+                    var th = document.querySelector('#board thead th[data-date="'+k+'"]');
+                    if(th) th.scrollIntoView({behavior:"smooth", block:"nearest", inline:"center"});
+                };
+            })(key);
+            days.appendChild(cell);
+        }
+    }
+
+    // ---------- 追加モーダル ----------
+    var selDates = {};       // 選択された日付（ISO -> true）
+    var modalY, modalM;      // モーダル内カレンダー表示月
+
+    function openAddModal(){
+        selDates = {};
+        var t = new Date();
+        // できるだけ今月を表示（既存習慣の最初の日付があればそちら優先）
+        var keys = allDates();
+        if(keys.length){ var f = parseDate(keys[0]); modalY = f.getFullYear(); modalM = f.getMonth(); }
+        else { modalY = t.getFullYear(); modalM = t.getMonth(); }
+        document.getElementById("f-name").value = "";
+        document.getElementById("f-goal").value = "";
+        document.getElementById("f-target").value = "";
+        renderAddCal();
+        document.getElementById("add-modal-bg").hidden = false;
+        document.getElementById("f-name").focus();
+    }
+    function closeAddModal(){
+        document.getElementById("add-modal-bg").hidden = true;
+    }
+    function renderAddCal(){
+        var dim = new Date(modalY, modalM+1, 0).getDate();
+        var firstDow = new Date(modalY, modalM, 1).getDay();
+        var today = new Date();
+        document.getElementById("cal-title").textContent = modalY + "年" + (modalM+1) + "月";
+
+        var week = document.getElementById("add-cal-week");
+        week.innerHTML = "";
+        WDAY.forEach(function(w){ var d=document.createElement("div"); d.className="wd"; d.textContent=w; week.appendChild(d); });
+
+        var days = document.getElementById("add-cal-days");
+        days.innerHTML = "";
+        for(var i=0; i<firstDow; i++){ var blank=document.createElement("div"); blank.className="cal-cell muted"; days.appendChild(blank); }
+        for(var dd=1; dd<=dim; dd++){
+            var dt = new Date(modalY, modalM, dd);
+            var key = iso(dt);
+            var cell = document.createElement("div");
+            cell.className = "cal-cell";
+            if(dt.toDateString() === today.toDateString()) cell.classList.add("today");
+            if(selDates[key]) cell.classList.add("sel");
+            cell.textContent = dd;
+            cell.onclick = (function(k){
+                return function(){
+                    selDates[k] = !selDates[k];
+                    this.classList.toggle("sel", selDates[k]);
+                    var n = Object.keys(selDates).filter(function(x){return selDates[x];}).length;
+                    document.querySelector("#sel-count b").textContent = n;
+                };
+            })(key);
+            days.appendChild(cell);
+        }
+        var n0 = Object.keys(selDates).filter(function(x){return selDates[x];}).length;
+        document.querySelector("#sel-count b").textContent = n0;
+    }
+    function addHabit(){
+        var name = document.getElementById("f-name").value.trim();
+        var goal = document.getElementById("f-goal").value.trim();
+        var target = parseInt(document.getElementById("f-target").value,10);
+        if(isNaN(target) || target < 0) target = 0;
+        var dates = Object.keys(selDates).filter(function(k){ return selDates[k]; }).sort();
+        if(!name){ alert("習慣名を入力してください"); return; }
+        if(dates.length === 0){ alert("カレンダーで日付を1つ以上選択してください"); return; }
+        var checks = {};
+        dates.forEach(function(k){ checks[k] = false; });
+        state.habits.push({ id:"h"+Date.now(), name:name, goal:goal, target:target, dates:dates, checks:checks });
+        save(); renderBoard(); updateGraph(); renderCalendar(); closeAddModal();
+    }
+
+    // ---------- 編集モーダル ----------
+    var editSelDates = {};
+    var editY, editM;
+    var currentEditHabit = null;
+
+    function openEditModal(h){
+        currentEditHabit = h;
+        editSelDates = {};
+        (h.dates||[]).forEach(function(k){ editSelDates[k] = true; });
+        var keys = (h.dates||[]);
+        if(keys.length){ var f = parseDate(keys[0]); editY = f.getFullYear(); editM = f.getMonth(); }
+        else { var t = new Date(); editY = t.getFullYear(); editM = t.getMonth(); }
+        document.getElementById("edit-f-name").value = h.name || "";
+        document.getElementById("edit-f-goal").value = h.goal || "";
+        document.getElementById("edit-f-target").value = (h.target>0 ? h.target : "");
+        renderEditCal();
+        document.getElementById("edit-modal-bg").hidden = false;
+        document.getElementById("edit-f-name").focus();
+    }
+    function closeEditModal(){
+        document.getElementById("edit-modal-bg").hidden = true;
+        currentEditHabit = null;
+    }
+    function renderEditCal(){
+        var dim = new Date(editY, editM+1, 0).getDate();
+        var firstDow = new Date(editY, editM, 1).getDay();
+        var today = new Date();
+        document.getElementById("edit-cal-title").textContent = editY + "年" + (editM+1) + "月";
+        var week = document.getElementById("edit-cal-week");
+        week.innerHTML = "";
+        WDAY.forEach(function(w){ var d=document.createElement("div"); d.className="wd"; d.textContent=w; week.appendChild(d); });
+        var days = document.getElementById("edit-cal-days");
+        days.innerHTML = "";
+        for(var i=0; i<firstDow; i++){ var blank=document.createElement("div"); blank.className="cal-cell muted"; days.appendChild(blank); }
+        for(var dd=1; dd<=dim; dd++){
+            var dt = new Date(editY, editM, dd);
+            var key = iso(dt);
+            var cell = document.createElement("div");
+            cell.className = "cal-cell";
+            if(dt.toDateString() === today.toDateString()) cell.classList.add("today");
+            if(editSelDates[key]) cell.classList.add("sel");
+            cell.textContent = dd;
+            cell.onclick = (function(k){
+                return function(){
+                    editSelDates[k] = !editSelDates[k];
+                    this.classList.toggle("sel", editSelDates[k]);
+                    var n = Object.keys(editSelDates).filter(function(x){return editSelDates[x];}).length;
+                    document.querySelector("#edit-sel-count b").textContent = n;
+                };
+            })(key);
+            days.appendChild(cell);
+        }
+        var n0 = Object.keys(editSelDates).filter(function(x){return editSelDates[x];}).length;
+        document.querySelector("#edit-sel-count b").textContent = n0;
+    }
+    function saveEditHabit(){
+        var h = currentEditHabit;
+        if(!h) return;
+        var name = document.getElementById("edit-f-name").value.trim();
+        var goal = document.getElementById("edit-f-goal").value.trim();
+        var target = parseInt(document.getElementById("edit-f-target").value,10);
+        if(isNaN(target) || target < 0) target = 0;
+        var dates = Object.keys(editSelDates).filter(function(k){ return editSelDates[k]; }).sort();
+        if(!name){ alert("習慣名を入力してください"); return; }
+        if(dates.length === 0){ alert("カレンダーで日付を1つ以上選択してください"); return; }
+        // チェック状態を引き継ぎつつ、選択外の日付は破棄、新規日付は未チェック
+        var newChecks = {};
+        dates.forEach(function(k){ newChecks[k] = !!(h.checks[k]); });
+        h.name = name; h.goal = goal; h.target = target; h.dates = dates; h.checks = newChecks;
+        save(); renderBoard(); updateGraph(); renderCalendar(); closeEditModal();
+    }
+
+    // ---------- 操作 ----------
+    document.getElementById("btn-today").onclick = function(){
+        weekStart = startOfWeek(new Date());
+        renderBoard();
+        var t = new Date();
+        var th = document.querySelector('#board thead th[data-date="'+iso(t)+'"]');
+        if(th) th.scrollIntoView({behavior:"smooth", block:"nearest", inline:"center"});
+    };
+    document.getElementById("btn-prev-week").onclick = function(){
+        weekStart.setDate(weekStart.getDate() - 7);
+        renderBoard();
+    };
+    document.getElementById("btn-next-week").onclick = function(){
+        weekStart.setDate(weekStart.getDate() + 7);
+        renderBoard();
+    };
+    document.getElementById("btn-add-habit").onclick = openAddModal;
+    document.getElementById("add-close").onclick = closeAddModal;
+    document.getElementById("add-cancel").onclick = closeAddModal;
+    document.getElementById("add-submit").onclick = addHabit;
+    document.getElementById("cal-prev").onclick = function(){ modalM--; if(modalM<0){modalM=11;modalY--;} renderAddCal(); };
+    document.getElementById("cal-next").onclick = function(){ modalM++; if(modalM>11){modalM=0;modalY++;} renderAddCal(); };
+    document.getElementById("add-modal-bg").addEventListener("click", function(e){
+        if(e.target === this) closeAddModal();
+    });
+    // 編集モーダルの操作
+    document.getElementById("edit-close").onclick = closeEditModal;
+    document.getElementById("edit-cancel").onclick = closeEditModal;
+    document.getElementById("edit-submit").onclick = saveEditHabit;
+    document.getElementById("edit-cal-prev").onclick = function(){ editM--; if(editM<0){editM=11;editY--;} renderEditCal(); };
+    document.getElementById("edit-cal-next").onclick = function(){ editM++; if(editM>11){editM=0;editY++;} renderEditCal(); };
+    document.getElementById("edit-modal-bg").addEventListener("click", function(e){
+        if(e.target === this) closeEditModal();
+    });
+
+    // 初期描画
+    renderGoal();
+    renderBoard();
+    renderCalendar();
+    updateGraph();
+})();
+</script>
+</body>
+</html>
