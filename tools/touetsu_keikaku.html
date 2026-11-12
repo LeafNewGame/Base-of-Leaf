@@ -456,6 +456,15 @@
             table.board{min-width:440px;}
             .app-head a{font-size:12px;}
         }
+
+        /* 他端末反映トースト */
+        .sync-toast{
+            position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);
+            background:rgba(20,50,28,.94);color:#fff;font-size:13px;padding:10px 18px;border-radius:22px;
+            box-shadow:0 6px 20px rgba(0,0,0,.22);opacity:0;pointer-events:none;
+            transition:opacity .25s ease, transform .25s ease;z-index:90;max-width:88vw;text-align:center;
+        }
+        .sync-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
     </style>
 </head>
 <body>
@@ -599,6 +608,9 @@
 
 <!-- 印刷（PDF）用エクスポートビュー -->
 <div id="export-print"></div>
+
+<!-- 他端末反映時のトースト -->
+<div id="sync-toast" class="sync-toast"></div>
 
 <!-- クラウド同期モーダル -->
 <div class="modal-bg" id="cloud-modal-bg" hidden>
@@ -804,12 +816,12 @@ create policy "own row" on public.touetsu_state
             }
             return r;
         }
-        async function push(stateObj){
+        async function push(stateObj, updatedAt){
             if(!configured()||!authed()) return false;
             var r=await authFetch("/rest/v1/"+TABLE,{
                 method:"POST",
                 headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+session.access_token, "Prefer":"resolution=merge-duplicates" },
-                body: JSON.stringify({ user_id:session.user.id, state:stateObj, updated_at:new Date().toISOString() })
+                body: JSON.stringify({ user_id:session.user.id, state:stateObj, updated_at:updatedAt||new Date().toISOString() })
             });
             if(!r.ok){ var t=await r.text(); lastErr=explain(t); emit(); return false; }
             lastErr=""; emit(); return true;
@@ -834,12 +846,58 @@ create policy "own row" on public.touetsu_state
         return { init:init, googleLogin:googleLogin, handleCallback:handleCallback, signOut:signOut, push:push, pull:pull, onStatus:onStatus, status:status, configured:configured, authed:authed };
     })();
 
-    // 自動アップロード（保存のたびにデバウンスしてクラウドへ送信）
-    var pushTimer=null;
+    // ===== クラウド同期エンジン =====
+    // 設計: どの端末でも「変更→即アップロード(デバウンス)」。もう一方の端末は
+    //   - フォーカス/表示時、または数秒ごとのポーリングでクラウドを取得
+    //   - 内容が最後に同期したものと「異なれば」採用（last-write-wins・時計ずれに強い）
+    //   - 採用時に再プッシュしないよう suppressPush でガード
+    var suppressPush = false;
+    var pushTimer = null;
+    var lastLocal = "";   // 最後に送信/採用した内容（JSON）— ポーリング時の比較用
+    function markLocal(){ try{ lastLocal = JSON.stringify(state); }catch(e){ lastLocal=""; } }
+
     function schedulePush(){
+        if(suppressPush) return;
         if(!Cloud.authed()) return;
         clearTimeout(pushTimer);
-        pushTimer=setTimeout(function(){ Cloud.push(state); }, 1000);
+        pushTimer = setTimeout(async function(){
+            var ok = await Cloud.push(state);
+            if(ok) markLocal();
+        }, 600);
+    }
+    // ページを閉じる/隠す前に未送信の変更を即アップロード
+    function flushPush(){
+        if(suppressPush || !Cloud.authed()) return;
+        Cloud.push(state);
+    }
+
+    // クラウドのデータを採用する（force=true は手動「読込」用、ガードを無視）
+    async function adopt(row, force){
+        if(!row || !row.state || !row.state.habits) return false;
+        if(!force && lastLocal && JSON.stringify(row.state) === lastLocal) return false; // 変化なし
+        var ae = document.activeElement;
+        if(!force && ae && (ae.tagName==="INPUT" || ae.tagName==="TEXTAREA")) return false; // 入力中は待機
+        if(!force && document.querySelector(".modal-bg:not([hidden])")) return false;         // モーダル中は待機
+        suppressPush = true;
+        try{
+            state = row.state;
+            boardMode = (state.mode==="card") ? "card" : "sheet";
+            try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+            markLocal();
+            renderGoal(); renderBoard(); updateGraph(); renderCalendar();
+            if(!force) showSyncToast("他端末の変更を反映しました");
+            return true;
+        } finally { suppressPush = false; }
+    }
+    // クラウドから取得して必要なら採用（ポーリング/フォーカス時に呼ぶ）
+    async function syncNow(){
+        if(!Cloud.authed()) return;
+        if(document.hidden) return;
+        if(document.querySelector(".modal-bg:not([hidden])")) return; // モーダル中は取得のみスキップ
+        try{
+            var row = await Cloud.pull();
+            if(row) await adopt(row, false);
+        }catch(e){ /* 次のサイクルで再試行 */ }
     }
     function cloudMsg(t, kind){
         var el=document.getElementById("cloud-msg");
@@ -884,6 +942,7 @@ create policy "own row" on public.touetsu_state
         if(!Cloud.authed()){ cloudMsg("先に「Googleで連携」してください。","err"); return; }
         cloudMsg("保存中…");
         var ok=await Cloud.push(state);
+        if(ok) markLocal();
         cloudMsg(ok?"クラウドに保存しました。":"保存に失敗しました（詳細はステータスを確認）。", ok?"ok":"err");
     }
     async function doPull(){
@@ -891,16 +950,23 @@ create policy "own row" on public.touetsu_state
             cloudMsg("読み込み中…");
             var row=await Cloud.pull();
             if(!row){ cloudMsg("クラウドに保存されたデータがありません。","err"); return; }
-            var remote=row.state;
-            if(remote && remote.habits){
-                state=remote;
-                boardMode=(state.mode==="card")?"card":"sheet";
-                save();
-                renderGoal(); renderBoard(); updateGraph(); renderCalendar();
+            if(row.state && row.state.habits){
+                await adopt(row, true);
                 var when=(row.updated_at||"").slice(0,16).replace("T"," ");
                 cloudMsg("クラウドから読み込みました（更新: "+when+"）","ok");
             } else { cloudMsg("クラウドのデータが空です。","err"); }
         }catch(e){ cloudMsg("読み込みエラー: "+e.message,"err"); }
+    }
+
+    // 他端末反映時の軽いトースト
+    var toastTimer=null;
+    function showSyncToast(msg){
+        var t=document.getElementById("sync-toast");
+        if(!t) return;
+        t.textContent=msg;
+        t.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer=setTimeout(function(){ t.classList.remove("show"); }, 2200);
     }
 
     // 全習慣が選択した日付の和集合（横軸＝日付）
@@ -1808,16 +1874,28 @@ create policy "own row" on public.touetsu_state
     document.getElementById("btn-cloud-push").onclick = doPushNow;
     document.getElementById("btn-cloud-pull").onclick = function(){ if(confirm("クラウドのデータで上書きします。この端末の未同期の変更は失われますがよろしいですか？")) doPull(); };
     document.getElementById("btn-cloud-out").onclick = function(){ Cloud.signOut(); };
+    // 起動時のローカル内容を基準にする（同じ内容を再取得しても再反映しない）
+    markLocal();
     Cloud.onStatus(updateCloudUI);
     Cloud.init().then(function(){
         var hasCode=/[?&]code=/.test(location.search);
         var hasTok=!!(location.hash && /access_token/.test(location.hash));
         if(hasCode || hasTok){
-            Cloud.handleCallback().then(function(ok){ if(ok && state.habits.length===0) doPull(); });
-        } else if(Cloud.authed() && state.habits.length===0){
-            doPull();
+            Cloud.handleCallback().then(function(ok){ if(ok) syncNow(); });
+        } else if(Cloud.authed()){
+            syncNow(); // 起動時に最新を取得（ローカルが空でなくても）
         }
     });
+
+    // 他端末の変更を「即時」に近い形で反映する仕組み
+    document.addEventListener("visibilitychange", function(){
+        if(!document.hidden) syncNow(); else flushPush();   // 表示されたら取得 / 隠れたら送信
+    });
+    window.addEventListener("focus", syncNow);
+    window.addEventListener("pagehide", flushPush);
+    window.addEventListener("beforeunload", flushPush);
+    // タブが開いたままでも、数秒ごとにポーリング（非表示/モーダル中はスキップ）
+    setInterval(function(){ if(!document.hidden) syncNow(); }, 15000);
 
     // 初期描画
     renderGoal();
