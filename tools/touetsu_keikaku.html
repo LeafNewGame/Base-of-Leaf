@@ -417,18 +417,21 @@
         .cloud-sql pre{margin:0;font-size:11px;white-space:pre-wrap;word-break:break-all;background:#1f2d23;color:#d8f0e2;padding:10px;border-radius:8px;overflow:auto;}
 
         /* ===== モバイル対応 ===== */
+        /* スマホでは固定高さのアプリ枠をやめて、通常の縦スクロールにする */
         @media (max-width:720px){
+            html,body{height:auto;}
+            body{display:block;height:auto;min-height:100%;-webkit-text-size-adjust:100%;}
             .app-head{flex-wrap:wrap;gap:8px;padding:10px 12px;}
             .app-head .brand{font-size:15px;}
             .head-right{gap:10px;}
-            .wrap{padding:10px;gap:10px;}
+            .wrap{display:flex;flex-direction:column;height:auto;min-height:0;padding:10px;gap:10px;}
             .topbar{grid-template-columns:1fr;gap:10px;}
             .card{padding:12px;}
             .donut{width:120px;height:120px;}
             .donut svg{width:120px;height:120px;}
             .goal-name{font-size:26px;}
             .board-head{padding:12px;flex-direction:column;align-items:flex-start;gap:10px;}
-            .board-tools{width:100%;justify-content:flex-start;gap:6px;}
+            .board-tools{width:100%;justify-content:flex-start;gap:6px;flex-wrap:wrap;}
             .board-tools .btn{font-size:11px;padding:6px 9px;}
             .mode-switch{width:100%;}
             .mode-btn{flex:1;}
@@ -437,10 +440,13 @@
             .chk{width:32px;height:32px;}
             .chk svg{width:20px;height:20px;}
             table.board{min-width:520px;}
-            .board-scroll{overflow-x:auto;}
+            /* 縦はページ全体でスクロール、横だけこの中でスクロール */
+            .board-card{flex:none;height:auto;overflow:visible;}
+            .board-scroll{display:block;overflow-x:auto;overflow-y:visible;height:auto;min-height:0;-webkit-overflow-scrolling:touch;}
             .cal-cell{min-height:46px;}
             .add-body{grid-template-columns:1fr;}
             .calprev-cal th,.calprev-cal td{height:84px;}
+            .tc-tasks{max-height:200px;}
         }
         @media (max-width:420px){
             .goal-name{font-size:22px;}
