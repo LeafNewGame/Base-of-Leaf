@@ -389,13 +389,77 @@
         .calprev-ev.done{color:#fff;}
         .calprev-more{font-size:10px;color:#888;margin-top:2px;}
         .calprev-hint{font-size:11px;color:var(--muted);margin-top:14px;}
+
+        /* ヘッダー右側（クラウド同期ボタン） */
+        .head-right{display:flex;align-items:center;gap:14px;}
+        .head-cloud{
+            font-size:13px;padding:5px 12px;border-radius:9px;
+            border:1px solid rgba(255,255,255,.6);background:rgba(255,255,255,.15);
+            color:#fff;cursor:pointer;transition:.15s;font-weight:600;
+        }
+        .head-cloud:hover{background:rgba(255,255,255,.28);}
+        .head-cloud.on{background:#fff;color:var(--green-d);border-color:#fff;}
+
+        /* クラウド同期モーダル */
+        .cloud-modal{background:#fff;border-radius:16px;width:min(560px,94vw);max-height:90vh;overflow:auto;padding:20px 22px;box-shadow:var(--shadow);}
+        .cloud-modal h3{margin:0 0 4px;font-size:18px;color:var(--green-d);display:flex;justify-content:space-between;align-items:center;}
+        .cloud-modal h3 .close{border:none;background:var(--frost);color:var(--green-d);font-size:18px;width:30px;height:30px;border-radius:8px;cursor:pointer;line-height:1;}
+        .cloud-modal h3 .close:hover{background:var(--green-l);}
+        .cloud-status{font-size:13px;color:var(--muted);margin:8px 0 14px;padding:8px 12px;background:var(--frost);border-radius:9px;}
+        .cloud-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;}
+        .cloud-actions .btn{font-size:13px;padding:9px 14px;}
+        .cloud-msg{font-size:12.5px;min-height:18px;margin:6px 0 2px;}
+        .cloud-msg.ok{color:var(--green-d);}
+        .cloud-msg.err{color:#c0584f;}
+        #cloud-err{font-size:11.5px;color:#c0584f;min-height:14px;margin-bottom:8px;}
+        .cloud-sql{display:none;background:#f4f7f5;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:10px;}
+        .cloud-sql p{font-size:12px;color:var(--muted);margin:0 0 6px;}
+        .cloud-sql pre{margin:0;font-size:11px;white-space:pre-wrap;word-break:break-all;background:#1f2d23;color:#d8f0e2;padding:10px;border-radius:8px;overflow:auto;}
+
+        /* ===== モバイル対応 ===== */
+        @media (max-width:720px){
+            .app-head{flex-wrap:wrap;gap:8px;padding:10px 12px;}
+            .app-head .brand{font-size:15px;}
+            .head-right{gap:10px;}
+            .wrap{padding:10px;gap:10px;}
+            .topbar{grid-template-columns:1fr;gap:10px;}
+            .card{padding:12px;}
+            .donut{width:120px;height:120px;}
+            .donut svg{width:120px;height:120px;}
+            .goal-name{font-size:26px;}
+            .board-head{padding:12px;flex-direction:column;align-items:flex-start;gap:10px;}
+            .board-tools{width:100%;justify-content:flex-start;gap:6px;}
+            .board-tools .btn{font-size:11px;padding:6px 9px;}
+            .mode-switch{width:100%;}
+            .mode-btn{flex:1;}
+            .task-grid{grid-template-columns:1fr;padding:12px;}
+            .task-card .tc-name{font-size:16px;}
+            .chk{width:32px;height:32px;}
+            .chk svg{width:20px;height:20px;}
+            table.board{min-width:520px;}
+            .board-scroll{overflow-x:auto;}
+            .cal-cell{min-height:46px;}
+            .add-body{grid-template-columns:1fr;}
+            .calprev-cal th,.calprev-cal td{height:84px;}
+        }
+        @media (max-width:420px){
+            .goal-name{font-size:22px;}
+            .donut{width:100px;height:100px;}
+            .donut svg{width:100px;height:100px;}
+            .donut .pct b{font-size:24px;}
+            table.board{min-width:440px;}
+            .app-head a{font-size:12px;}
+        }
     </style>
 </head>
 <body>
 
 <header class="app-head">
     <span class="brand">越冬計画</span>
-    <a href="../index.html">← PLANTER ホーム</a>
+    <div class="head-right">
+        <button class="head-cloud" id="btn-cloud" type="button">☁ 同期</button>
+        <a href="../index.html">← PLANTER ホーム</a>
+    </div>
 </header>
 
 <div class="wrap">
@@ -530,6 +594,49 @@
 <!-- 印刷（PDF）用エクスポートビュー -->
 <div id="export-print"></div>
 
+<!-- クラウド同期モーダル -->
+<div class="modal-bg" id="cloud-modal-bg" hidden>
+    <div class="cloud-modal">
+        <h3>クラウド同期 <button class="close" id="cloud-close" type="button">×</button></h3>
+        <div class="cloud-status" id="cloud-status">確認中…</div>
+        <div class="cloud-actions">
+            <button class="btn primary" id="btn-cloud-google" type="button">Googleで連携</button>
+            <button class="btn" id="btn-cloud-push" type="button" hidden>クラウドに保存</button>
+            <button class="btn" id="btn-cloud-pull" type="button" hidden>クラウドから読み込み</button>
+            <button class="btn ghost" id="btn-cloud-out" type="button" hidden>連携解除</button>
+        </div>
+        <div class="cloud-msg" id="cloud-msg"></div>
+        <div id="cloud-err"></div>
+        <div class="cloud-sql" id="cloud-sql">
+            <p>データ保存用のテーブルがまだありません。箱庭と<strong>同じ Supabase プロジェクト</strong>の SQL Editor で以下を 1 回実行してください（アカウント連携の設定は不要です）：</p>
+            <pre>create table if not exists public.touetsu_state (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  state jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table public.touetsu_state enable row level security;
+create policy "own row" on public.touetsu_state
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);</pre>
+        </div>
+    </div>
+</div>
+
+<!-- 公式 Supabase JS SDK を ESM で読み込み、createClient を window に公開する（箱庭と同じ） -->
+<script type="module">
+  (async () => {
+    try {
+      const m = await import("https://esm.sh/@supabase/supabase-js@2");
+      window.__sbCreateClient = m.createClient;
+    } catch (e1) {
+      try {
+        const m = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+        window.__sbCreateClient = m.createClient;
+      } catch (e2) { console.error("Supabase SDK の読み込みに失敗しました", e1, e2); }
+    }
+    document.dispatchEvent(new Event("sb-ready"));
+  })();
+</script>
+
 <!-- カレンダー拡大プレビュー（PDFと同じ表示） -->
 <div class="modal-bg" id="cal-preview-bg" hidden>
     <div class="calprev-modal">
@@ -583,6 +690,211 @@
     }
     function save(){
         try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+        schedulePush();
+    }
+
+    /* ===== クラウド同期（箱庭と同じ Supabase / Google アカウント連携を転用） =====
+       - 認証: 箱庭が localStorage["kg_settings"] に保存した URL/key と、
+         同じ Supabase プロジェクトのセッション(localStorage["kg_supabase_auth"])をそのまま再利用。
+         → ユーザー側の設定は不要（箱庭で一度連携していれば自動で使える）。
+       - データ: 専用テーブル touetsu_state(user_id uuid PK, state jsonb, updated_at timestamptz)。
+         kb_cards はユーザー1行のみの設計のため、上書きを避けて専用テーブルに分ける。
+         テーブル未作成時はモーダル内に SQL を表示。 */
+    var Cloud = (function(){
+        var LS_SESSION = "kg_supabase_auth";   // 箱庭と共有
+        var LS_SET = "kg_settings";             // 箱庭と共有
+        var TABLE = "touetsu_state";
+        var url="", key="", sb=null, session=null, ready=false, lastErr="";
+        var listeners=[];
+        function emit(){ listeners.forEach(function(cb){ try{ cb(status()); }catch(e){} }); }
+        function configured(){ return !!(url&&key); }
+        function authed(){ return !!(session&&session.access_token); }
+        function toOur(s){ return { access_token:s.access_token, refresh_token:s.refresh_token, user:{ id:s.user.id, email:s.user.email } }; }
+        function normBase(u){
+            u=(u||"").trim().replace(/\s+/g,"");
+            if(!u) return "";
+            if(!/^https?:\/\//i.test(u)) u="https://"+u;
+            try{ return new URL(u).origin; }catch(e){ return u.replace(/\/+$/,""); }
+        }
+        function status(){
+            var ref=(url.match(/https?:\/\/([a-z0-9]+)\.supabase\.(co|in)/i)||[])[1]||"";
+            var s = !ready ? "loading" : (authed() ? "online" : (configured() ? "signedout" : "unconfigured"));
+            return { state:s, email:(session&&session.user&&session.user.email)||"", error:lastErr, ref:ref };
+        }
+        function whenSB(){
+            return new Promise(function(res,rej){
+                if(window.__sbCreateClient) return res(window.__sbCreateClient);
+                var t0=Date.now();
+                var iv=setInterval(function(){
+                    if(window.__sbCreateClient){ clearInterval(iv); res(window.__sbCreateClient); }
+                    else if(Date.now()-t0>9000){ clearInterval(iv); rej(new Error("Supabase SDK の読み込みがタイムアウトしました（ネット接続／CDN を確認）")); }
+                },50);
+            });
+        }
+        async function ensureClient(){
+            if(sb) return sb;
+            var createClient=await whenSB();
+            sb=createClient(url,key,{
+                auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, flowType:"pkce", storage:window.localStorage, storageKey:LS_SESSION }
+            });
+            sb.auth.onAuthStateChange(function(_e,s){
+                if(s){ session=toOur(s); } else { session=null; }
+                emit();
+            });
+            return sb;
+        }
+        async function init(){
+            var s=null;
+            try{ s=JSON.parse(localStorage.getItem(LS_SET)||"null"); }catch(e){}
+            url=normBase(s&&s.supabaseUrl||"");
+            key=(s&&s.supabaseKey||"").trim();
+            ready=false; emit();
+            if(!configured()){ ready=true; emit(); return; }
+            try{
+                await ensureClient();
+                var r=await sb.auth.getSession();
+                session = (r.data&&r.data.session) ? toOur(r.data.session) : null;
+            }catch(e){ console.warn("cloud init err",e); session=null; }
+            ready=true; emit();
+        }
+        async function googleLogin(){
+            if(!configured()){ lastErr="箱庭で先にアカウント連携（Supabase URL / anon key）を設定してください。"; emit(); return; }
+            try{
+                var c=await ensureClient();
+                var r=await c.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: location.origin+location.pathname } });
+                if(r.error) throw r.error;
+            }catch(e){ lastErr="Google連携準備エラー: "+(e.message||e); emit(); }
+        }
+        async function handleCallback(){
+            if(!sb){ try{ await ensureClient(); }catch(e){ lastErr=e.message; emit(); return false; } }
+            try{
+                var r=await sb.auth.getSession();
+                if(r.data&&r.data.session){
+                    session=toOur(r.data.session); emit();
+                    if(/[?&]code=/.test(location.search) || (location.hash&&/access_token/.test(location.hash))){
+                        var clean=location.pathname+location.search
+                            .replace(/[?&](code|state|error|error_description|error_code)=[^&]*/g,"")
+                            .replace(/\?$/,"");
+                        history.replaceState({},document.title,clean);
+                    }
+                    return true;
+                }
+            }catch(e){ lastErr="連携完了処理エラー: "+(e.message||e); emit(); }
+            return false;
+        }
+        async function signOut(){
+            if(sb){ try{ await sb.auth.signOut(); }catch(e){} }
+            session=null; emit();
+        }
+        async function authFetch(path,opts){
+            opts=opts||{};
+            opts.headers=Object.assign({ "apikey":key }, opts.headers||{});
+            var r=await fetch(url+path,opts);
+            if(r.status===401 && session && session.refresh_token){
+                try{
+                    var rr=await sb.auth.refreshSession();
+                    if(rr.data&&rr.data.session){ session=toOur(rr.data.session); opts.headers["Authorization"]="Bearer "+session.access_token; r=await fetch(url+path,opts); }
+                }catch(e){}
+            }
+            return r;
+        }
+        async function push(stateObj){
+            if(!configured()||!authed()) return false;
+            var r=await authFetch("/rest/v1/"+TABLE,{
+                method:"POST",
+                headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+session.access_token, "Prefer":"resolution=merge-duplicates" },
+                body: JSON.stringify({ user_id:session.user.id, state:stateObj, updated_at:new Date().toISOString() })
+            });
+            if(!r.ok){ var t=await r.text(); lastErr=explain(t); emit(); return false; }
+            lastErr=""; emit(); return true;
+        }
+        async function pull(){
+            if(!configured()||!authed()) return null;
+            var r=await authFetch("/rest/v1/"+TABLE+"?select=state,updated_at&user_id=eq."+encodeURIComponent(session.user.id),{
+                headers:{ "Authorization":"Bearer "+session.access_token }
+            });
+            if(!r.ok){ var t=await r.text(); lastErr=explain(t); throw new Error(lastErr||("取得失敗 "+r.status)); }
+            var rows=await r.json();
+            if(rows&&rows.length) return rows[0];
+            return null;
+        }
+        function explain(t){
+            if(/PGRST125|Invalid path/i.test(t)) return "Supabase URL が正しくありません（オリジンのみ: https://xxxx.supabase.co）。接続先: "+(url||"(未設定)");
+            if(/PGRST205|42P01|does not exist|Could not find the table/i.test(t)) return "テーブル touetsu_state が見つかりません。モーダル内の SQL を箱庭と同じ Supabase プロジェクトで実行してください。";
+            if(/42501|permission denied|row-level security|RLS/i.test(t)) return "権限エラー（RLS）。モーダル内のポリシー作成 SQL を実行してください。";
+            return "";
+        }
+        function onStatus(cb){ listeners.push(cb); }
+        return { init:init, googleLogin:googleLogin, handleCallback:handleCallback, signOut:signOut, push:push, pull:pull, onStatus:onStatus, status:status, configured:configured, authed:authed };
+    })();
+
+    // 自動アップロード（保存のたびにデバウンスしてクラウドへ送信）
+    var pushTimer=null;
+    function schedulePush(){
+        if(!Cloud.authed()) return;
+        clearTimeout(pushTimer);
+        pushTimer=setTimeout(function(){ Cloud.push(state); }, 1000);
+    }
+    function cloudMsg(t, kind){
+        var el=document.getElementById("cloud-msg");
+        if(!el) return;
+        el.textContent=t||"";
+        el.className="cloud-msg"+(kind?(" "+kind):"");
+    }
+    function updateCloudUI(){
+        var st=Cloud.status();
+        var btn=document.getElementById("btn-cloud");
+        if(btn){
+            if(st.state==="online"){ btn.textContent="☁ 同期済"; btn.classList.add("on"); }
+            else if(st.state==="unconfigured"){ btn.textContent="☁ 未連携"; btn.classList.remove("on"); }
+            else if(st.state==="loading"){ btn.textContent="☁ …"; btn.classList.remove("on"); }
+            else { btn.textContent="☁ 同期"; btn.classList.remove("on"); }
+        }
+        var stat=document.getElementById("cloud-status");
+        if(stat){
+            var ref=st.ref?"（プロジェクト "+st.ref+"）":"";
+            if(st.state==="online") stat.innerHTML="接続中: "+(st.email||"アカウント")+ref;
+            else if(st.state==="signedout") stat.textContent="ログインしてください"+ref;
+            else if(st.state==="unconfigured") stat.textContent="箱庭でアカウント連携を設定してください"+ref;
+            else stat.textContent="確認中…";
+        }
+        var g=document.getElementById("btn-cloud-google");
+        var p=document.getElementById("btn-cloud-push");
+        var pu=document.getElementById("btn-cloud-pull");
+        var o=document.getElementById("btn-cloud-out");
+        var show=(st.state==="online");
+        if(g) g.hidden=show;
+        if(p) p.hidden=!show;
+        if(pu) pu.hidden=!show;
+        if(o) o.hidden=!show;
+        var err=document.getElementById("cloud-err");
+        if(err) err.textContent=st.error||"";
+        var sql=document.getElementById("cloud-sql");
+        if(sql) sql.style.display=((st.state==="unconfigured")||/テーブル/.test(st.error||""))?"block":"none";
+    }
+    function openCloudModal(){ var m=document.getElementById("cloud-modal-bg"); if(m) m.hidden=false; updateCloudUI(); }
+    function closeCloudModal(){ var m=document.getElementById("cloud-modal-bg"); if(m) m.hidden=true; }
+    async function doPushNow(){
+        if(!Cloud.authed()){ cloudMsg("先に「Googleで連携」してください。","err"); return; }
+        cloudMsg("保存中…");
+        var ok=await Cloud.push(state);
+        cloudMsg(ok?"クラウドに保存しました。":"保存に失敗しました（詳細はステータスを確認）。", ok?"ok":"err");
+    }
+    async function doPull(){
+        try{
+            cloudMsg("読み込み中…");
+            var row=await Cloud.pull();
+            if(!row){ cloudMsg("クラウドに保存されたデータがありません。","err"); return; }
+            var remote=row.state;
+            if(remote && remote.habits){
+                state=remote;
+                boardMode=(state.mode==="card")?"card":"sheet";
+                save();
+                renderGoal(); renderBoard(); updateGraph(); renderCalendar();
+                var when=(row.updated_at||"").slice(0,16).replace("T"," ");
+                cloudMsg("クラウドから読み込みました（更新: "+when+"）","ok");
+            } else { cloudMsg("クラウドのデータが空です。","err"); }
+        }catch(e){ cloudMsg("読み込みエラー: "+e.message,"err"); }
     }
 
     // 全習慣が選択した日付の和集合（横軸＝日付）
@@ -1481,6 +1793,25 @@
         img.onerror = function(){ alert("画像の生成に失敗しました。PDFでの保存をお試しください。"); };
         img.src = svg64;
     };
+
+    // クラウド同期の初期化とボタン連携
+    document.getElementById("btn-cloud").onclick = openCloudModal;
+    document.getElementById("cloud-close").onclick = closeCloudModal;
+    document.getElementById("cloud-modal-bg").addEventListener("click", function(e){ if(e.target === this) closeCloudModal(); });
+    document.getElementById("btn-cloud-google").onclick = function(){ Cloud.googleLogin(); };
+    document.getElementById("btn-cloud-push").onclick = doPushNow;
+    document.getElementById("btn-cloud-pull").onclick = function(){ if(confirm("クラウドのデータで上書きします。この端末の未同期の変更は失われますがよろしいですか？")) doPull(); };
+    document.getElementById("btn-cloud-out").onclick = function(){ Cloud.signOut(); };
+    Cloud.onStatus(updateCloudUI);
+    Cloud.init().then(function(){
+        var hasCode=/[?&]code=/.test(location.search);
+        var hasTok=!!(location.hash && /access_token/.test(location.hash));
+        if(hasCode || hasTok){
+            Cloud.handleCallback().then(function(ok){ if(ok && state.habits.length===0) doPull(); });
+        } else if(Cloud.authed() && state.habits.length===0){
+            doPull();
+        }
+    });
 
     // 初期描画
     renderGoal();
